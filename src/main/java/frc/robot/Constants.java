@@ -21,6 +21,8 @@ public class Constants {
         public static final FeedbackConfig kFeedbackConfig = new FeedbackConfig(FeedbackDevice.IntegratedSensor, encoderUnits, gearboxRatio);
     }
 
+    public static final int pigeonID = 8;
+
     // ========================================
     //    Global Motor Controller Constants
     // ========================================
