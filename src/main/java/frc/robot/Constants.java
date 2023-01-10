@@ -24,6 +24,15 @@ public class Constants {
 
     public static final int pigeonID = 8;
 
+    public static final class Vision {
+        // Target Heights
+        public static final int highPoleHeight = 106; // cm
+        public static final int midPoleHeight = 87; // cm
+        // Limelight
+        public static final int cameraHeight = 0; // cm
+        public static final int cameraAngle = 0; // degrees 
+    }
+
     // ========================================
     //    Global Motor Controller Constants
     // ========================================A

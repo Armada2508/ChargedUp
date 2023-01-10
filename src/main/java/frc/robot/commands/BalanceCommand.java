@@ -8,7 +8,7 @@ import frc.robot.subsystems.DriveSubsystem;
 
 public class BalanceCommand extends CommandBase {
     
-    private final int pitchDeadzone = 2;
+    private final int pitchDeadzone = 2; // degrees
     private DriveSubsystem subsystem;
     private PigeonIMU pigeon;
 
@@ -28,14 +28,12 @@ public class BalanceCommand extends CommandBase {
         if (pigeon.getState() == PigeonState.Ready) {
             pitch = pigeon.getPitch();
         }
-        double power = -1*pitch/45; // its in reverse for some reason ? ?
+        double power = -1*pitch/180; // its in reverse for some reason ? ?
         if (power > 1) power = 1;
         if (power < -1) power = -1;
         if (pitch > pitchDeadzone) { // outside of deadzone start doin shit
-            System.out.println("FIXXX UP");
             subsystem.setPower(power, power);
         } else if (pitch < -pitchDeadzone) {
-            System.out.println("FIXXX DOWN");
             subsystem.setPower(power, power);
         } else { // we're in deadzone so not tilted too much so stop moving
             subsystem.setPower(0, 0);
