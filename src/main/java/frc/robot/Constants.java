@@ -8,10 +8,11 @@ import frc.robot.Lib.util.Util;
 public class Constants {
     
     public static final class Drive {
-        public static final int LFID = 0;
-        public static final int LRID = 1;
-        public static final int RFID = 2;
-        public static final int RRID = 3;
+        public static final int RID = 0;
+        public static final int RFID = 1;
+        public static final int LID = 2;
+        public static final int LFID = 3;
+        public static final int turnAdjustment = 3;
 
         public static final double diameter = 6;
         public static final int encoderUnits = 2048;
@@ -25,7 +26,7 @@ public class Constants {
 
     // ========================================
     //    Global Motor Controller Constants
-    // ========================================
+    // ========================================A
     public static final class MotorController {
 
         // Status frames are sent over CAN that contain data about the Talon.

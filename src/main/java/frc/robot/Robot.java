@@ -8,6 +8,7 @@ import com.ctre.phoenix.sensors.PigeonIMU;
 import com.ctre.phoenix.sensors.PigeonIMU.PigeonState;
 
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -25,6 +26,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
+    new RobotContainer(pigeon);
   }
 
   /**
@@ -36,8 +38,9 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
+    CommandScheduler.getInstance().run();
     if (pigeon.getState() == PigeonState.Ready) {
-      System.out.println(pigeon.getYaw());
+      // System.out.println(pigeon.getPitch());
     }
   }
 

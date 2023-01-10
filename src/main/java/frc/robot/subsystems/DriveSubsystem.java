@@ -29,10 +29,10 @@ public class DriveSubsystem extends SubsystemBase{
     private final PigeonIMU mImu = new PigeonIMU(0);
 
     public DriveSubsystem() {
-        TalonFXL = new WPI_TalonFX(Drive.LFID); 
-        TalonFXLfollow = new WPI_TalonFX(Drive.LRID); 
-        TalonFXR = new WPI_TalonFX(Drive.RFID); 
-        TalonFXRfollow = new WPI_TalonFX(Drive.RRID);
+        TalonFXL = new WPI_TalonFX(Drive.LID); 
+        TalonFXLfollow = new WPI_TalonFX(Drive.LFID); 
+        TalonFXR = new WPI_TalonFX(Drive.RID); 
+        TalonFXRfollow = new WPI_TalonFX(Drive.RFID);
         TalonFXL.setInverted(true);
         TalonFXLfollow.setInverted(true);
         TalonFXLfollow.follow(TalonFXL);
