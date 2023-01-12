@@ -4,11 +4,16 @@ import java.util.Map;
 
 import com.ctre.phoenix.sensors.PigeonIMU;
 
+import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import frc.robot.commands.AutoDriveCommand;
 import frc.robot.commands.BalanceCommand;
 import frc.robot.commands.CenterCommand;
 import frc.robot.commands.DriveCommand;
@@ -24,7 +29,8 @@ public class RobotContainer {
     
     RobotContainer(PigeonIMU pigeon) {
         this.pigeon = pigeon;
-        driveSubsystem.setDefaultCommand(new DriveCommand(() -> joystick.getRawAxis(1), () -> joystick.getRawAxis(2), driveSubsystem)); // default to driving from joystick input
+        driveSubsystem.setDefaultCommand(new DriveCommand(() -> joystick.getRawAxis(1), () -> joystick.getRawAxis(0), driveSubsystem)); // default to driving from joystick input
+        configureCamera();
         configureShuffleboard();
         configureButtons();
     }
@@ -46,13 +52,13 @@ public class RobotContainer {
             .withSize(4, 3);
         Shuffleboard.getTab("Pigeon")
             .addDouble("Pigeon Pitch", () -> pigeon.getPitch())
-            .withPosition(0, 3)
+            .withPosition(4, 0)
             .withWidget(BuiltInWidgets.kNumberBar)
             .withProperties(Map.of("min", -90, "max", 90))
             .withSize(4, 3);
         Shuffleboard.getTab("Pigeon")
             .addDouble("Pigeon Roll", () -> pigeon.getRoll())
-            .withPosition(0, 6)
+            .withPosition(8, 0)
             .withWidget(BuiltInWidgets.kNumberBar)
             .withProperties(Map.of("min", -90, "max", 90))
             .withSize(4, 3);
@@ -80,7 +86,26 @@ public class RobotContainer {
             .withSize(4, 3)
             .withProperties(Map.of("min", 0, "max", 100))
             .withWidget(BuiltInWidgets.kNumberBar);
+        Shuffleboard.getTab("Vision")
+            .add(CameraServer.getVideo().getSource())
+            .withPosition(0, 4)
+            .withSize(16, 9)
+            .withWidget(BuiltInWidgets.kCameraStream);
         Shuffleboard.selectTab("Vision");
+    }
+
+    private void configureCamera() {
+        UsbCamera camera = CameraServer.startAutomaticCapture(0);
+        camera.setBrightness(50);
+        camera.setFPS(15);
+        camera.setResolution(426, 240);
+    }
+
+    public Command getAutoCommand() {
+        return new SequentialCommandGroup(
+            new AutoDriveCommand(24, driveSubsystem),
+            new AutoDriveCommand(48, driveSubsystem)
+        );
     }
 
 }

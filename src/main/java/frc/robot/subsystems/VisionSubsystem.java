@@ -13,9 +13,10 @@ public class VisionSubsystem {
     private NetworkTableEntry targetY = table.getEntry("ty"); // In degrees
     private NetworkTableEntry targetArea = table.getEntry("ta"); // Percent area that the target takes up in the whole capture
     private NetworkTableEntry limelightLED = table.getEntry("ledMode");
+    private double minimumArea = 5;
 
     public boolean hasTarget() {
-        return hasTarget.getInteger(0) == 1 && getTargetArea() > 5;
+        return hasTarget.getInteger(0) == 1 && getTargetArea() > minimumArea;
     }
 
     public double getTargetX() {
@@ -34,7 +35,7 @@ public class VisionSubsystem {
      * h2 = height of target, h1 = height of camera, a1 = camera angle, a2 = target angle
      * @return distance in inches
      */
-    public double distanceFromTarget(Pole target) {
+    public double distanceFromTargetInInches(Pole target) {
         double targetHeight = (target == Pole.HIGH_POLE) ? Vision.highPoleHeight : Vision.midPoleHeight;
         double radians = Math.toRadians(Vision.cameraAngle + getTargetY());
         double distance = (targetHeight - Vision.cameraHeight) / Math.tan(radians);

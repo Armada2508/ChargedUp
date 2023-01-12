@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 public class Robot extends TimedRobot {
 
   private final PigeonIMU pigeon = new PigeonIMU(Constants.pigeonID);
+  private RobotContainer container; 
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -26,7 +27,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
-    new RobotContainer(pigeon);
+    container = new RobotContainer(pigeon);
   }
 
   /**
@@ -56,6 +57,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
+    container.getAutoCommand().schedule();
   }
 
   /** This function is called periodically during autonomous. */
