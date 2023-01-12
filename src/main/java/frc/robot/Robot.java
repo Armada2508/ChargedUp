@@ -41,7 +41,7 @@ public class Robot extends TimedRobot {
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
     if (pigeon.getState() == PigeonState.Ready) {
-      // System.out.println(pigeon.getPitch());
+      System.out.println(pigeon.getRoll());
     }
   }
 

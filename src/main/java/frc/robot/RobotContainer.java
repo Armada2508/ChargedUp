@@ -13,7 +13,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
-import frc.robot.commands.AutoDriveCommand;
+import frc.robot.commands.AutoTurnCommand;
 import frc.robot.commands.BalanceCommand;
 import frc.robot.commands.CenterCommand;
 import frc.robot.commands.DriveCommand;
@@ -26,7 +26,7 @@ public class RobotContainer {
     private final DriveSubsystem driveSubsystem = new DriveSubsystem();
     private final VisionSubsystem vision = new VisionSubsystem();
     private final PigeonIMU pigeon;
-    
+    // ! Auto Turn Command Drift
     RobotContainer(PigeonIMU pigeon) {
         this.pigeon = pigeon;
         driveSubsystem.setDefaultCommand(new DriveCommand(() -> joystick.getRawAxis(1), () -> joystick.getRawAxis(0), driveSubsystem)); // default to driving from joystick input
@@ -97,14 +97,15 @@ public class RobotContainer {
     private void configureCamera() {
         UsbCamera camera = CameraServer.startAutomaticCapture(0);
         camera.setBrightness(50);
-        camera.setFPS(15);
+        camera.setFPS(12);
         camera.setResolution(426, 240);
     }
 
     public Command getAutoCommand() {
         return new SequentialCommandGroup(
-            new AutoDriveCommand(24, driveSubsystem),
-            new AutoDriveCommand(48, driveSubsystem)
+            new AutoTurnCommand(driveSubsystem, pigeon, 90)
+            // new AutoDriveCommand(24, driveSubsystem),
+            // new AutoDriveCommand(48, driveSubsystem)
         );
     }
 
