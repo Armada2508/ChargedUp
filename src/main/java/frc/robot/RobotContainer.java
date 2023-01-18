@@ -13,32 +13,43 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import frc.robot.commands.AutoDriveCommand;
 import frc.robot.commands.AutoTurnCommand;
 import frc.robot.commands.BalanceCommand;
 import frc.robot.commands.CenterCommand;
 import frc.robot.commands.DriveCommand;
+import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
 
 public class RobotContainer {
 
     private final Joystick joystick = new Joystick(0);
-    private final DriveSubsystem driveSubsystem = new DriveSubsystem();
     private final VisionSubsystem vision = new VisionSubsystem();
+    private final ArmSubsystem armSubsystem = new ArmSubsystem();
+    private final DriveSubsystem driveSubsystem;
     private final PigeonIMU pigeon;
     // ! Auto Turn Command Drift
     RobotContainer(PigeonIMU pigeon) {
         this.pigeon = pigeon;
-        driveSubsystem.setDefaultCommand(new DriveCommand(() -> joystick.getRawAxis(1), () -> joystick.getRawAxis(0), driveSubsystem)); // default to driving from joystick input
+        this.driveSubsystem = new DriveSubsystem(pigeon);
+        driveSubsystem.setDefaultCommand(new DriveCommand(() -> joystick.getRawAxis(1)*-1, () -> joystick.getRawAxis(0)*-1, driveSubsystem)); // default to driving from joystick input
+        armSubsystem.calibrate();
         configureCamera();
         configureShuffleboard();
         configureButtons();
     }
 
     private void configureButtons() {
-        new JoystickButton(joystick, 12).whileTrue(new BalanceCommand(driveSubsystem, pigeon));
-        new JoystickButton(joystick, 11).onTrue(new InstantCommand(vision::limelightON));
+        new JoystickButton(joystick, 12).onTrue(new InstantCommand(() -> {
+            Command command = driveSubsystem.getCurrentCommand(); 
+            if (command instanceof BalanceCommand) {
+                command.cancel();
+            }
+        }));
+        new JoystickButton(joystick, 11).onTrue(new BalanceCommand(driveSubsystem, pigeon));
         new JoystickButton(joystick, 10).onTrue(new InstantCommand(vision::limelightOFF));
+        new JoystickButton(joystick, 9).onTrue(new InstantCommand(vision::limelightON));
         new JoystickButton(joystick, 3).onTrue(new CenterCommand(driveSubsystem, vision));
     }
 
@@ -91,7 +102,6 @@ public class RobotContainer {
             .withPosition(0, 4)
             .withSize(16, 9)
             .withWidget(BuiltInWidgets.kCameraStream);
-        Shuffleboard.selectTab("Vision");
     }
 
     private void configureCamera() {
@@ -103,8 +113,9 @@ public class RobotContainer {
 
     public Command getAutoCommand() {
         return new SequentialCommandGroup(
-            new AutoTurnCommand(driveSubsystem, pigeon, 90)
-            // new AutoDriveCommand(24, driveSubsystem),
+            new AutoTurnCommand(driveSubsystem, pigeon, 90),
+            new AutoDriveCommand(24, driveSubsystem),
+            new AutoTurnCommand(driveSubsystem, pigeon, -90)
             // new AutoDriveCommand(48, driveSubsystem)
         );
     }

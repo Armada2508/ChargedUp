@@ -5,7 +5,6 @@
 package frc.robot;
 
 import com.ctre.phoenix.sensors.PigeonIMU;
-import com.ctre.phoenix.sensors.PigeonIMU.PigeonState;
 
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -40,9 +39,6 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
-    if (pigeon.getState() == PigeonState.Ready) {
-      System.out.println(pigeon.getRoll());
-    }
   }
 
   /**

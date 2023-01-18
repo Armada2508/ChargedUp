@@ -20,26 +20,27 @@ import frc.robot.Lib.util.Util;
 
 public class DriveSubsystem extends SubsystemBase{
 
-    private MotorControllerGroup right;
-    private MotorControllerGroup left;
     private WPI_TalonFX TalonFXL; 
     private WPI_TalonFX TalonFXLfollow; 
     private WPI_TalonFX TalonFXR; 
     private WPI_TalonFX TalonFXRfollow;
-    private final PIDController pidController = new PIDController(0.125, 0, 0);
+    private MotorControllerGroup right;
+    private MotorControllerGroup left;
+    private final PIDController pidController = new PIDController(0.01, 0, 0);
     private final DifferentialDriveKinematics mKinematics = new DifferentialDriveKinematics(Drive.kTrackWidth); 
     private final DifferentialDriveOdometry odometry = null; // fix
-    private final PigeonIMU mImu = new PigeonIMU(0);
+    private final PigeonIMU pigeon;
 
-    public DriveSubsystem() {
+    public DriveSubsystem(PigeonIMU pigeon) {
+        this.pigeon = pigeon;
         TalonFXL = new WPI_TalonFX(Drive.LID); 
         TalonFXLfollow = new WPI_TalonFX(Drive.LFID); 
         TalonFXR = new WPI_TalonFX(Drive.RID); 
         TalonFXRfollow = new WPI_TalonFX(Drive.RFID);
         configureMotor(TalonFXL);
         configureMotor(TalonFXR);
-        TalonFXL.setInverted(true);
-        TalonFXLfollow.setInverted(true);
+        TalonFXR.setInverted(true);
+        TalonFXRfollow.setInverted(true);
         TalonFXLfollow.follow(TalonFXL);
         TalonFXRfollow.follow(TalonFXR);
         left =  new MotorControllerGroup(TalonFXL, TalonFXLfollow);
@@ -147,7 +148,7 @@ public class DriveSubsystem extends SubsystemBase{
     }
 
     public double getHeading() {
-        return Util.boundedAngleDegrees(mImu.getFusedHeading());
+        return Util.boundedAngleDegrees(pigeon.getFusedHeading());
     }
 
 }

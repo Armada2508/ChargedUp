@@ -9,7 +9,7 @@ import frc.robot.subsystems.DriveSubsystem;
 public class BalanceCommand extends CommandBase {
     
     private final int pitchDeadzone = 2; // degrees
-    private final int rollDeadzone = 2; // degrees
+    private final int rollDeadzone = 3; // degrees
     private DriveSubsystem subsystem;
     private PigeonIMU pigeon;
 
@@ -31,21 +31,20 @@ public class BalanceCommand extends CommandBase {
             pitch = pigeon.getPitch();
             roll = pigeon.getRoll();
         }
-        double power = -1*pitch/180; // its in reverse for some reason ? ?
-        if (power > 1) power = 1;
-        if (power < -1) power = -1;
-    
-        if (pitch > pitchDeadzone) { // outside of deadzone start doin shit
+        double power = -1*pitch/135; // its in reverse for some reason ? ?
+        if (roll > rollDeadzone) { 
+            subsystem.setPower(0.1, -0.1);
+        } 
+        else if (roll < -rollDeadzone) {
+            subsystem.setPower(-0.1, 0.1);
+        } 
+        else if (pitch > pitchDeadzone) { 
             subsystem.setPower(power, power);
-        } else if (pitch < -pitchDeadzone) {
+        } 
+        else if (pitch < -pitchDeadzone) {
             subsystem.setPower(power, power);
-        
-        } else if (roll > rollDeadzone) { // outside of deadzone start doin shit
-            // subsystem.setPower(power, power);
-        } else if (roll < -rollDeadzone) {
-            // subsystem.setPower(power, power);
-    
-        } else { // we're in deadzone so not tilted too much so stop moving
+        } 
+        else { // we're in deadzone so not tilted too much so stop moving
             subsystem.setPower(0, 0);
         }
     }

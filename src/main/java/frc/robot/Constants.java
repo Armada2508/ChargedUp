@@ -33,6 +33,10 @@ public class Constants {
         public static final int cameraAngle = 0; // degrees 
     }
 
+    public static final class Arm {
+        public static final int motorID = 4;
+    }
+
     // ========================================
     //    Global Motor Controller Constants
     // ========================================A

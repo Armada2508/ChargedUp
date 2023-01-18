@@ -16,7 +16,7 @@ public class AutoTurnCommand extends CommandBase {
      * 
      * @param driveSubsystem
      * @param pigeon
-     * @param targetDegrees positive is left, negative is right
+     * @param targetDegrees positive is right, negative is left
      */
     public AutoTurnCommand(DriveSubsystem driveSubsystem, PigeonIMU pigeon, double targetDegrees) {
         if (targetDegrees == 0) cancel();
@@ -33,10 +33,10 @@ public class AutoTurnCommand extends CommandBase {
     public void initialize() {
         startingYaw = pigeon.getYaw();
         targetDegrees = targetDegrees + startingYaw;
-        if (targetDegrees < 0) {
+        if (targetDegrees > 0) {
             driveSubsystem.setPower(0.25, -0.25);
         }
-        else if (targetDegrees > 0) {
+        else if (targetDegrees < 0) {
             driveSubsystem.setPower(-0.25, 0.25);
         }
     }
@@ -53,8 +53,8 @@ public class AutoTurnCommand extends CommandBase {
     @Override
     public boolean isFinished() { 
         final int angleRange = 3; // degrees deadband
-        final double currentPosition = pigeon.getYaw();
-        return (currentPosition < targetDegrees + angleRange && currentPosition > targetDegrees  - angleRange);
+        final double currentDegrees = pigeon.getYaw();
+        return (currentDegrees < targetDegrees + angleRange && currentDegrees > targetDegrees  - angleRange);
 
     }
 }
