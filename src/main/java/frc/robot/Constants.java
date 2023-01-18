@@ -16,7 +16,7 @@ public class Constants {
 
         public static final double diameter = 6;
         public static final int encoderUnits = 2048;
-        public static final double gearboxRatio = 12.75;
+        public static final double gearboxRatio = 10.7; //! ehhh
         public static final double kTrackWidth = Util.inchesToMeters(23.5);
 
         public static final FeedbackConfig kFeedbackConfig = new FeedbackConfig(FeedbackDevice.IntegratedSensor, encoderUnits, gearboxRatio);
@@ -35,6 +35,12 @@ public class Constants {
 
     public static final class Arm {
         public static final int motorID = 4;
+        public static final int encoderUnits = 2048;
+        public static final int gearboxRatio = 100;
+        public static final double degreesPerEncoderUnit = (360/encoderUnits)/gearboxRatio;
+
+        public static final int minDegrees = 0;
+        public static final int maxDegrees = 90;
     }
 
     // ========================================

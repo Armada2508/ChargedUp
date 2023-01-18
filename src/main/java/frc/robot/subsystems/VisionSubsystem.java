@@ -5,6 +5,9 @@ import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import frc.robot.Constants.Vision;
 
+/**
+ * Used to interface with the limelight.
+ */
 public class VisionSubsystem {
 
     private NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");

@@ -5,7 +5,10 @@ import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.VisionSubsystem.Pole;
 
-public class CenterCommand extends CommandBase {
+/**
+ * This will center the robot 
+ */
+public class LineUpCommand extends CommandBase {
 
     private final double deadbandDegrees = 1;
     private final double deadbandDistance = 1;
@@ -13,7 +16,7 @@ public class CenterCommand extends CommandBase {
     private VisionSubsystem vision;
     private DriveSubsystem driveSubsystem;
 
-    public CenterCommand(DriveSubsystem driveSubsystem, VisionSubsystem visionSubsystem) {
+    public LineUpCommand(DriveSubsystem driveSubsystem, VisionSubsystem visionSubsystem) {
         vision = visionSubsystem;
         this.driveSubsystem = driveSubsystem;
         addRequirements(driveSubsystem);
@@ -21,11 +24,11 @@ public class CenterCommand extends CommandBase {
 
     @Override
     public void initialize() {
+        if (!vision.hasTarget()) cancel();
     }
 
     @Override
     public void execute() {
-        if (!vision.hasTarget()) return;
         double x = vision.getTargetX();
         double speed = 0.25;
         double currentDistance = vision.distanceFromTargetInInches(Pole.MID_POLE);

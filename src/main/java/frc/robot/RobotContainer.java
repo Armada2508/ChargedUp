@@ -10,14 +10,15 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
-import frc.robot.commands.AutoDriveCommand;
-import frc.robot.commands.AutoTurnCommand;
 import frc.robot.commands.BalanceCommand;
-import frc.robot.commands.CenterCommand;
-import frc.robot.commands.DriveCommand;
+import frc.robot.commands.LineUpCommand;
+import frc.robot.commands.Driving.AutoDriveCommand;
+import frc.robot.commands.Driving.AutoTurnCommand;
+import frc.robot.commands.Driving.DriveCommand;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
@@ -34,10 +35,10 @@ public class RobotContainer {
         this.pigeon = pigeon;
         this.driveSubsystem = new DriveSubsystem(pigeon);
         driveSubsystem.setDefaultCommand(new DriveCommand(() -> joystick.getRawAxis(1)*-1, () -> joystick.getRawAxis(0)*-1, driveSubsystem)); // default to driving from joystick input
-        armSubsystem.calibrate();
         configureCamera();
         configureShuffleboard();
         configureButtons();
+        // new CalibrateArmCommand(armSubsystem).schedule();
     }
 
     private void configureButtons() {
@@ -50,8 +51,10 @@ public class RobotContainer {
         new JoystickButton(joystick, 11).onTrue(new BalanceCommand(driveSubsystem, pigeon));
         new JoystickButton(joystick, 10).onTrue(new InstantCommand(vision::limelightOFF));
         new JoystickButton(joystick, 9).onTrue(new InstantCommand(vision::limelightON));
-        new JoystickButton(joystick, 3).onTrue(new CenterCommand(driveSubsystem, vision));
-    }
+        new JoystickButton(joystick, 5).whileTrue(Commands.startEnd(() -> armSubsystem.setPower(0.1), armSubsystem::stop, armSubsystem));
+        new JoystickButton(joystick, 3).whileTrue(Commands.startEnd(() -> armSubsystem.setPower(-0.1), armSubsystem::stop, armSubsystem));
+        new JoystickButton(joystick, 4).onTrue(new LineUpCommand(driveSubsystem, vision));
+   }
 
     private void configureShuffleboard() {
         // Pigeon
@@ -83,13 +86,13 @@ public class RobotContainer {
             .addNumber("Target X", vision::getTargetX)
             .withPosition(4, 0)
             .withSize(4, 3)
-            .withProperties(Map.of("min", -27, "max", 27))
+            .withProperties(Map.of("min", -29.8, "max", 29.8))
             .withWidget(BuiltInWidgets.kNumberBar);
         Shuffleboard.getTab("Vision")
             .addNumber("Target Y", vision::getTargetY)
             .withPosition(8, 0)
             .withSize(4, 3)
-            .withProperties(Map.of("min", -20.5, "max", 20.5))
+            .withProperties(Map.of("min", -24.85, "max", 24.85))
             .withWidget(BuiltInWidgets.kNumberBar);
         Shuffleboard.getTab("Vision")
             .addNumber("Target Area", vision::getTargetArea)
