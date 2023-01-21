@@ -31,10 +31,14 @@ public class Constants {
         // Limelight
         public static final int cameraHeight = 0; // cm
         public static final int cameraAngle = 0; // degrees 
+        
+        public static final int reflectionPipeline = 0;
+        public static final int colorPipeline = 1;
     }
 
     public static final class Arm {
         public static final int motorID = 4;
+        public static final int motorIDFollow = 5;
         public static final int encoderUnits = 2048;
         public static final int gearboxRatio = 100;
         public static final double degreesPerEncoderUnit = (360/encoderUnits)/gearboxRatio;

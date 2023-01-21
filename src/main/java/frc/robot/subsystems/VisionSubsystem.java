@@ -16,10 +16,10 @@ public class VisionSubsystem {
     private NetworkTableEntry targetY = table.getEntry("ty"); // In degrees
     private NetworkTableEntry targetArea = table.getEntry("ta"); // Percent area that the target takes up in the whole capture
     private NetworkTableEntry limelightLED = table.getEntry("ledMode");
-    private double minimumArea = 5;
+    private NetworkTableEntry pipeline = table.getEntry("pipeline");
 
     public boolean hasTarget() {
-        return hasTarget.getInteger(0) == 1 && getTargetArea() > minimumArea;
+        return hasTarget.getInteger(0) == 1;
     }
 
     public double getTargetX() {
@@ -46,6 +46,14 @@ public class VisionSubsystem {
         // d = (h2-h1) / tan(a1+a2)
     }
 
+    public void setPipeline(int pipe) {
+        pipeline.setNumber(pipe);
+    }
+
+    public int getPipeline() {
+        return (int) pipeline.getInteger(0);
+    }
+
     public void limelightON() {
         limelightLED.setNumber(3);
     }
@@ -57,6 +65,11 @@ public class VisionSubsystem {
     public enum Pole {
         MID_POLE,
         HIGH_POLE
+    }
+
+    public enum Target {
+        POLE, 
+        CONE
     }
 
 }

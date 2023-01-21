@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix.motorcontrol.DemandType;
 import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
@@ -10,9 +11,11 @@ import frc.robot.Constants.Arm;
 public class ArmSubsystem extends SubsystemBase {
     
     private WPI_TalonFX talonFX = new WPI_TalonFX(Arm.motorID);
+    private WPI_TalonFX talonFXFollower = new WPI_TalonFX(Arm.motorIDFollow);
     private DigitalInput limitSwitch = new DigitalInput(0);
 
     public ArmSubsystem() {
+        talonFXFollower.follow(talonFX);
     }
 
     @Override
@@ -23,7 +26,7 @@ public class ArmSubsystem extends SubsystemBase {
      * @param power to set the motor between -1.0 and 1.0
      */
     public void setPower(double power) {
-        talonFX.set(power);
+        talonFX.set(TalonFXControlMode.PercentOutput, power, DemandType.ArbitraryFeedForward, getFeedForward());
     }
 
     /**
@@ -33,7 +36,7 @@ public class ArmSubsystem extends SubsystemBase {
     public void setArmPosition(double theta) {
         if (theta > Arm.maxDegrees || theta < Arm.minDegrees) return;
         double targetPosition = theta / Arm.degreesPerEncoderUnit;
-        talonFX.set(TalonFXControlMode.Position, targetPosition);
+        talonFX.set(TalonFXControlMode.Position, targetPosition, DemandType.ArbitraryFeedForward, getFeedForward());
     }
 
     /**
@@ -42,6 +45,13 @@ public class ArmSubsystem extends SubsystemBase {
      */
     public double getArmPosition() {
         return talonFX.getSelectedSensorPosition() * Arm.degreesPerEncoderUnit;
+    }
+
+    private double getFeedForward() {
+        final double gravityConstant = 0.07;
+        double degrees = getArmPosition();
+        double scalar = Math.cos(Math.toRadians(degrees));
+        return gravityConstant * scalar;
     }
 
     public boolean pollLimitSwitch() {

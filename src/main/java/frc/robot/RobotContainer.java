@@ -1,10 +1,21 @@
 package frc.robot;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+
+import org.opencv.core.Core;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.Scalar;
+import org.opencv.core.Size;
+import org.opencv.imgproc.Imgproc;
 
 import com.ctre.phoenix.sensors.PigeonIMU;
 
 import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.cscore.CvSink;
+import edu.wpi.first.cscore.CvSource;
 import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
@@ -22,6 +33,7 @@ import frc.robot.commands.Driving.DriveCommand;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
+import frc.robot.subsystems.VisionSubsystem.Target;
 
 public class RobotContainer {
 
@@ -30,6 +42,7 @@ public class RobotContainer {
     private final ArmSubsystem armSubsystem = new ArmSubsystem();
     private final DriveSubsystem driveSubsystem;
     private final PigeonIMU pigeon;
+    private Thread visionThread;
     // ! Auto Turn Command Drift
     RobotContainer(PigeonIMU pigeon) {
         this.pigeon = pigeon;
@@ -53,7 +66,8 @@ public class RobotContainer {
         new JoystickButton(joystick, 9).onTrue(new InstantCommand(vision::limelightON));
         new JoystickButton(joystick, 5).whileTrue(Commands.startEnd(() -> armSubsystem.setPower(0.1), armSubsystem::stop, armSubsystem));
         new JoystickButton(joystick, 3).whileTrue(Commands.startEnd(() -> armSubsystem.setPower(-0.1), armSubsystem::stop, armSubsystem));
-        new JoystickButton(joystick, 4).onTrue(new LineUpCommand(driveSubsystem, vision));
+        new JoystickButton(joystick, 6).onTrue(new LineUpCommand(driveSubsystem, vision, Target.POLE));
+        new JoystickButton(joystick, 4).onTrue(new LineUpCommand(driveSubsystem, vision, Target.CONE));
    }
 
     private void configureShuffleboard() {
@@ -103,15 +117,41 @@ public class RobotContainer {
         Shuffleboard.getTab("Vision")
             .add(CameraServer.getVideo().getSource())
             .withPosition(0, 4)
-            .withSize(16, 9)
+            .withSize(4, 3)
             .withWidget(BuiltInWidgets.kCameraStream);
+        Shuffleboard.getTab("Vision")
+            .add(CameraServer.getVideo("OpenCV").getSource())
+            .withPosition(9, 4)
+            .withSize(4, 3)
+            .withWidget(BuiltInWidgets.kCameraStream);
+        Shuffleboard.selectTab("Vision");
     }
 
     private void configureCamera() {
-        UsbCamera camera = CameraServer.startAutomaticCapture(0);
-        camera.setBrightness(50);
+        UsbCamera camera = CameraServer.startAutomaticCapture("Camera", 0);
+        camera.setExposureManual(25);
         camera.setFPS(12);
         camera.setResolution(426, 240);
+        visionThread = new Thread(() -> {
+            CvSink sink = CameraServer.getVideo();
+            CvSource source = CameraServer.putVideo("OpenCV", 426, 260);
+            Mat mat = new Mat();
+            Scalar lower = new Scalar(0, 50, 50);
+            Scalar upper = new Scalar(50, 255, 255);
+            while(!visionThread.isInterrupted()) {
+                if (sink.grabFrame(mat) == 0) {
+                    source.notifyError(sink.getError());
+                    continue;
+                }
+                Imgproc.blur(mat, mat, new Size(10, 10));
+                Core.inRange(mat, lower, upper, mat);
+                List<MatOfPoint> contours = new ArrayList<>();
+                Imgproc.findContours(mat, contours, new Mat(), Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_NONE);
+                Imgproc.drawContours(mat, contours, -1, new Scalar(0, 255, 0), 2);
+                source.putFrame(mat);
+            }
+        });
+        visionThread.start();
     }
 
     public Command getAutoCommand() {
