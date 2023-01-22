@@ -26,10 +26,10 @@ public class Constants {
 
     public static final class Vision {
         // Target Heights
-        public static final int highPoleHeight = 106; // cm
-        public static final int midPoleHeight = 87; // cm
+        public static final double highPoleHeight = 41.73; // inches
+        public static final double midPoleHeight = 34.25; // inches
         // Limelight
-        public static final int cameraHeight = 0; // cm
+        public static final int cameraHeight = 6; // inches
         public static final int cameraAngle = 0; // degrees 
         
         public static final int reflectionPipeline = 0;
