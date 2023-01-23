@@ -17,7 +17,7 @@ public class ArmCommand extends CommandBase {
 
     @Override
     public void initialize() {
-        subsystem.setArmPosition(targetDegrees);  
+        subsystem.setPosition(targetDegrees);  
     }
 
     @Override
@@ -31,8 +31,8 @@ public class ArmCommand extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        double currentDegrees = subsystem.getArmPosition();
-        return (currentDegrees > targetDegrees-degreesDeadband && currentDegrees < targetDegrees+degreesDeadband);
+        double currentDegrees = subsystem.getPosition();
+        return (Math.abs(currentDegrees) < targetDegrees+degreesDeadband);
     }
     
 }

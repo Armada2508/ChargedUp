@@ -7,6 +7,7 @@ import frc.robot.subsystems.DriveSubsystem;
 
 public class AutoTurnCommand extends CommandBase {
 
+    private final int degreesDeadband = 1;
     private DriveSubsystem driveSubsystem;
     private PigeonIMU pigeon;
     private double targetDegrees;
@@ -52,9 +53,8 @@ public class AutoTurnCommand extends CommandBase {
 
     @Override
     public boolean isFinished() { 
-        final int angleRange = 3; // degrees deadband
         final double currentDegrees = pigeon.getYaw();
-        return (currentDegrees < targetDegrees + angleRange && currentDegrees > targetDegrees  - angleRange);
+        return (Math.abs(currentDegrees) < targetDegrees+degreesDeadband);
 
     }
 }

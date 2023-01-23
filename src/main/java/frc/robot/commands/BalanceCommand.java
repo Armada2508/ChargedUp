@@ -8,8 +8,8 @@ import frc.robot.subsystems.DriveSubsystem;
 
 public class BalanceCommand extends CommandBase {
     
-    private final int pitchDeadzone = 2; // degrees
-    private final int rollDeadzone = 3; // degrees
+    private final int pitchDeadzone = 1; // degrees
+    private final int rollDeadzone = 1; // degrees
     private DriveSubsystem subsystem;
     private PigeonIMU pigeon;
 

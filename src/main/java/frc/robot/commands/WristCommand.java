@@ -32,6 +32,6 @@ public class WristCommand extends CommandBase {
     @Override
     public boolean isFinished() {
         double currentDegrees = subsystem.getPosition();
-        return (currentDegrees > targetDegrees-degreesDeadband && currentDegrees < targetDegrees+degreesDeadband);
+        return (Math.abs(currentDegrees) < targetDegrees+degreesDeadband);
     }
 }

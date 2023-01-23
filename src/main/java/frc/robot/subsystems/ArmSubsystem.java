@@ -10,6 +10,7 @@ import frc.robot.Constants.Arm;
 
 public class ArmSubsystem extends SubsystemBase {
     
+    private final double gravityConstant = 0.07;
     private WPI_TalonFX talonFX = new WPI_TalonFX(Arm.motorID);
     private WPI_TalonFX talonFXFollower = new WPI_TalonFX(Arm.motorIDFollow);
     private DigitalInput limitSwitch = new DigitalInput(0);
@@ -48,7 +49,6 @@ public class ArmSubsystem extends SubsystemBase {
     }
 
     private double getFeedForward() {
-        final double gravityConstant = 0.07;
         double degrees = getPosition();
         double scalar = Math.cos(Math.toRadians(degrees));
         return gravityConstant * scalar;

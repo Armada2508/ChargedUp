@@ -4,7 +4,8 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.DriveSubsystem;
 
 public class AutoDriveCommand extends CommandBase {
-   
+
+    private final double distanceDeadband = 0.1;
     private double targetDistance;
     private DriveSubsystem subsystem;
 
@@ -30,10 +31,8 @@ public class AutoDriveCommand extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        double deadband = 0.1;
         double currentPos = subsystem.getRightPostition();
-        System.out.println(currentPos + " " + targetDistance);
-        return (currentPos > targetDistance-deadband && currentPos < targetDistance+deadband);
+        return (Math.abs(currentPos) < targetDistance+distanceDeadband);
     }
 
 

@@ -21,7 +21,7 @@ public class Constants {
 
         public static final double diameter = 6;
         public static final int encoderUnits = 2048;
-        public static final double gearboxRatio = 10.7; //! ehhh
+        public static final double gearboxRatio = 10.7;
         public static final double kTrackWidth = Util.inchesToMeters(23.5);
 
         public static final FeedbackConfig kFeedbackConfig = new FeedbackConfig(FeedbackDevice.IntegratedSensor, encoderUnits, gearboxRatio);
@@ -54,13 +54,22 @@ public class Constants {
         public static final int minDegrees = 0;
         public static final int maxDegrees = 90;
     }
-
-    public static final class Gripper {
-        public static final int motorID = 1;
-    }
-
+    //! gearbox ratio not finalized
     public static final class Wrist {
-        public static final int motorID = 1;
+        public static final int motorID = 7;
+        public static final int encoderUnits = 2048;
+        public static final int gearboxRatio = 100;
+        public static final double degreesPerEncoderUnit = (360/encoderUnits)/gearboxRatio;
+
+        public static final int minDegrees = -30;
+        public static final int maxDegrees = 30;
+    }
+    //! gearbox ratio not finalized
+    public static final class Gripper {
+        public static final int motorID = 6;
+        public static final int encoderUnits = 2048;
+        public static final int gearboxRatio = 100;
+        public static final double degreesPerEncoderUnit = (360/encoderUnits)/gearboxRatio;
     }
 
     // ========================================
