@@ -55,6 +55,14 @@ public class Constants {
         public static final int maxDegrees = 90;
     }
 
+    public static final class Gripper {
+        public static final int motorID = 1;
+    }
+
+    public static final class Wrist {
+        public static final int motorID = 1;
+    }
+
     // ========================================
     //    Global Motor Controller Constants
     // ========================================A
