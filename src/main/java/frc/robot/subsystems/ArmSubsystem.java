@@ -33,7 +33,7 @@ public class ArmSubsystem extends SubsystemBase {
      * Have arm go to a desired degrees. Must be between min and max degrees.
      * @param theta degrees to go to
      */
-    public void setArmPosition(double theta) {
+    public void setPosition(double theta) {
         if (theta > Arm.maxDegrees || theta < Arm.minDegrees) return;
         double targetPosition = theta / Arm.degreesPerEncoderUnit;
         talonFX.set(TalonFXControlMode.Position, targetPosition, DemandType.ArbitraryFeedForward, getFeedForward());
@@ -43,23 +43,19 @@ public class ArmSubsystem extends SubsystemBase {
      * 
      * @return Arm's current position in degrees
      */
-    public double getArmPosition() {
+    public double getPosition() {
         return talonFX.getSelectedSensorPosition() * Arm.degreesPerEncoderUnit;
     }
 
     private double getFeedForward() {
         final double gravityConstant = 0.07;
-        double degrees = getArmPosition();
+        double degrees = getPosition();
         double scalar = Math.cos(Math.toRadians(degrees));
         return gravityConstant * scalar;
     }
 
     public boolean pollLimitSwitch() {
         return !limitSwitch.get(); // Switches are held high
-    }
-
-    public void stop() {
-        talonFX.set(TalonFXControlMode.PercentOutput, 0);
     }
 
     public void calibrate() {

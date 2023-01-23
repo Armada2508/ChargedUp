@@ -23,7 +23,7 @@ public class CalibrateArmCommand extends CommandBase {
    
     @Override
     public void end(boolean interrupted) {
-        subsystem.stop();
+        subsystem.setPower(0);
         subsystem.calibrate();
     }
 

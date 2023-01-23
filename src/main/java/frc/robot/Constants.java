@@ -14,6 +14,11 @@ public class Constants {
         public static final int LFID = 3;
         public static final int turnAdjustment = 3;
 
+        // PID
+        public static final double kF = 0.01; 
+        public static final double kI = 0;
+        public static final double kD = 0;
+
         public static final double diameter = 6;
         public static final int encoderUnits = 2048;
         public static final double gearboxRatio = 10.7; //! ehhh

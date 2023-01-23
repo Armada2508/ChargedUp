@@ -51,8 +51,8 @@ public class RobotContainer {
         new JoystickButton(joystick, 11).onTrue(new BalanceCommand(driveSubsystem, pigeon));
         new JoystickButton(joystick, 10).onTrue(new InstantCommand(vision::limelightOFF));
         new JoystickButton(joystick, 9).onTrue(new InstantCommand(vision::limelightON));
-        new JoystickButton(joystick, 5).whileTrue(Commands.startEnd(() -> armSubsystem.setPower(0.1), armSubsystem::stop, armSubsystem));
-        new JoystickButton(joystick, 3).whileTrue(Commands.startEnd(() -> armSubsystem.setPower(-0.1), armSubsystem::stop, armSubsystem));
+        new JoystickButton(joystick, 5).whileTrue(Commands.startEnd(() -> armSubsystem.setPower(0.1), () -> armSubsystem.setPower(0), armSubsystem));
+        new JoystickButton(joystick, 3).whileTrue(Commands.startEnd(() -> armSubsystem.setPower(-0.1), () -> armSubsystem.setPower(0), armSubsystem));
         new JoystickButton(joystick, 6).onTrue(new LineUpCommand(Target.CONE, driveSubsystem, vision, pigeon));
         new JoystickButton(joystick, 4).onTrue(new LineUpCommand(Target.HIGH_POLE, driveSubsystem, vision, pigeon));
    }

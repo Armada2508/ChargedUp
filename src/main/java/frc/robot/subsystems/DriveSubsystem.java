@@ -6,7 +6,6 @@ import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.ctre.phoenix.sensors.PigeonIMU;
 
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
@@ -26,7 +25,6 @@ public class DriveSubsystem extends SubsystemBase{
     private WPI_TalonFX TalonFXRfollow;
     private MotorControllerGroup right;
     private MotorControllerGroup left;
-    private final PIDController pidController = new PIDController(0.01, 0, 0);
     private final DifferentialDriveKinematics mKinematics = new DifferentialDriveKinematics(Drive.kTrackWidth); 
     private final DifferentialDriveOdometry odometry = null; // fix
     private final PigeonIMU pigeon;
@@ -75,9 +73,9 @@ public class DriveSubsystem extends SubsystemBase{
     }
 
     private void configureMotor(WPI_TalonFX motor) {
-        motor.config_kP(0, pidController.getP());
-        motor.config_kI(0, pidController.getI());
-        motor.config_kD(0, pidController.getD());
+        motor.config_kP(0, Drive.kF);
+        motor.config_kI(0, Drive.kI);
+        motor.config_kD(0, Drive.kD);
     }
     
     public void callibrate() {
