@@ -30,10 +30,9 @@ public class RobotContainer {
     private final VisionSubsystem vision = new VisionSubsystem();
     private final ArmSubsystem armSubsystem = new ArmSubsystem();
     private final DriveSubsystem driveSubsystem;
-    private final PigeonIMU pigeon;
+    private final PigeonIMU pigeon = new PigeonIMU(Constants.pigeonID);
     // ! Auto Turn Command Drift
-    RobotContainer(PigeonIMU pigeon) {
-        this.pigeon = pigeon;
+    RobotContainer() {
         this.driveSubsystem = new DriveSubsystem(pigeon);
         driveSubsystem.setDefaultCommand(new DriveCommand(() -> joystick.getRawAxis(1)*-1, () -> joystick.getRawAxis(0)*-1, driveSubsystem)); // default to driving from joystick input
         configureCamera();
@@ -54,8 +53,8 @@ public class RobotContainer {
         new JoystickButton(joystick, 9).onTrue(new InstantCommand(vision::limelightON));
         new JoystickButton(joystick, 5).whileTrue(Commands.startEnd(() -> armSubsystem.setPower(0.1), armSubsystem::stop, armSubsystem));
         new JoystickButton(joystick, 3).whileTrue(Commands.startEnd(() -> armSubsystem.setPower(-0.1), armSubsystem::stop, armSubsystem));
-        new JoystickButton(joystick, 6).onTrue(new LineUpCommand(driveSubsystem, vision, Target.HIGH_POLE));
-        new JoystickButton(joystick, 4).onTrue(new LineUpCommand(driveSubsystem, vision, Target.CONE));
+        new JoystickButton(joystick, 6).onTrue(new LineUpCommand(Target.CONE, driveSubsystem, vision, pigeon));
+        new JoystickButton(joystick, 4).onTrue(new LineUpCommand(Target.HIGH_POLE, driveSubsystem, vision, pigeon));
    }
 
     private void configureShuffleboard() {
@@ -119,9 +118,9 @@ public class RobotContainer {
 
     public Command getAutoCommand() {
         return new SequentialCommandGroup(
-            new AutoTurnCommand(driveSubsystem, pigeon, 90),
+            new AutoTurnCommand(90, driveSubsystem, pigeon),
             new AutoDriveCommand(24, driveSubsystem),
-            new AutoTurnCommand(driveSubsystem, pigeon, -90)
+            new AutoTurnCommand(-90, driveSubsystem, pigeon)
             // new AutoDriveCommand(48, driveSubsystem)
         );
     }

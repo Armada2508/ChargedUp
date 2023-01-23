@@ -1,85 +1,65 @@
 package frc.robot.commands;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.ctre.phoenix.sensors.PigeonIMU;
+
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants.Vision;
+import frc.robot.commands.Driving.AutoDriveCommand;
+import frc.robot.commands.Driving.AutoTurnCommand;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.VisionSubsystem.Target;
 
-/**
- * This will center the robot 
- */
 public class LineUpCommand extends CommandBase {
 
-    private final double deadbandDegrees = 3;
-    private final double deadbandDistance = 3;
-    private final Target target;
-    private double desiredDistance; // inches
-    private VisionSubsystem vision;
+    private List<Command> commands = new ArrayList<>();
+    private int currentIndex = 0;
+    private Target target;
     private DriveSubsystem driveSubsystem;
+    private VisionSubsystem visionSubsystem;
+    private PigeonIMU pigeon;
 
-    public LineUpCommand(DriveSubsystem driveSubsystem, VisionSubsystem visionSubsystem, Target target) {
-        vision = visionSubsystem;
-        this.driveSubsystem = driveSubsystem;
+    public LineUpCommand(Target target, DriveSubsystem driveSubsystem, VisionSubsystem visionSubsystem, PigeonIMU pigeon) {
         this.target = target;
+        this.driveSubsystem = driveSubsystem;
+        this.visionSubsystem = visionSubsystem;
+        this.pigeon = pigeon;
         addRequirements(driveSubsystem);
     }
 
     @Override
     public void initialize() {
-        if (target == Target.CONE) {
-            desiredDistance = 6;
-            vision.limelightOFF();
-            vision.setPipeline(Vision.colorPipeline);
-        } else {
-            desiredDistance = 40;
-            vision.limelightON();
-            vision.setPipeline(Vision.reflectionPipeline);
-        }
-        if (!vision.hasTarget()) cancel();
+        double angleX = visionSubsystem.getTargetX();
+        commands.add(new AutoTurnCommand(angleX, driveSubsystem, pigeon));
+        commands.get(currentIndex).schedule();
     }
 
     @Override
     public void execute() {
-        double x = vision.getTargetX();
-        double currentDistance = vision.distanceFromTargetInInches(target);
-        double leftSpeed = 0;
-        double rightSpeed = 0;
-        // System.out.println("Angle: " + x);
-        // System.out.println("Vertical: " + vision.getTargetY());
-        // System.out.println("Current Distance: " + currentDistance);
-        final double limelightMaxDegrees = 29.8;
-        double proportionalAngle = Math.abs(x) / (limelightMaxDegrees/4); // PID but just P
-        if (proportionalAngle > 1) proportionalAngle = 1;
-        if (x > deadbandDegrees) { // Target is right
-            leftSpeed += 0.1 * proportionalAngle;
-            rightSpeed -= 0.1 * proportionalAngle;
-        } else if (x < -deadbandDegrees) { // Target is left
-            leftSpeed -= 0.1 * proportionalAngle;
-            rightSpeed += 0.1 * proportionalAngle;
-        } else if (currentDistance > desiredDistance+deadbandDistance) { // Too far from target
-            leftSpeed += 0.125;
-            rightSpeed += 0.125;
-        } else if (currentDistance < desiredDistance-deadbandDistance) { // Too close to target
-            leftSpeed -= 0.125;
-            rightSpeed -= 0.125;
-        } 
-        driveSubsystem.setPower(leftSpeed, rightSpeed);
+        Command currentCommand = commands.get(currentIndex);
+        if (currentCommand.isFinished()) {
+            final double desiredDistance = (target == Target.CONE) ? Vision.coneDistance : Vision.poleDistance;
+            double startingDistance = visionSubsystem.distanceFromTargetInInches(target);
+            double turnAngle = visionSubsystem.getTargetX();
+            if (currentIndex == 0) commands.add(new AutoDriveCommand(startingDistance - desiredDistance, driveSubsystem));
+            if (currentIndex == 1) commands.add(new AutoTurnCommand(turnAngle, driveSubsystem, pigeon));
+            currentIndex++;
+            commands.get(currentIndex).schedule();
+        }
     }
 
     @Override
     public void end(boolean interrupted) {
         driveSubsystem.setPower(0, 0);
     }
-    
+
     @Override
     public boolean isFinished() {
-        double x = vision.getTargetX();
-        double currentDistance = vision.distanceFromTargetInInches(target);
-        return (
-            Math.abs(x) < deadbandDegrees 
-            && Math.abs(currentDistance) < desiredDistance+deadbandDistance
-        );
+        return currentIndex >= 3;
     }
-
+   
 }
