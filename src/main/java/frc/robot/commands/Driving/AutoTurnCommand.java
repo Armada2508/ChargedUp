@@ -18,7 +18,7 @@ public class AutoTurnCommand extends CommandBase {
      * @param pigeon
      * @param targetDegrees positive is right, negative is left
      */
-    public AutoTurnCommand(DriveSubsystem driveSubsystem, PigeonIMU pigeon, double targetDegrees) {
+    public AutoTurnCommand(double targetDegrees, DriveSubsystem driveSubsystem, PigeonIMU pigeon) {
         if (targetDegrees == 0) cancel();
         this.driveSubsystem = driveSubsystem;
         this.pigeon = pigeon;

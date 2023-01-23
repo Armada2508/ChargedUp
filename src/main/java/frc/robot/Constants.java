@@ -28,10 +28,13 @@ public class Constants {
         // Target Heights
         public static final double highPoleHeight = 41.73; // inches
         public static final double midPoleHeight = 34.25; // inches
+        // Target Desired Distances
+        public static final int poleDistance = 24; // inches
+        public static final int coneDistance = 6; // inches
         // Limelight
         public static final int cameraHeight = 6; // inches
         public static final int cameraAngle = 0; // degrees 
-        
+        // Limelight Pipelines
         public static final int reflectionPipeline = 0;
         public static final int colorPipeline = 1;
     }

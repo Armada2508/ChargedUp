@@ -4,8 +4,6 @@
 
 package frc.robot;
 
-import com.ctre.phoenix.sensors.PigeonIMU;
-
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
@@ -17,7 +15,6 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
  */
 public class Robot extends TimedRobot {
 
-  private final PigeonIMU pigeon = new PigeonIMU(Constants.pigeonID);
   private RobotContainer container; 
 
   /**
@@ -26,7 +23,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
-    container = new RobotContainer(pigeon);
+    container = new RobotContainer();
   }
 
   /**
