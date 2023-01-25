@@ -9,6 +9,7 @@ import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -25,16 +26,17 @@ import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.VisionSubsystem.Target;
 
 public class RobotContainer {
-    // Test Comment
+
     private final Joystick joystick = new Joystick(0);
     private final VisionSubsystem vision = new VisionSubsystem();
     private final ArmSubsystem armSubsystem = new ArmSubsystem();
     private final DriveSubsystem driveSubsystem;
     private final PigeonIMU pigeon = new PigeonIMU(Constants.pigeonID);
-    // ! Auto Turn Command Drift
+    public static SendableChooser<Double> send = new SendableChooser<>();
+
     RobotContainer() {
         this.driveSubsystem = new DriveSubsystem(pigeon);
-        driveSubsystem.setDefaultCommand(new DriveCommand(() -> joystick.getRawAxis(1)*-1, () -> joystick.getRawAxis(0)*-1, driveSubsystem)); // default to driving from joystick input
+        driveSubsystem.setDefaultCommand(new DriveCommand(() -> joystick.getRawAxis(1)*-1, () -> joystick.getRawAxis(2)*-1, driveSubsystem)); // default to driving from joystick input
         configureCamera();
         configureShuffleboard();
         configureButtons();
@@ -54,10 +56,17 @@ public class RobotContainer {
         new JoystickButton(joystick, 5).whileTrue(Commands.startEnd(() -> armSubsystem.setPower(0.1), () -> armSubsystem.setPower(0), armSubsystem));
         new JoystickButton(joystick, 3).whileTrue(Commands.startEnd(() -> armSubsystem.setPower(-0.1), () -> armSubsystem.setPower(0), armSubsystem));
         new JoystickButton(joystick, 6).onTrue(new LineUpCommand(Target.CONE, driveSubsystem, vision, pigeon));
-        new JoystickButton(joystick, 4).onTrue(new LineUpCommand(Target.HIGH_POLE, driveSubsystem, vision, pigeon));
+        new JoystickButton(joystick, 4).onTrue(new LineUpCommand(Target.MID_POLE, driveSubsystem, vision, pigeon));
    }
 
     private void configureShuffleboard() {
+        // Robot
+        Shuffleboard.getTab("Robot")
+            .add(send)
+            .withWidget(BuiltInWidgets.kNumberSlider)
+            .withPosition(0, 0)
+            .withSize(6, 5);
+        
         // Pigeon
         Shuffleboard.getTab("Pigeon")
             .addDouble("Pigeon Yaw", () -> pigeon.getYaw())
@@ -106,7 +115,6 @@ public class RobotContainer {
             .withPosition(0, 4)
             .withSize(4, 3)
             .withWidget(BuiltInWidgets.kCameraStream);
-        Shuffleboard.selectTab("Vision");
     }
 
     private void configureCamera() {

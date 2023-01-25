@@ -1,23 +1,20 @@
-package frc.robot.commands;
+package frc.robot.commands.Arm;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.ArmSubsystem;
 
-public class ArmCommand extends CommandBase {
+public class CalibrateArmCommand extends CommandBase {
 
-    private final int degreesDeadband = 1;
-    private double targetDegrees;
     private ArmSubsystem subsystem;
 
-    public ArmCommand(double theta, ArmSubsystem subsystem) {
-        targetDegrees = theta;
+    public CalibrateArmCommand(ArmSubsystem subsystem) {
         this.subsystem = subsystem;
         addRequirements(subsystem);
     }
 
     @Override
     public void initialize() {
-        subsystem.setPosition(targetDegrees);  
+        subsystem.setPower(-0.1);
     }
 
     @Override
@@ -27,12 +24,12 @@ public class ArmCommand extends CommandBase {
     @Override
     public void end(boolean interrupted) {
         subsystem.setPower(0);
+        subsystem.calibrate();
     }
 
     @Override
     public boolean isFinished() {
-        double currentDegrees = subsystem.getPosition();
-        return (Math.abs(currentDegrees) < targetDegrees+degreesDeadband);
+        return subsystem.pollLimitSwitch();
     }
     
 }

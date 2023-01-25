@@ -9,9 +9,16 @@ public class GripperSubsystem extends SubsystemBase {
     
     private WPI_TalonFX talonFX = new WPI_TalonFX(Gripper.motorID);
 
-    public void setPower(double powerInput) {
-        talonFX.set(powerInput);
+    public void setPower(double power) {
+        talonFX.set(power);
     }
 
-    //public void setGripperPosition(double )
+    public void setPercentClosed(double percent) {
+
+    }
+
+    public double getPercentClosed() {
+        return 0;
+    }
+
 }

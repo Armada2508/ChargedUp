@@ -18,6 +18,10 @@ public class VisionSubsystem {
     private NetworkTableEntry limelightLED = table.getEntry("ledMode");
     private NetworkTableEntry pipeline = table.getEntry("pipeline");
 
+    public VisionSubsystem() {
+        limelightLED.setNumber(0);
+    }
+
     public boolean hasTarget() {
         return hasTarget.getInteger(0) == 1;
     }
@@ -51,6 +55,7 @@ public class VisionSubsystem {
     }
 
     public void setPipeline(int pipe) {
+        limelightLED.setNumber(0);
         pipeline.setNumber(pipe);
     }
 
@@ -64,6 +69,10 @@ public class VisionSubsystem {
 
     public void limelightOFF() {
         limelightLED.setNumber(1);
+    }
+
+    public boolean isLimelightON() {
+        return limelightLED.getInteger(0) == 3;
     }
 
     public enum Target {

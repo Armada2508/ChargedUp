@@ -37,6 +37,7 @@ public class WristSubsystem extends SubsystemBase {
     public double getPosition() {
         return talonFX.getSelectedSensorPosition() * Wrist.degreesPerEncoderUnit;
     }
+    
     private double getFeedForward() {
         double degrees = getPosition();
         double scalar = Math.cos(Math.toRadians(degrees));
@@ -48,4 +49,3 @@ public class WristSubsystem extends SubsystemBase {
     }
 
 }
-//add method to set position of the wrist to x ammount of degrees similar to the Wrist, min degrees = -30, max degrees = 30

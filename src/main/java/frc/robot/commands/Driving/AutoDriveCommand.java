@@ -10,6 +10,7 @@ public class AutoDriveCommand extends CommandBase {
     private DriveSubsystem subsystem;
 
     public AutoDriveCommand(double distanceInches, DriveSubsystem subsystem) {
+        // System.out.println(distanceInches);
         targetDistance = distanceInches;
         this.subsystem = subsystem;
         addRequirements(subsystem);

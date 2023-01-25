@@ -37,8 +37,8 @@ public class DriveSubsystem extends SubsystemBase{
         TalonFXRfollow = new WPI_TalonFX(Drive.RFID);
         configureMotor(TalonFXL);
         configureMotor(TalonFXR);
-        TalonFXR.setInverted(true);
-        TalonFXRfollow.setInverted(true);
+        // TalonFXR.setInverted(true);
+        // TalonFXRfollow.setInverted(true);
         TalonFXLfollow.follow(TalonFXL);
         TalonFXRfollow.follow(TalonFXR);
         left =  new MotorControllerGroup(TalonFXL, TalonFXLfollow);

@@ -2,16 +2,18 @@ package frc.robot.commands.Driving;
 
 import com.ctre.phoenix.sensors.PigeonIMU;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.RobotContainer;
 import frc.robot.subsystems.DriveSubsystem;
 
 public class AutoTurnCommand extends CommandBase {
 
     private final int degreesDeadband = 1;
+    private final double targetDegrees;
+    private double absoluteTarget;
     private DriveSubsystem driveSubsystem;
     private PigeonIMU pigeon;
-    private double targetDegrees;
-    private double startingYaw;
 
     /**
      * 
@@ -20,41 +22,35 @@ public class AutoTurnCommand extends CommandBase {
      * @param targetDegrees positive is right, negative is left
      */
     public AutoTurnCommand(double targetDegrees, DriveSubsystem driveSubsystem, PigeonIMU pigeon) {
-        if (targetDegrees == 0) cancel();
         this.driveSubsystem = driveSubsystem;
         this.pigeon = pigeon;
-        // Account for drift, // ! get rid of this on charged up, this was just for testing on everest
-        if (targetDegrees > 25) targetDegrees -= 18;
-        if (targetDegrees < 25) targetDegrees += 18;
         this.targetDegrees = targetDegrees;
         addRequirements(driveSubsystem);
     }
     
     @Override
     public void initialize() {
-        startingYaw = pigeon.getYaw();
-        targetDegrees = targetDegrees + startingYaw;
-        if (targetDegrees > 0) {
-            driveSubsystem.setPower(0.25, -0.25);
-        }
-        else if (targetDegrees < 0) {
-            driveSubsystem.setPower(-0.25, 0.25);
-        }
+        absoluteTarget = pigeon.getYaw() + targetDegrees;
     }
 
     @Override
     public void execute() {
+        double speed = RobotContainer.send.getSelected() * (absoluteTarget - pigeon.getYaw());
+        speed = MathUtil.clamp(speed, -1, 1);
+        System.out.println(speed);
+        if (speed < 0.1 || speed > 0.1) speed = 0.1 * Math.signum(speed);
+        driveSubsystem.setPower(speed, -speed);
     }
 
     @Override
     public void end(boolean interrupted) {
+        System.out.println("FINISHED TURNING");
         driveSubsystem.setPower(0, 0);
     }
 
     @Override
     public boolean isFinished() { 
         final double currentDegrees = pigeon.getYaw();
-        return (Math.abs(currentDegrees) < targetDegrees+degreesDeadband);
-
+        return (currentDegrees < absoluteTarget+degreesDeadband && currentDegrees > absoluteTarget-degreesDeadband);
     }
 }

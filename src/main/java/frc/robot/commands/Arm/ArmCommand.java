@@ -1,15 +1,15 @@
-package frc.robot.commands;
+package frc.robot.commands.Arm;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.subsystems.WristSubsystem;
+import frc.robot.subsystems.ArmSubsystem;
 
-public class WristCommand extends CommandBase {
+public class ArmCommand extends CommandBase {
 
     private final int degreesDeadband = 1;
     private double targetDegrees;
-    private WristSubsystem subsystem;
+    private ArmSubsystem subsystem;
 
-    public WristCommand(double theta, WristSubsystem subsystem) {
+    public ArmCommand(double theta, ArmSubsystem subsystem) {
         targetDegrees = theta;
         this.subsystem = subsystem;
         addRequirements(subsystem);
@@ -34,4 +34,5 @@ public class WristCommand extends CommandBase {
         double currentDegrees = subsystem.getPosition();
         return (Math.abs(currentDegrees) < targetDegrees+degreesDeadband);
     }
+    
 }
