@@ -39,7 +39,6 @@ public class LineUpCommand extends CommandBase {
         else visionSubsystem.setPipeline(Vision.reflectionPipeline);
 
         double angleX = visionSubsystem.getTargetX();
-        System.out.println(angleX);
         commands.add(new AutoTurnCommand(angleX, driveSubsystem, pigeon));
         commands.get(currentIndex).schedule();
     }
@@ -50,12 +49,8 @@ public class LineUpCommand extends CommandBase {
         if (currentCommand.isFinished()) {
             final double desiredDistance = (target == Target.CONE) ? Vision.coneDistance : Vision.poleDistance;
             double startingDistance = visionSubsystem.distanceFromTargetInInches(target);
-            double turnAngle = visionSubsystem.getTargetX();
-            // System.out.println(startingDistance + " " + turnAngle);
             if (currentIndex == 0) commands.add(new AutoDriveCommand(startingDistance - desiredDistance, driveSubsystem));
-            if (currentIndex == 1) commands.add(new AutoTurnCommand(turnAngle, driveSubsystem, pigeon));
             currentIndex++;
-            System.out.println(commands);
             commands.get(currentIndex).schedule();
         }
     }
@@ -67,7 +62,7 @@ public class LineUpCommand extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        return currentIndex >= 3;
+        return currentIndex >= 2;
     }
    
 }

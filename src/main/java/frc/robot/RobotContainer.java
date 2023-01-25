@@ -9,7 +9,6 @@ import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -22,17 +21,21 @@ import frc.robot.commands.Driving.AutoTurnCommand;
 import frc.robot.commands.Driving.DriveCommand;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.GripperSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.VisionSubsystem.Target;
+import frc.robot.subsystems.WristSubsystem;
 
 public class RobotContainer {
 
     private final Joystick joystick = new Joystick(0);
+    private final Joystick buttonBoard = new Joystick(1);
     private final VisionSubsystem vision = new VisionSubsystem();
     private final ArmSubsystem armSubsystem = new ArmSubsystem();
+    private final WristSubsystem wristSubsystem = new WristSubsystem();
+    private final GripperSubsystem gripperSubsystem = new GripperSubsystem();
     private final DriveSubsystem driveSubsystem;
     private final PigeonIMU pigeon = new PigeonIMU(Constants.pigeonID);
-    public static SendableChooser<Double> send = new SendableChooser<>();
 
     RobotContainer() {
         this.driveSubsystem = new DriveSubsystem(pigeon);
@@ -41,9 +44,13 @@ public class RobotContainer {
         configureShuffleboard();
         configureButtons();
         // new CalibrateArmCommand(armSubsystem).schedule();
+        // System.out.println(vision.distanceFromTargetInInches(Target.MID_POLE, 20)); // 41.899
+        // System.out.println(vision.distanceFromTargetInInches(Target.MID_POLE, 10)); // 86.487
+        // System.out.println(vision.distanceFromTargetInInches(Target.MID_POLE, 2)); // 436.702
     }
 
     private void configureButtons() {
+        // Joystick
         new JoystickButton(joystick, 12).onTrue(new InstantCommand(() -> {
             Command command = driveSubsystem.getCurrentCommand(); 
             if (command instanceof BalanceCommand) {
@@ -53,20 +60,20 @@ public class RobotContainer {
         new JoystickButton(joystick, 11).onTrue(new BalanceCommand(driveSubsystem, pigeon));
         new JoystickButton(joystick, 10).onTrue(new InstantCommand(vision::limelightOFF));
         new JoystickButton(joystick, 9).onTrue(new InstantCommand(vision::limelightON));
-        new JoystickButton(joystick, 5).whileTrue(Commands.startEnd(() -> armSubsystem.setPower(0.1), () -> armSubsystem.setPower(0), armSubsystem));
-        new JoystickButton(joystick, 3).whileTrue(Commands.startEnd(() -> armSubsystem.setPower(-0.1), () -> armSubsystem.setPower(0), armSubsystem));
+        new JoystickButton(joystick, 8).onTrue(new AutoTurnCommand(45, driveSubsystem, pigeon));
+        new JoystickButton(joystick, 7).onTrue(new AutoTurnCommand(-45, driveSubsystem, pigeon));
         new JoystickButton(joystick, 6).onTrue(new LineUpCommand(Target.CONE, driveSubsystem, vision, pigeon));
         new JoystickButton(joystick, 4).onTrue(new LineUpCommand(Target.MID_POLE, driveSubsystem, vision, pigeon));
+        // Buttonboard
+        new JoystickButton(buttonBoard, 0).whileTrue(Commands.startEnd(() -> armSubsystem.setPower(0.1), () -> armSubsystem.setPower(0), armSubsystem));
+        new JoystickButton(buttonBoard, 1).whileTrue(Commands.startEnd(() -> armSubsystem.setPower(-0.1), () -> armSubsystem.setPower(0), armSubsystem));
+        new JoystickButton(buttonBoard, 2).whileTrue(Commands.startEnd(() -> wristSubsystem.setPower(0.1), () -> wristSubsystem.setPower(0), wristSubsystem));
+        new JoystickButton(buttonBoard, 3).whileTrue(Commands.startEnd(() -> wristSubsystem.setPower(-0.1), () -> wristSubsystem.setPower(0), wristSubsystem));
+        new JoystickButton(buttonBoard, 4).whileTrue(Commands.startEnd(() -> gripperSubsystem.setPower(0.1), () -> gripperSubsystem.setPower(0), gripperSubsystem));
+        new JoystickButton(buttonBoard, 5).whileTrue(Commands.startEnd(() -> gripperSubsystem.setPower(-0.1), () -> gripperSubsystem.setPower(0), gripperSubsystem));
    }
 
     private void configureShuffleboard() {
-        // Robot
-        Shuffleboard.getTab("Robot")
-            .add(send)
-            .withWidget(BuiltInWidgets.kNumberSlider)
-            .withPosition(0, 0)
-            .withSize(6, 5);
-        
         // Pigeon
         Shuffleboard.getTab("Pigeon")
             .addDouble("Pigeon Yaw", () -> pigeon.getYaw())

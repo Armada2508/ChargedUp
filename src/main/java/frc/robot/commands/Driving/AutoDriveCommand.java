@@ -6,11 +6,11 @@ import frc.robot.subsystems.DriveSubsystem;
 public class AutoDriveCommand extends CommandBase {
 
     private final double distanceDeadband = 0.1;
-    private double targetDistance;
+    private final double targetDistance;
+    private double absoluteTarget;
     private DriveSubsystem subsystem;
 
     public AutoDriveCommand(double distanceInches, DriveSubsystem subsystem) {
-        // System.out.println(distanceInches);
         targetDistance = distanceInches;
         this.subsystem = subsystem;
         addRequirements(subsystem);
@@ -18,6 +18,7 @@ public class AutoDriveCommand extends CommandBase {
 
     @Override
     public void initialize() {
+        absoluteTarget = subsystem.getRightPostition() + targetDistance;
         subsystem.driveDistance(targetDistance);
     }
 
@@ -33,7 +34,7 @@ public class AutoDriveCommand extends CommandBase {
     @Override
     public boolean isFinished() {
         double currentPos = subsystem.getRightPostition();
-        return (Math.abs(currentPos) < targetDistance+distanceDeadband);
+        return (currentPos < absoluteTarget+distanceDeadband && currentPos > absoluteTarget-distanceDeadband);
     }
 
 

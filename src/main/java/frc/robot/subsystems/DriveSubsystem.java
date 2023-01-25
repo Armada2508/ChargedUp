@@ -7,6 +7,7 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.ctre.phoenix.sensors.PigeonIMU;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
@@ -19,22 +20,18 @@ import frc.robot.Lib.util.Util;
 
 public class DriveSubsystem extends SubsystemBase{
 
-    private WPI_TalonFX TalonFXL; 
-    private WPI_TalonFX TalonFXLfollow; 
-    private WPI_TalonFX TalonFXR; 
-    private WPI_TalonFX TalonFXRfollow;
-    private MotorControllerGroup right;
+    private WPI_TalonFX TalonFXL = new WPI_TalonFX(Drive.LID); 
+    private WPI_TalonFX TalonFXLfollow = new WPI_TalonFX(Drive.LFID);  
+    private WPI_TalonFX TalonFXR = new WPI_TalonFX(Drive.RID); 
+    private WPI_TalonFX TalonFXRfollow = new WPI_TalonFX(Drive.RFID);
     private MotorControllerGroup left;
+    private MotorControllerGroup right;
     private final DifferentialDriveKinematics mKinematics = new DifferentialDriveKinematics(Drive.kTrackWidth); 
-    private final DifferentialDriveOdometry odometry = null; // fix
+    private final DifferentialDriveOdometry odometry;
     private final PigeonIMU pigeon;
 
     public DriveSubsystem(PigeonIMU pigeon) {
         this.pigeon = pigeon;
-        TalonFXL = new WPI_TalonFX(Drive.LID); 
-        TalonFXLfollow = new WPI_TalonFX(Drive.LFID); 
-        TalonFXR = new WPI_TalonFX(Drive.RID); 
-        TalonFXRfollow = new WPI_TalonFX(Drive.RFID);
         configureMotor(TalonFXL);
         configureMotor(TalonFXR);
         // TalonFXR.setInverted(true);
@@ -43,6 +40,7 @@ public class DriveSubsystem extends SubsystemBase{
         TalonFXRfollow.follow(TalonFXR);
         left =  new MotorControllerGroup(TalonFXL, TalonFXLfollow);
         right = new MotorControllerGroup(TalonFXR, TalonFXRfollow);
+        odometry = new DifferentialDriveOdometry(new Rotation2d(getHeading()), 0, 0);
     }
 
     @Override
@@ -73,7 +71,7 @@ public class DriveSubsystem extends SubsystemBase{
     }
 
     private void configureMotor(WPI_TalonFX motor) {
-        motor.config_kP(0, Drive.kF);
+        motor.config_kP(0, Drive.kP);
         motor.config_kI(0, Drive.kI);
         motor.config_kD(0, Drive.kD);
     }

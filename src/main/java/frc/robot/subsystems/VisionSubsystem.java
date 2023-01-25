@@ -19,7 +19,7 @@ public class VisionSubsystem {
     private NetworkTableEntry pipeline = table.getEntry("pipeline");
 
     public VisionSubsystem() {
-        limelightLED.setNumber(0);
+        setPipeline(Vision.colorPipeline);
     }
 
     public boolean hasTarget() {
@@ -55,8 +55,8 @@ public class VisionSubsystem {
     }
 
     public void setPipeline(int pipe) {
-        limelightLED.setNumber(0);
         pipeline.setNumber(pipe);
+        limelightLED.setNumber(0);
     }
 
     public int getPipeline() {
