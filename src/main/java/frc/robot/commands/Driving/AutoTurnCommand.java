@@ -5,13 +5,15 @@ import com.ctre.phoenix.sensors.PigeonIMU;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.Constants.Drive;
 import frc.robot.subsystems.DriveSubsystem;
 
 public class AutoTurnCommand extends CommandBase {
 
     private final double relativeDegrees;
-    private final double kP = 0.008;
-    private PIDController pid = new PIDController(kP, 0, 0);
+    private final double timeForFinish = 0.5; // seconds
+    private double currentTime;
+    private PIDController pid = new PIDController(Drive.turnkP, 0, 0);
     private double absoluteTarget;
     private DriveSubsystem driveSubsystem;
     private PigeonIMU pigeon;
@@ -32,16 +34,17 @@ public class AutoTurnCommand extends CommandBase {
     @Override
     public void initialize() {
         absoluteTarget = pigeon.getYaw() + relativeDegrees;
+        currentTime = 0;
         pid.reset();
         pid.setSetpoint(absoluteTarget);
-        pid.setTolerance(1);
+        pid.setTolerance(0.1);
     }
 
     @Override
     public void execute() {
         double speed = pid.calculate(pigeon.getYaw());
-        speed = MathUtil.clamp(speed, -1, 1);
-        if (Math.abs(speed) < 0.1) speed = 0.1 * Math.signum(speed);
+        speed = MathUtil.clamp(speed, -0.5, 0.5);
+        if (Math.abs(speed) < Drive.minSpeed) speed = Drive.minSpeed * Math.signum(speed);
         driveSubsystem.setPower(speed, -speed);
     }
 
@@ -52,6 +55,9 @@ public class AutoTurnCommand extends CommandBase {
 
     @Override
     public boolean isFinished() { 
-        return pid.atSetpoint();
+        if (pid.atSetpoint()) {
+            currentTime += 0.02;
+        }
+        return pid.atSetpoint() && currentTime >= timeForFinish;
     }
 }

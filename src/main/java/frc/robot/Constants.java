@@ -18,6 +18,10 @@ public class Constants {
         public static final double kP = 0.01; 
         public static final double kI = 0;
         public static final double kD = 0.01;
+
+        // Turning PID
+        public static final double turnkP = 0.02;
+        public static final double minSpeed = 0.18;
         
         public static final double diameter = 6;
         public static final int encoderUnits = 2048;
