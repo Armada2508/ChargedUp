@@ -14,25 +14,21 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.commands.BalanceCommand;
-import frc.robot.commands.LineUpCommand;
+import frc.robot.commands.LineUpPoleCommand;
 import frc.robot.commands.Driving.AutoDriveCommand;
 import frc.robot.commands.Driving.AutoTurnCommand;
 import frc.robot.commands.Driving.DriveCommand;
-import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
-import frc.robot.subsystems.GripperSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
-import frc.robot.subsystems.VisionSubsystem.Target;
-import frc.robot.subsystems.WristSubsystem;
 
 public class RobotContainer {
 
     private final Joystick joystick = new Joystick(0);
     // private final Joystick buttonBoard = new Joystick(1);
     private final VisionSubsystem vision = new VisionSubsystem();
-    private final ArmSubsystem armSubsystem = new ArmSubsystem();
-    private final WristSubsystem wristSubsystem = new WristSubsystem();
-    private final GripperSubsystem gripperSubsystem = new GripperSubsystem();
+    // private final ArmSubsystem armSubsystem = new ArmSubsystem();
+    // private final WristSubsystem wristSubsystem = new WristSubsystem();
+    // private final GripperSubsystem gripperSubsystem = new GripperSubsystem();
     private final DriveSubsystem driveSubsystem;
     private final PigeonIMU pigeon = new PigeonIMU(Constants.pigeonID);
 
@@ -61,8 +57,8 @@ public class RobotContainer {
         new JoystickButton(joystick, 9).onTrue(new InstantCommand(vision::limelightON));
         new JoystickButton(joystick, 8).onTrue(new AutoTurnCommand(45, driveSubsystem, pigeon));
         new JoystickButton(joystick, 7).onTrue(new AutoTurnCommand(-45, driveSubsystem, pigeon));
-        new JoystickButton(joystick, 6).onTrue(new LineUpCommand(Target.CONE, driveSubsystem, vision, pigeon));
-        new JoystickButton(joystick, 4).whileTrue(new LineUpCommand(Target.MID_POLE, driveSubsystem, vision, pigeon));
+        new JoystickButton(joystick, 6).onTrue(new LineUpPoleCommand(driveSubsystem, vision, pigeon));
+        new JoystickButton(joystick, 4).whileTrue(new LineUpPoleCommand(driveSubsystem, vision, pigeon));
         // Buttonboard 
         /* 
         new JoystickButton(buttonBoard, 1).whileTrue(Commands.startEnd(() -> armSubsystem.setPower(0.1), () -> armSubsystem.setPower(0), armSubsystem));

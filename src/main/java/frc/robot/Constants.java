@@ -34,15 +34,15 @@ public class Constants {
     public static final int pigeonID = 8;
 
     public static final class Vision {
+        public static final double distanceBetweenPolesInches = 17;
         // Target Heights
-        public static final double highPoleHeight = 41.73; // inches
-        public static final double midPoleHeight = 34.25; // inches
+        public static final double highPoleHeightInches = 43.84375;
+        public static final double midPoleHeightInches = 24.0625; 
         // Target Desired Distances
-        public static final int poleDistance = 23; // inches
-        public static final int coneDistance = 6; // inches
+        public static final int coneDistanceInches = 6;
         // Limelight
-        public static final int cameraHeight = 19; // inches
-        public static final int cameraAngle = 0; // degrees 
+        public static final int cameraHeightInches = 18;
+        public static final int cameraAngleMountedDegrees = 0; 
         // Limelight Pipelines
         public static final int reflectionPipeline = 0;
         public static final int colorPipeline = 1;

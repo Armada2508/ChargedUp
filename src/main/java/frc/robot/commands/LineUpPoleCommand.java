@@ -5,26 +5,24 @@ import java.util.List;
 
 import com.ctre.phoenix.sensors.PigeonIMU;
 
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.Constants.Vision;
-import frc.robot.commands.Driving.AutoDriveCommand;
+import frc.robot.Lib.util.Util;
 import frc.robot.commands.Driving.AutoTurnCommand;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.VisionSubsystem.Target;
 
-public class LineUpCommand extends CommandBase {
+public class LineUpPoleCommand extends CommandBase {
 
     private List<Command> commands = new ArrayList<>();
     private int currentIndex = 0;
-    private Target target;
     private DriveSubsystem driveSubsystem;
     private VisionSubsystem visionSubsystem;
     private PigeonIMU pigeon;
 
-    public LineUpCommand(Target target, DriveSubsystem driveSubsystem, VisionSubsystem visionSubsystem, PigeonIMU pigeon) {
-        this.target = target;
+    public LineUpPoleCommand(DriveSubsystem driveSubsystem, VisionSubsystem visionSubsystem, PigeonIMU pigeon) {
         this.driveSubsystem = driveSubsystem;
         this.visionSubsystem = visionSubsystem;
         this.pigeon = pigeon;
@@ -35,23 +33,25 @@ public class LineUpCommand extends CommandBase {
     public void initialize() {
         currentIndex = 0;
         commands.clear();
-        if (target == Target.CONE) visionSubsystem.setPipeline(Vision.colorPipeline);
-        else visionSubsystem.setPipeline(Vision.reflectionPipeline);
 
         double angleX = visionSubsystem.getTargetX();
         commands.add(new AutoTurnCommand(angleX, driveSubsystem, pigeon));
-        commands.get(currentIndex).schedule();
+        commands.get(currentIndex).initialize();
     }
 
     @Override
     public void execute() {
         Command currentCommand = commands.get(currentIndex);
+        currentCommand.execute();
         if (currentCommand.isFinished()) {
-            final double desiredDistance = (target == Target.CONE) ? Vision.coneDistance : Vision.poleDistance;
-            double startingDistance = visionSubsystem.distanceFromTargetInInches(target);
-            if (currentIndex == 0) commands.add(new AutoDriveCommand(startingDistance - desiredDistance, driveSubsystem));
+            currentCommand.end(false);
+            double distance = visionSubsystem.distanceFromTargetInInches(Target.HIGH_POLE);
+            double phi = visionSubsystem.getPythonData()[0];
+            System.out.println(phi);
+            double theta = visionSubsystem.angleFromLinedUp(distance, phi);
+            Pair<Double, Double> currentCoords = Util.toCartesianCoordinates(distance, theta);
             currentIndex++;
-            commands.get(currentIndex).schedule();
+            commands.get(currentIndex).initialize();
         }
     }
 

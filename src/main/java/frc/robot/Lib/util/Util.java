@@ -2,8 +2,9 @@ package frc.robot.Lib.util;
 
 import java.util.List;
 
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.Pair;
+import edu.wpi.first.math.geometry.Rotation2d;
 
 /**
  * Contains basic functions that are used often.
@@ -211,5 +212,19 @@ public class Util {
 
     public static double inchesToMeters(double in){
         return in*.0254;
+    }
+
+    /**
+     * Go from polar coordinates to cartesian coordinates
+     * @param distance
+     * @param theta in radians
+     * @return
+     */
+    public static Pair<Double, Double> toCartesianCoordinates(double distance, double theta) {
+        double x = 0;
+        double y = 0;
+        x = distance * Math.cos(theta);
+        y = distance * Math.sin(theta);
+        return new Pair<Double,Double>(x, y);
     }
 }
