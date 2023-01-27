@@ -1,23 +1,20 @@
 package frc.robot.commands;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.ctre.phoenix.sensors.PigeonIMU;
 
 import edu.wpi.first.math.Pair;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
+import frc.robot.Constants.Vision;
 import frc.robot.Lib.util.Util;
 import frc.robot.commands.Driving.AutoTurnCommand;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.VisionSubsystem.Target;
 
-public class LineUpPoleCommand extends CommandBase {
+public class LineUpPoleCommand {
 
-    private List<Command> commands = new ArrayList<>();
-    private int currentIndex = 0;
     private DriveSubsystem driveSubsystem;
     private VisionSubsystem visionSubsystem;
     private PigeonIMU pigeon;
@@ -26,43 +23,24 @@ public class LineUpPoleCommand extends CommandBase {
         this.driveSubsystem = driveSubsystem;
         this.visionSubsystem = visionSubsystem;
         this.pigeon = pigeon;
-        addRequirements(driveSubsystem);
     }
 
-    @Override
-    public void initialize() {
-        currentIndex = 0;
-        commands.clear();
-
-        double angleX = visionSubsystem.getTargetX();
-        commands.add(new AutoTurnCommand(angleX, driveSubsystem, pigeon));
-        commands.get(currentIndex).initialize();
-    }
-
-    @Override
-    public void execute() {
-        Command currentCommand = commands.get(currentIndex);
-        currentCommand.execute();
-        if (currentCommand.isFinished()) {
-            currentCommand.end(false);
+    public SequentialCommandGroup getCommand() {
+        return new InstantCommand(() -> visionSubsystem.setPipeline(Vision.highPolePipeline))
+        .andThen(new WaitCommand(0.2))
+        .andThen(new AutoTurnCommand(visionSubsystem::getTargetX, driveSubsystem, pigeon))
+        .andThen(new WaitCommand(0.4))
+        .andThen(() -> {
             double distance = visionSubsystem.distanceFromTargetInInches(Target.HIGH_POLE);
-            double phi = visionSubsystem.getPythonData()[0];
-            System.out.println(phi);
+            visionSubsystem.setPipeline(Vision.midPolePipeline);
+            double phi = visionSubsystem.getTargetX() * (Math.PI / 180);
+            System.out.println("distance " + distance);
+            System.out.println("phi " + phi);
             double theta = visionSubsystem.angleFromLinedUp(distance, phi);
+            System.out.println("theta " + theta);
             Pair<Double, Double> currentCoords = Util.toCartesianCoordinates(distance, theta);
-            currentIndex++;
-            commands.get(currentIndex).initialize();
-        }
+            System.out.println("x: " + currentCoords.getFirst() + " y: " + currentCoords.getSecond());
+        }, driveSubsystem);
     }
 
-    @Override
-    public void end(boolean interrupted) {
-        driveSubsystem.setPower(0, 0);
-    }
-
-    @Override
-    public boolean isFinished() {
-        return currentIndex >= 2;
-    }
-   
 }

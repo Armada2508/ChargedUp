@@ -11,7 +11,7 @@ Commands:
 	x - AutoTurn(Turn robot number of degrees) (Relative)
 	x! - AutoArm(Position arm to certain degrees) (0 : 90) (Absolute)
 	x! - AutoWrist(Position wrist to certain degrees) (-30 : 30) (Absolute)
-	- AutoGrip(Claw percent close) (0 is open, 1 is closed) (Absolute)
+	- AutoGrip(Claw percent close) (-1 is open, 1 is closed) (Absolute)
 	Complicated Auto:
 	x! - Balancing Command
 	- Put a cone on pole command
@@ -27,7 +27,7 @@ Subsystems:
 
 Vision:
 
-x!- Command to line up with a pole/cone     or cube(low priority)
+- Command to line up with a pole/cone     or cube(low priority)
 
 Miscellaneous:
 

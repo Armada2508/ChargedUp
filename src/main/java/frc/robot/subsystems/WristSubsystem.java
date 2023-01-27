@@ -25,7 +25,7 @@ public class WristSubsystem extends SubsystemBase {
      * @param theta degrees to go to
      */
     public void setPosition(double theta) {
-        if (theta > Wrist.maxDegrees || theta < Wrist.minDegrees) return;
+        if (theta > Wrist.maxDegrees || theta < Wrist.minDegrees) throw new IllegalArgumentException("Degrees are not in acceptable range of " + Wrist.minDegrees + " and " + Wrist.maxDegrees);
         double targetPosition = theta / Wrist.degreesPerEncoderUnit;
         talonFX.set(TalonFXControlMode.Position, targetPosition, DemandType.ArbitraryFeedForward, getFeedForward());
     }

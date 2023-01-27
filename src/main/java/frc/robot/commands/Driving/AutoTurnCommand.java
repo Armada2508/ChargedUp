@@ -1,5 +1,7 @@
 package frc.robot.commands.Driving;
 
+import java.util.function.DoubleSupplier;
+
 import com.ctre.phoenix.sensors.PigeonIMU;
 
 import edu.wpi.first.math.MathUtil;
@@ -10,8 +12,8 @@ import frc.robot.subsystems.DriveSubsystem;
 
 public class AutoTurnCommand extends CommandBase {
 
-    private final double relativeDegrees;
-    private final double timeForFinish = 0.5; // seconds
+    private final DoubleSupplier relativeDegrees;
+    private final double timeForFinish = 0.1; // seconds
     private double currentTime;
     private PIDController pid = new PIDController(Drive.turnkP, 0, 0);
     private double absoluteTarget;
@@ -25,6 +27,16 @@ public class AutoTurnCommand extends CommandBase {
      * @param targetDegrees positive is right, negative is left
      */
     public AutoTurnCommand(double targetDegrees, DriveSubsystem driveSubsystem, PigeonIMU pigeon) {
+        this(() -> targetDegrees, driveSubsystem, pigeon);
+    }
+
+    /**
+     * 
+     * @param driveSubsystem
+     * @param pigeon
+     * @param targetDegrees positive is right, negative is left
+     */
+    public AutoTurnCommand(DoubleSupplier targetDegrees, DriveSubsystem driveSubsystem, PigeonIMU pigeon) {
         this.driveSubsystem = driveSubsystem;
         this.pigeon = pigeon;
         this.relativeDegrees = targetDegrees;
@@ -33,7 +45,7 @@ public class AutoTurnCommand extends CommandBase {
     
     @Override
     public void initialize() {
-        absoluteTarget = pigeon.getYaw() + relativeDegrees;
+        absoluteTarget = pigeon.getYaw() + relativeDegrees.getAsDouble();
         currentTime = 0;
         pid.reset();
         pid.setSetpoint(absoluteTarget);

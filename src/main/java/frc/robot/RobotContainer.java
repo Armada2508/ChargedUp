@@ -20,6 +20,7 @@ import frc.robot.commands.Driving.AutoTurnCommand;
 import frc.robot.commands.Driving.DriveCommand;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
+import frc.robot.subsystems.VisionSubsystem.Target;
 
 public class RobotContainer {
 
@@ -39,9 +40,11 @@ public class RobotContainer {
         configureShuffleboard();
         configureButtons();
         // new CalibrateArmCommand(armSubsystem).schedule();
-        // System.out.println(vision.distanceFromTargetInInches(Target.MID_POLE, 20)); // 41.899
-        // System.out.println(vision.distanceFromTargetInInches(Target.MID_POLE, 10)); // 86.487
-        // System.out.println(vision.distanceFromTargetInInches(Target.MID_POLE, 2)); // 436.702
+        System.out.println(vision.distanceFromTargetInInches(Target.HIGH_POLE, 24.85));
+        System.out.println(vision.distanceFromTargetInInches(Target.HIGH_POLE, 20)); 
+        System.out.println(vision.distanceFromTargetInInches(Target.HIGH_POLE, 10));
+        System.out.println(vision.distanceFromTargetInInches(Target.HIGH_POLE, 5));  
+        System.out.println(vision.distanceFromTargetInInches(Target.HIGH_POLE, 2)); 
     }
 
     private void configureButtons() {
@@ -57,8 +60,7 @@ public class RobotContainer {
         new JoystickButton(joystick, 9).onTrue(new InstantCommand(vision::limelightON));
         new JoystickButton(joystick, 8).onTrue(new AutoTurnCommand(45, driveSubsystem, pigeon));
         new JoystickButton(joystick, 7).onTrue(new AutoTurnCommand(-45, driveSubsystem, pigeon));
-        new JoystickButton(joystick, 6).onTrue(new LineUpPoleCommand(driveSubsystem, vision, pigeon));
-        new JoystickButton(joystick, 4).whileTrue(new LineUpPoleCommand(driveSubsystem, vision, pigeon));
+        new JoystickButton(joystick, 4).onTrue(new LineUpPoleCommand(driveSubsystem, vision, pigeon).getCommand());
         // Buttonboard 
         /* 
         new JoystickButton(buttonBoard, 1).whileTrue(Commands.startEnd(() -> armSubsystem.setPower(0.1), () -> armSubsystem.setPower(0), armSubsystem));

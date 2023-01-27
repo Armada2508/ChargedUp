@@ -44,8 +44,8 @@ public class Constants {
         public static final int cameraHeightInches = 18;
         public static final int cameraAngleMountedDegrees = 0; 
         // Limelight Pipelines
-        public static final int reflectionPipeline = 0;
-        public static final int colorPipeline = 1;
+        public static final int highPolePipeline = 0;
+        public static final int midPolePipeline = 1;
     }
 
     public static final class Arm {

@@ -35,7 +35,7 @@ public class ArmSubsystem extends SubsystemBase {
      * @param theta degrees to go to
      */
     public void setPosition(double theta) {
-        if (theta > Arm.maxDegrees || theta < Arm.minDegrees) return;
+        if (theta > Arm.maxDegrees || theta < Arm.minDegrees) throw new IllegalArgumentException("Degrees are not in acceptable range of " + Arm.minDegrees + " and " + Arm.maxDegrees);
         double targetPosition = theta / Arm.degreesPerEncoderUnit;
         talonFX.set(TalonFXControlMode.Position, targetPosition, DemandType.ArbitraryFeedForward, getFeedForward());
     }

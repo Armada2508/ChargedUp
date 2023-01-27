@@ -17,11 +17,6 @@ public class VisionSubsystem {
     private final NetworkTableEntry targetArea = table.getEntry("ta"); // Percent area that the target takes up in the whole capture
     private final NetworkTableEntry limelightLED = table.getEntry("ledMode");
     private final NetworkTableEntry pipeline = table.getEntry("pipeline");
-    private final NetworkTableEntry pythonData = table.getEntry("llpython");
-
-    public VisionSubsystem() {
-        setPipeline(Vision.colorPipeline);
-    }
 
     public boolean hasTarget() {
         return hasTarget.getInteger(0) == 1;
@@ -37,10 +32,6 @@ public class VisionSubsystem {
 
     public double getTargetArea() {
         return targetArea.getDouble(0);
-    }
-
-    public double[] getPythonData() {
-        return pythonData.getDoubleArray(new double[0]);
     }
 
     public void setPipeline(int pipe) {
@@ -65,32 +56,44 @@ public class VisionSubsystem {
     }
 
     /**
-     * Calculates distance from the limelight to the selected Target in inches.
+     * Calculates distance from the limelight to the selected Target in inches and with the angle given.
      * distance = (h2-h1) / tan(a1+a2)
      * h2 = height of target, h1 = height of camera, a1 = camera angle, a2 = target angle
      * @return distance in inches
      */
-    public double distanceFromTargetInInches(Target target) {;
+    public double distanceFromTargetInInches(Target target, double angle) {;
         double targetHeight = switch(target) {
             case CONE -> 0;
             case MID_POLE -> Vision.midPoleHeightInches;
             case HIGH_POLE -> Vision.highPoleHeightInches;
         };
-        double radians = Math.toRadians(Vision.cameraAngleMountedDegrees + getTargetY());
+        double radians = Math.toRadians(Vision.cameraAngleMountedDegrees + angle);
         double distance = (targetHeight - Vision.cameraHeightInches) / Math.tan(radians);
         return distance;
     }
 
     /**
+     * Calculates distance from the limelight to the selected Target in inches. Angle is taken from limelight.
+     * distance = (h2-h1) / tan(a1+a2)
+     * h2 = height of target, h1 = height of camera, a1 = camera angle, a2 = target angle
+     * @return distance in inches
+     */
+    public double distanceFromTargetInInches(Target target) {;
+        return distanceFromTargetInInches(target, getTargetY());
+    }
+
+
+    /**
      * Given the distance to the rear pole and the angle between the two poles assuming you are looking at the rear pole 
      * this gives you the angle of how far away you are of the poles being completely in line with each other  
-     * @param distanceToRearInches distance from the limelight to the rear pole in inches
+     * @param distanceToPoleInches distance from the limelight to the rear pole in inches
      * @param angleBetweenPolesRadians angle between the two poles in radians
-     * @return theta in radians
+     * @return Theta in radians, or NaN if the result cannot be computed
      */
-    public double angleFromLinedUp(double distanceToRearInches, double angleBetweenPolesRadians) {
+    public double angleFromLinedUp(double distanceToPoleInches, double angleBetweenPolesRadians) {
+        if (distanceToPoleInches <= 0 || angleBetweenPolesRadians == 0) throw new IllegalArgumentException("distance is less than 0 or angle is 0");
         return Math.acos(
-            (distanceToRearInches * Math.tan(angleBetweenPolesRadians)) /
+            (distanceToPoleInches * Math.tan(angleBetweenPolesRadians)) /
             (Vision.distanceBetweenPolesInches * Math.tan(angleBetweenPolesRadians) + Vision.distanceBetweenPolesInches)
         );
     }
