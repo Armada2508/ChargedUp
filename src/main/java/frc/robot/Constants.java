@@ -26,9 +26,9 @@ public class Constants {
         public static final double diameter = 6;
         public static final int encoderUnits = 2048;
         public static final double gearboxRatio = 10.7;
-        public static final double kTrackWidth = Util.inchesToMeters(23.5);
+        public static final double trackWidth = Util.inchesToMeters(23.5);
 
-        public static final FeedbackConfig kFeedbackConfig = new FeedbackConfig(FeedbackDevice.IntegratedSensor, encoderUnits, gearboxRatio);
+        public static final FeedbackConfig feedbackConfig = new FeedbackConfig(FeedbackDevice.IntegratedSensor, encoderUnits, gearboxRatio);
     }
 
     public static final int pigeonID = 8;
@@ -44,8 +44,8 @@ public class Constants {
         public static final int cameraHeightInches = 18;
         public static final int cameraAngleMountedDegrees = 0; 
         // Limelight Pipelines
-        public static final int highPolePipeline = 0;
-        public static final int midPolePipeline = 1;
+        public static final int redPipeline = 0;
+        public static final int bluePipeline = 1;
     }
 
     public static final class Arm {

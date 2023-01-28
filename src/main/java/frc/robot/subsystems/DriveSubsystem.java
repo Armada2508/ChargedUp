@@ -18,7 +18,7 @@ import frc.robot.Lib.Encoder;
 import frc.robot.Lib.util.Util;
 
 
-public class DriveSubsystem extends SubsystemBase{
+public class DriveSubsystem extends SubsystemBase {
 
     private WPI_TalonFX TalonFXL = new WPI_TalonFX(Drive.LID); 
     private WPI_TalonFX TalonFXLfollow = new WPI_TalonFX(Drive.LFID);  
@@ -26,7 +26,7 @@ public class DriveSubsystem extends SubsystemBase{
     private WPI_TalonFX TalonFXRfollow = new WPI_TalonFX(Drive.RFID);
     private MotorControllerGroup left;
     private MotorControllerGroup right;
-    private final DifferentialDriveKinematics mKinematics = new DifferentialDriveKinematics(Drive.kTrackWidth); 
+    private final DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(Drive.trackWidth); 
     private final DifferentialDriveOdometry odometry;
     private final PigeonIMU pigeon;
 
@@ -40,6 +40,7 @@ public class DriveSubsystem extends SubsystemBase{
         TalonFXRfollow.follow(TalonFXR);
         left =  new MotorControllerGroup(TalonFXL, TalonFXLfollow);
         right = new MotorControllerGroup(TalonFXR, TalonFXRfollow);
+        callibrate();
         odometry = new DifferentialDriveOdometry(new Rotation2d(getHeading()), 0, 0);
     }
 
@@ -128,15 +129,19 @@ public class DriveSubsystem extends SubsystemBase{
     }
 
     public double getVelocity() {
-        return mKinematics.toChassisSpeeds(getWheelSpeeds()).vxMetersPerSecond;
+        return kinematics.toChassisSpeeds(getWheelSpeeds()).vxMetersPerSecond;
     }
 
     public double toVelocity(int velocity) {
-        return Encoder.toVelocity(velocity, Drive.kFeedbackConfig.getEpr(), Drive.kFeedbackConfig.getGearRatio(), Drive.diameter);
+        return Encoder.toVelocity(velocity, Drive.feedbackConfig.getEpr(), Drive.feedbackConfig.getGearRatio(), Drive.diameter);
     }
 
     public double fromVelocity(double velocity) {
-        return Encoder.fromVelocity(velocity, Drive.kFeedbackConfig.getEpr(), Drive.kFeedbackConfig.getGearRatio(), Drive.diameter);
+        return Encoder.fromVelocity(velocity, Drive.feedbackConfig.getEpr(), Drive.feedbackConfig.getGearRatio(), Drive.diameter);
+    }
+    
+    public DifferentialDriveKinematics getKinematics() {
+        return kinematics;
     }
 
     public Pose2d getPose() {

@@ -17,6 +17,8 @@ public class VisionSubsystem {
     private final NetworkTableEntry targetArea = table.getEntry("ta"); // Percent area that the target takes up in the whole capture
     private final NetworkTableEntry limelightLED = table.getEntry("ledMode");
     private final NetworkTableEntry pipeline = table.getEntry("pipeline");
+    private final NetworkTableEntry tagID = table.getEntry("tid");
+    private final NetworkTableEntry botPose = table.getEntry("botpose");
 
     public boolean hasTarget() {
         return hasTarget.getInteger(0) == 1;
@@ -41,6 +43,19 @@ public class VisionSubsystem {
 
     public int getPipeline() {
         return (int) pipeline.getInteger(0);
+    }
+
+    public int getTagID() {
+        return (int) tagID.getInteger(0);
+    }
+
+    /**
+     * Gives the robot pose Translation (x, y, z) & Rotation (x, y, z) in field space. In field space 0, 0, 0 
+     * is at the center of the field.
+     * @return
+     */
+    public double[] getBotPose() {
+        return botPose.getDoubleArray(new double[0]);
     }
 
     public void limelightON() {

@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import frc.robot.commands.AprilTagCommand;
 import frc.robot.commands.BalanceCommand;
 import frc.robot.commands.LineUpPoleCommand;
 import frc.robot.commands.Driving.AutoDriveCommand;
@@ -60,6 +61,7 @@ public class RobotContainer {
         new JoystickButton(joystick, 9).onTrue(new InstantCommand(vision::limelightON));
         new JoystickButton(joystick, 8).onTrue(new AutoTurnCommand(45, driveSubsystem, pigeon));
         new JoystickButton(joystick, 7).onTrue(new AutoTurnCommand(-45, driveSubsystem, pigeon));
+        new JoystickButton(joystick, 6).onTrue(new AprilTagCommand(driveSubsystem, vision));
         new JoystickButton(joystick, 4).onTrue(new LineUpPoleCommand(driveSubsystem, vision, pigeon).getCommand());
         // Buttonboard 
         /* 

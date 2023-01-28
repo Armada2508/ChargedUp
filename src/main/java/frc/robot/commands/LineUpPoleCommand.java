@@ -6,7 +6,6 @@ import edu.wpi.first.math.Pair;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
-import frc.robot.Constants.Vision;
 import frc.robot.Lib.util.Util;
 import frc.robot.commands.Driving.AutoTurnCommand;
 import frc.robot.subsystems.DriveSubsystem;
@@ -26,13 +25,13 @@ public class LineUpPoleCommand {
     }
 
     public SequentialCommandGroup getCommand() {
-        return new InstantCommand(() -> visionSubsystem.setPipeline(Vision.highPolePipeline))
+        return new InstantCommand(() -> visionSubsystem.setPipeline(0))
         .andThen(new WaitCommand(0.2))
         .andThen(new AutoTurnCommand(visionSubsystem::getTargetX, driveSubsystem, pigeon))
         .andThen(new WaitCommand(0.4))
         .andThen(() -> {
             double distance = visionSubsystem.distanceFromTargetInInches(Target.HIGH_POLE);
-            visionSubsystem.setPipeline(Vision.midPolePipeline);
+            visionSubsystem.setPipeline(1);
             double phi = visionSubsystem.getTargetX() * (Math.PI / 180);
             System.out.println("distance " + distance);
             System.out.println("phi " + phi);
