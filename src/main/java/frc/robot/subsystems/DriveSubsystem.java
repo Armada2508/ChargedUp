@@ -26,7 +26,7 @@ public class DriveSubsystem extends SubsystemBase {
     private WPI_TalonFX TalonFXRfollow = new WPI_TalonFX(Drive.RFID);
     private MotorControllerGroup left;
     private MotorControllerGroup right;
-    private final DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(Drive.trackWidth); 
+    private final DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(Drive.trackWidthMeters); 
     private final DifferentialDriveOdometry odometry;
     private final PigeonIMU pigeon;
 
@@ -53,7 +53,7 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     public void driveDistance(double distanceInches) {
-        double sensorUnits = Encoder.fromDistance(distanceInches, Drive.encoderUnits, Drive.gearboxRatio, Drive.diameter);
+        double sensorUnits = Encoder.fromDistance(distanceInches, Drive.encoderUnits, Drive.gearboxRatio, Drive.diameterInches);
         TalonFXL.set(TalonFXControlMode.Position, TalonFXL.getSelectedSensorPosition()+sensorUnits);
         TalonFXR.set(TalonFXControlMode.Position, TalonFXR.getSelectedSensorPosition()+sensorUnits);
     }
@@ -63,12 +63,12 @@ public class DriveSubsystem extends SubsystemBase {
     }
     
     public double getRightPostition() {
-        return Encoder.toDistance(TalonFXR.getSelectedSensorPosition(), Drive.encoderUnits, Drive.gearboxRatio, Drive.diameter); 
+        return Encoder.toDistance(TalonFXR.getSelectedSensorPosition(), Drive.encoderUnits, Drive.gearboxRatio, Drive.diameterInches); 
         
     }
     
     public double getleftPostition() {
-        return Encoder.toDistance(TalonFXL.getSelectedSensorPosition(), Drive.encoderUnits, Drive.gearboxRatio, Drive.diameter); 
+        return Encoder.toDistance(TalonFXL.getSelectedSensorPosition(), Drive.encoderUnits, Drive.gearboxRatio, Drive.diameterInches); 
     }
 
     private void configureMotor(WPI_TalonFX motor) {
@@ -91,13 +91,23 @@ public class DriveSubsystem extends SubsystemBase {
         TalonFXRfollow.setNeutralMode(NeutralMode.Brake);
     }
 
+    public void setVoltage(double voltsL, double voltsR) {
+        TalonFXL.setVoltage(voltsL);
+        TalonFXR.setVoltage(voltsR);
+    }
+
     public DifferentialDriveWheelSpeeds getWheelSpeeds() {
         return new DifferentialDriveWheelSpeeds(getVelocityLeft(), getVelocityRight());
     }
-
-    public void setVelocity(DifferentialDriveWheelSpeeds speeds) {
-        TalonFXR.set(ControlMode.Velocity, fromVelocity(speeds.rightMetersPerSecond));
-        TalonFXL.set(ControlMode.Velocity, fromVelocity(speeds.leftMetersPerSecond));
+    
+    /**
+     * Sets the velocity of the motors.
+     * @param velocityL The velocity of the left motors in inches/second
+     * @param velocityR The velocity of the right motors in inches/second
+     */
+    public void setVelocity(double velocityL, double velocityR) {
+        TalonFXR.set(ControlMode.Velocity, fromVelocity(velocityL));
+        TalonFXL.set(ControlMode.Velocity, fromVelocity(velocityR));
     }
 
     public void setVelocity(DifferentialDriveWheelSpeeds speeds, double deadband) {
@@ -112,36 +122,25 @@ public class DriveSubsystem extends SubsystemBase {
             TalonFXL.set(ControlMode.Velocity, fromVelocity(speeds.rightMetersPerSecond));
         }
     }
-
-    public void setVoltage(double voltsL, double voltsR) {
-        TalonFXL.setVoltage(voltsL);
-        TalonFXR.setVoltage(voltsR);
+    
+    public double toVelocity(double velocity) {
+        return Encoder.toVelocity(velocity, Drive.encoderUnits, Drive.gearboxRatio, Drive.diameterInches);
     }
 
-    //Maybe change bc it's only checking one motor on the right
+    public double fromVelocity(double velocity) {
+        return Encoder.fromVelocity(velocity, Drive.encoderUnits, Drive.gearboxRatio, Drive.diameterInches);
+    }
+
     public double getVelocityRight() {
-        return toVelocity((int)TalonFXR.getSelectedSensorVelocity());
+        return toVelocity(TalonFXR.getSelectedSensorVelocity());
     }
 
-    //Maybe change bc it's only checking one motor on the left
     public double getVelocityLeft() {
-        return toVelocity((int)TalonFXL.getSelectedSensorVelocity());
+        return toVelocity(TalonFXL.getSelectedSensorVelocity());
     }
 
     public double getVelocity() {
         return kinematics.toChassisSpeeds(getWheelSpeeds()).vxMetersPerSecond;
-    }
-
-    public double toVelocity(int velocity) {
-        return Encoder.toVelocity(velocity, Drive.feedbackConfig.getEpr(), Drive.feedbackConfig.getGearRatio(), Drive.diameter);
-    }
-
-    public double fromVelocity(double velocity) {
-        return Encoder.fromVelocity(velocity, Drive.feedbackConfig.getEpr(), Drive.feedbackConfig.getGearRatio(), Drive.diameter);
-    }
-    
-    public DifferentialDriveKinematics getKinematics() {
-        return kinematics;
     }
 
     public Pose2d getPose() {

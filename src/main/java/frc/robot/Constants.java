@@ -23,10 +23,10 @@ public class Constants {
         public static final double turnkP = 0.02;
         public static final double minSpeed = 0.18;
         
-        public static final double diameter = 6;
+        public static final double diameterInches = 6;
         public static final int encoderUnits = 2048;
         public static final double gearboxRatio = 10.7;
-        public static final double trackWidth = Util.inchesToMeters(23.5);
+        public static final double trackWidthMeters = Util.inchesToMeters(23.5);
 
         public static final FeedbackConfig feedbackConfig = new FeedbackConfig(FeedbackDevice.IntegratedSensor, encoderUnits, gearboxRatio);
     }

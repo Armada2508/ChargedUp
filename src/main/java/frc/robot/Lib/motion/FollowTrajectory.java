@@ -2,19 +2,26 @@ package frc.robot.Lib.motion;
 
 import java.util.ArrayList;
 
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableEntry;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.math.controller.*;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.RamseteController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.*;
-import edu.wpi.first.math.trajectory.*;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.trajectory.constraint.CentripetalAccelerationConstraint;
 import edu.wpi.first.math.trajectory.constraint.DifferentialDriveKinematicsConstraint;
 import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
-import edu.wpi.first.wpilibj2.command.*;
-import frc.robot.subsystems.*;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.RamseteCommand;
+import frc.robot.subsystems.DriveSubsystem;
 
 
 /**
@@ -40,12 +47,10 @@ public class FollowTrajectory {
      * @param kS The kS constant(Feedforward)
      * @param kV The kV constant(Feedforward)
      * @param kA The kA constant(Feedforward)
-     * @param kP The kP constant(PID)
-     * @param kI The kI constant(PID)
-     * @param kD The kD constant(PID)
      * @param b The B constant(RAMSETE)
      * @param zeta The Zeta constant(RAMSETE)
      * @param trackWidth The width of the drivetrain(Kinematics)
+     * @param pidController The PID Controller to use
      * @param turnCompensation How much to overcorrect for turning aka how much the tracks are couple, 0 for a perfect drive
      */
     public static void config(double kS, double kV, double kA, double b, double zeta, double trackWidth, PIDController pidController, double turnCompensation) {
@@ -76,7 +81,6 @@ public class FollowTrajectory {
         PIDController leftController = new PIDController(0, 0, 0);
         PIDController rightController = new PIDController(0, 0, 0);
         driveSubsystem.brake();
-        //make getPose
         return new RamseteCommand(
                 trajectory,
                 driveSubsystem::getPose,
@@ -107,7 +111,6 @@ public class FollowTrajectory {
     public static Command getCommand(DriveSubsystem driveSubsystem, Trajectory trajectory, Pose2d zeroPose) {
         trajectory = trajectory.relativeTo(zeroPose);
         driveSubsystem.brake();
-        //make getPose
         return new RamseteCommand(
                 trajectory,
                 driveSubsystem::getPose,
@@ -138,14 +141,13 @@ public class FollowTrajectory {
     public static Command getCommandTalon(DriveSubsystem driveSubsystem, Trajectory trajectory, Pose2d zeroPose) {
         trajectory = trajectory.relativeTo(zeroPose);
         driveSubsystem.brake();
-        //make getPose
         return new RamseteCommand(
                 trajectory,
                 driveSubsystem::getPose,
                 kController,
                 kKinematics,
                 (velocityL, velocityR) -> {
-                    driveSubsystem.setVelocity(new DifferentialDriveWheelSpeeds(velocityL, velocityR));
+                    driveSubsystem.setVelocity(Units.metersToInches(velocityL), Units.metersToInches(velocityR));
 
                     kLeftReference.setNumber(velocityL);
                     kRightReference.setNumber(velocityR);

@@ -6,6 +6,7 @@ import com.ctre.phoenix.sensors.PigeonIMU;
 
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.UsbCamera;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -13,6 +14,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import frc.robot.Constants.Drive;
+import frc.robot.Lib.motion.FollowTrajectory;
 import frc.robot.commands.AprilTagCommand;
 import frc.robot.commands.BalanceCommand;
 import frc.robot.commands.LineUpPoleCommand;
@@ -35,6 +38,7 @@ public class RobotContainer {
     private final PigeonIMU pigeon = new PigeonIMU(Constants.pigeonID);
 
     RobotContainer() {
+        FollowTrajectory.config(0, 0, 0, 2.0, 0.7, Drive.trackWidthMeters, new PIDController(Drive.kP, Drive.kI, Drive.kD), 0);
         this.driveSubsystem = new DriveSubsystem(pigeon);
         driveSubsystem.setDefaultCommand(new DriveCommand(() -> joystick.getRawAxis(1)*-1, () -> joystick.getRawAxis(2)*-1, driveSubsystem)); // default to driving from joystick input
         configureCamera();
