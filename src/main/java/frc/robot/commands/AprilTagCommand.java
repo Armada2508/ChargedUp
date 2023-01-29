@@ -3,7 +3,7 @@ package frc.robot.commands;
 import java.util.ArrayList;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants.Vision;
 import frc.robot.Lib.motion.FollowTrajectory;
 import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.PhotonSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
 
 public class AprilTagCommand extends CommandBase {
@@ -28,6 +29,7 @@ public class AprilTagCommand extends CommandBase {
     private int currentTag = -1;
     private Pose2d currentPose = new Pose2d();
     private DriveSubsystem driveSubsystem;
+    private PhotonSubsystem photonSubsystem = new PhotonSubsystem();
     private VisionSubsystem visionSubsystem;
 
     public AprilTagCommand(DriveSubsystem driveSubsystem, VisionSubsystem visionSubsystem) {
@@ -50,17 +52,20 @@ public class AprilTagCommand extends CommandBase {
             }
             case Invalid -> new int[0];
         };
-        double[] pose = visionSubsystem.getBotPose();
-        currentPose = new Pose2d(pose[0], pose[1], new Rotation2d(pose[5] * Math.PI/180));
-        System.out.println("Pose: " + currentPose);
-        Translation2d targetTranslation = new Translation2d(
-            currentPose.getTranslation().getX(), currentPose.getTranslation().getY()+2
-        );
-        Pose2d targetPose = new Pose2d(targetTranslation, currentPose.getRotation());
-        Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
-            currentPose, new ArrayList<Translation2d>(), targetPose, config
-        );
-        FollowTrajectory.getCommandTalon(driveSubsystem, trajectory, currentPose);
+        // double[] pose = visionSubsystem.getBotPose();
+        if (photonSubsystem.hasTargets()) {
+            Transform3d transform = photonSubsystem.getBestTarget().getBestCameraToTarget();
+            currentPose = new Pose2d(transform.getTranslation().toTranslation2d(), transform.getRotation().toRotation2d());
+            System.out.println("Pose: " + currentPose);
+            Translation2d targetTranslation = new Translation2d(
+                currentPose.getTranslation().getX(), currentPose.getTranslation().getY()+2
+            );
+            Pose2d targetPose = new Pose2d(targetTranslation, currentPose.getRotation());
+            Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
+                currentPose, new ArrayList<Translation2d>(), targetPose, config
+            );
+            FollowTrajectory.getCommandTalon(driveSubsystem, trajectory, currentPose);
+        }
     }
 
     @Override
