@@ -21,6 +21,7 @@ public class Constants {
 
         // Turning PID
         public static final double turnkP = 0.02;
+
         public static final double minSpeed = 0.18;
         
         public static final double diameterInches = 6;
@@ -75,6 +76,22 @@ public class Constants {
         public static final int encoderUnits = 2048;
         public static final int gearboxRatio = 100;
         public static final double degreesPerEncoderUnit = (360/encoderUnits)/gearboxRatio;
+    }
+
+    public static final class Balance {
+        // PID
+        public static final double pitchkP = 0.015;
+        public static final double pitchkI = 0;
+        public static final double pitchkD = 0.005;
+        public static final double rollkP = 0;
+        public static final double rollkI = 0;
+        public static final double rollkD = 0;
+        // Tolerance
+        public static final double pitchTolerance = 2;
+        // Offsets
+        public static final double rollOffset = -2;
+        // Speeds
+        public static final double maxSpeed = 0.5;
     }
 
     // ========================================

@@ -24,7 +24,6 @@ import frc.robot.commands.Driving.AutoTurnCommand;
 import frc.robot.commands.Driving.DriveCommand;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
-import frc.robot.subsystems.VisionSubsystem.Target;
 
 public class RobotContainer {
 
@@ -45,16 +44,11 @@ public class RobotContainer {
         configureShuffleboard();
         configureButtons();
         // new CalibrateArmCommand(armSubsystem).schedule();
-        System.out.println(vision.distanceFromTargetInInches(Target.HIGH_POLE, 24.85));
-        System.out.println(vision.distanceFromTargetInInches(Target.HIGH_POLE, 20)); 
-        System.out.println(vision.distanceFromTargetInInches(Target.HIGH_POLE, 10));
-        System.out.println(vision.distanceFromTargetInInches(Target.HIGH_POLE, 5));  
-        System.out.println(vision.distanceFromTargetInInches(Target.HIGH_POLE, 2)); 
     }
 
     private void configureButtons() {
         // Joystick
-        new JoystickButton(joystick, 12).onTrue(new InstantCommand(() -> {
+        new JoystickButton(joystick, 12).onTrue(new InstantCommand(() -> { // Cancels balance command
             Command command = driveSubsystem.getCurrentCommand(); 
             if (command instanceof BalanceCommand) {
                 command.cancel();

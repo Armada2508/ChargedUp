@@ -106,7 +106,7 @@ public class VisionSubsystem {
      * @return Theta in radians, or NaN if the result cannot be computed
      */
     public double angleFromLinedUp(double distanceToPoleInches, double angleBetweenPolesRadians) {
-        if (distanceToPoleInches <= 0 || angleBetweenPolesRadians == 0) throw new IllegalArgumentException("distance is less than 0 or angle is 0");
+        if (distanceToPoleInches <= 0 || angleBetweenPolesRadians == 0) return 0;
         return Math.acos(
             (distanceToPoleInches * Math.tan(angleBetweenPolesRadians)) /
             (Vision.distanceBetweenPolesInches * Math.tan(angleBetweenPolesRadians) + Vision.distanceBetweenPolesInches)

@@ -13,7 +13,7 @@ Commands:
 	x! - AutoWrist(Position wrist to certain degrees) (-30 : 30) (Absolute)
 	- AutoGrip(Claw percent close) (-1 is open, 1 is closed) (Absolute)
 	Complicated Auto:
-	x! - Balancing Command
+	- Balancing Command
 	- Put a cone on pole command
 	- Pick up a cone command
 	
@@ -27,7 +27,7 @@ Subsystems:
 
 Vision:
 
-- Command to line up with a pole/cone     or cube(low priority)
+- Command to line up with a pole or cone and cube
 
 Miscellaneous:
 
