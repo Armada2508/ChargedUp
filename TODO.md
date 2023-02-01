@@ -13,7 +13,7 @@ Commands:
 	x! - AutoWrist(Position wrist to certain degrees) (-30 : 30) (Absolute)
 	- AutoGrip(Claw percent close) (-1 is open, 1 is closed) (Absolute)
 	Complicated Auto:
-	- Balancing Command
+	x - Balancing Command
 	- Put a cone on pole command
 	- Pick up a cone command
 	

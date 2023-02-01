@@ -25,7 +25,7 @@ public class BalanceCommand extends CommandBase {
         addRequirements(driveSubsystem);
         pitchController.setSetpoint(0);
         rollController.setSetpoint(0);
-        pitchController.setTolerance(Balance.pitchTolerance);
+        rollController.setTolerance(Balance.rollTolerance);
     }
 
     @Override
@@ -44,8 +44,13 @@ public class BalanceCommand extends CommandBase {
             currentRoll = pigeon.getRoll() + Balance.rollOffset;
             System.out.println("Pitch: " + currentPitch + " Roll: " + currentRoll);
         }
-        double pitchSpeed = pitchController.calculate(currentPitch);
-        double rollSpeed = rollController.calculate(currentRoll);
+        double pitchSpeed = 0;
+        double rollSpeed = 0;
+        if (!rollController.atSetpoint()) {
+            rollSpeed = rollController.calculate(currentRoll);
+        } else {
+            pitchSpeed = pitchController.calculate(currentPitch);
+        }
         // Clamp maximum
         double leftSpeed = MathUtil.clamp(pitchSpeed+rollSpeed, -Balance.maxSpeed, Balance.maxSpeed);
         double rightSpeed = MathUtil.clamp(pitchSpeed-rollSpeed, -Balance.maxSpeed, Balance.maxSpeed);

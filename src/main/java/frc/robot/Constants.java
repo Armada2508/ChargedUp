@@ -83,11 +83,11 @@ public class Constants {
         public static final double pitchkP = 0.015;
         public static final double pitchkI = 0;
         public static final double pitchkD = 0.005;
-        public static final double rollkP = 0;
+        public static final double rollkP = Drive.turnkP;
         public static final double rollkI = 0;
         public static final double rollkD = 0;
         // Tolerance
-        public static final double pitchTolerance = 2;
+        public static final double rollTolerance = 2;
         // Offsets
         public static final double rollOffset = -2;
         // Speeds
