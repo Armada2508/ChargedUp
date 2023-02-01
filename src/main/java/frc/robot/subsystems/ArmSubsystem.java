@@ -10,7 +10,6 @@ import frc.robot.Constants.Arm;
 
 public class ArmSubsystem extends SubsystemBase {
     
-    private final double gravityConstant = 0.07;
     private WPI_TalonFX talonFX = new WPI_TalonFX(Arm.motorID);
     private WPI_TalonFX talonFXFollower = new WPI_TalonFX(Arm.motorIDFollow);
     private DigitalInput limitSwitch = new DigitalInput(0);
@@ -18,9 +17,6 @@ public class ArmSubsystem extends SubsystemBase {
     public ArmSubsystem() {
         talonFXFollower.follow(talonFX);
     }
-
-    @Override
-    public void periodic() {}
 
     /**
      * 
@@ -35,7 +31,7 @@ public class ArmSubsystem extends SubsystemBase {
      * @param theta degrees to go to
      */
     public void setPosition(double theta) {
-        if (theta > Arm.maxDegrees || theta < Arm.minDegrees) throw new IllegalArgumentException("Degrees are not in acceptable range of " + Arm.minDegrees + " and " + Arm.maxDegrees);
+        if (theta > Arm.maxDegrees || theta < Arm.minDegrees) return;
         double targetPosition = theta / Arm.degreesPerEncoderUnit;
         talonFX.set(TalonFXControlMode.Position, targetPosition, DemandType.ArbitraryFeedForward, getFeedForward());
     }
@@ -51,7 +47,7 @@ public class ArmSubsystem extends SubsystemBase {
     private double getFeedForward() {
         double degrees = getPosition();
         double scalar = Math.cos(Math.toRadians(degrees));
-        return gravityConstant * scalar;
+        return Arm.gravityFeedForward * scalar;
     }
 
     public boolean pollLimitSwitch() {

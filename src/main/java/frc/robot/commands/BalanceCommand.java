@@ -25,7 +25,6 @@ public class BalanceCommand extends CommandBase {
         addRequirements(driveSubsystem);
         pitchController.setSetpoint(0);
         rollController.setSetpoint(0);
-        rollController.setTolerance(Balance.rollTolerance);
     }
 
     @Override
@@ -42,15 +41,11 @@ public class BalanceCommand extends CommandBase {
         if (pigeon.getState() == PigeonState.Ready) {
             currentPitch = pigeon.getPitch();
             currentRoll = pigeon.getRoll() + Balance.rollOffset;
-            System.out.println("Pitch: " + currentPitch + " Roll: " + currentRoll);
+            // System.out.println("Pitch: " + currentPitch + " Roll: " + currentRoll);
         }
-        double pitchSpeed = 0;
-        double rollSpeed = 0;
-        if (!rollController.atSetpoint()) {
-            rollSpeed = rollController.calculate(currentRoll);
-        } else {
-            pitchSpeed = pitchController.calculate(currentPitch);
-        }
+        double pitchSpeed = pitchController.calculate(currentPitch);
+        double rollSpeed = rollController.calculate(currentRoll);
+        if (currentPitch > 0) rollSpeed *= -1; // When going the other way its opposite it's flipped.
         // Clamp maximum
         double leftSpeed = MathUtil.clamp(pitchSpeed+rollSpeed, -Balance.maxSpeed, Balance.maxSpeed);
         double rightSpeed = MathUtil.clamp(pitchSpeed-rollSpeed, -Balance.maxSpeed, Balance.maxSpeed);

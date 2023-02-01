@@ -7,17 +7,17 @@ public class WristCommand extends CommandBase {
 
     private final int degreesDeadband = 1;
     private double targetDegrees;
-    private WristSubsystem subsystem;
+    private WristSubsystem wristSubsystem;
 
-    public WristCommand(double theta, WristSubsystem subsystem) {
+    public WristCommand(double theta, WristSubsystem wristSubsystem) {
         targetDegrees = theta;
-        this.subsystem = subsystem;
-        addRequirements(subsystem);
+        this.wristSubsystem = wristSubsystem;
+        addRequirements(wristSubsystem);
     }
 
     @Override
     public void initialize() {
-        subsystem.setPosition(targetDegrees);  
+        wristSubsystem.setPosition(targetDegrees);  
     }
 
     @Override
@@ -26,12 +26,12 @@ public class WristCommand extends CommandBase {
    
     @Override
     public void end(boolean interrupted) {
-        subsystem.setPower(0);
+        wristSubsystem.setPower(0);
     }
 
     @Override
     public boolean isFinished() {
-        double currentDegrees = subsystem.getPosition();
+        double currentDegrees = wristSubsystem.getPosition();
         return (Math.abs(currentDegrees) < targetDegrees+degreesDeadband);
     }
 }

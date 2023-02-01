@@ -1,40 +1,46 @@
-Commands:
+# Commands:
 
-	Manual(Raw Power) (Relative):	
-	x - DriveCommand 
-	x! - ArmCommand
-	x! - WristCommand
-	x! - GripCommand
+### Manual (Raw Power) (Relative):	
+- ~~DriveCommand~~
+- ~~ArmCommand~~ !
+- ~~WristCommand~~ !
+- ~~GripCommand~~ !
+
+### Basic Auto:
+- ~~AutoDriveForward/Backward (Drives robot number of inches) (Relative)~~ !
+- ~~AutoTurn (Turn robot number of degrees) (Relative)~~ !
+- ~~AutoArm (Position arm to certain degrees) (0 : 90) (Absolute)~~ !
+- ~~AutoWrist (Position wrist to certain degrees) (-30 : 30) (Absolute)~~ !
+- ~~AutoGrip (Claw percent close) (-1 is open, 1 is closed) (Absolute)~~ !
+- ~~ArmCalibrate~~ !
+### Complicated Auto:
+- ~~Balancing Command~~
+- ~~Put a cone on pole command~~ !
+- Put a cube on a station command
+- Pick up a cone command
+- Pick up a cube command
 	
-	Basic Auto:
-	x - AutoDriveForward/Backward(Drives robot number of inches) (Relative)
-	x - AutoTurn(Turn robot number of degrees) (Relative)
-	x! - AutoArm(Position arm to certain degrees) (0 : 90) (Absolute)
-	x! - AutoWrist(Position wrist to certain degrees) (-30 : 30) (Absolute)
-	- AutoGrip(Claw percent close) (-1 is open, 1 is closed) (Absolute)
-	Complicated Auto:
-	x - Balancing Command
-	- Put a cone on pole command
-	- Pick up a cone command
-	
-Subsystems:
+# Subsystems:
 
 - DriveSubsystem
 - ArmSubsystem
 - WristSubsystem
 - GripperSubsystem
-- VisionSubsystem (Limelight)
+- VisionSubsystem (Limelight/PhotonVision)
 
-Vision:
+## Vision:
 
-- Command to line up with a pole or cone and cube
+- Command to line up with a pole or cone or cube
 
-Miscellaneous:
+## Constants:
 
-- Cameras
+- Go through all constants and ensure they are the right values (gearbox ratios, motor encoder units per rev, etc.) 
+
+## Miscellaneous:
+
+- ~~Cameras~~
 - Shuffleboard Data
 
-Key: <br>
-x = done <br>
+### Key: <br>
 ! = test <br>
 ? = review

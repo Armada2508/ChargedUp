@@ -6,18 +6,18 @@ import frc.robot.subsystems.GripperSubsystem;
 public class GripperCommand extends CommandBase {
 
     private final int degreesDeadband = 1;
-    private double targetDegrees;
-    private GripperSubsystem subsystem;
+    private double percentClosed;
+    private GripperSubsystem gripperSubsystem;
 
-    public GripperCommand(double theta, GripperSubsystem subsystem) {
-        targetDegrees = theta;
-        this.subsystem = subsystem;
-        addRequirements(subsystem);
+    public GripperCommand(double percentClosed, GripperSubsystem gripperSubsystem) {
+        this.percentClosed = percentClosed;
+        this.gripperSubsystem = gripperSubsystem;
+        addRequirements(gripperSubsystem);
     }
 
     @Override
     public void initialize() {
-        subsystem.setPercentClosed(targetDegrees);  
+        gripperSubsystem.setPercentClosed(percentClosed);  
     }
 
     @Override
@@ -26,13 +26,13 @@ public class GripperCommand extends CommandBase {
    
     @Override
     public void end(boolean interrupted) {
-        subsystem.setPower(0);
+        gripperSubsystem.setPower(0);
     }
 
     @Override
     public boolean isFinished() {
-        double currentDegrees = subsystem.getPercentClosed();
-        return (Math.abs(currentDegrees) < targetDegrees+degreesDeadband);
+        double currentDegrees = gripperSubsystem.getPercentClosed();
+        return (Math.abs(currentDegrees) < percentClosed+degreesDeadband);
     }
 
 }

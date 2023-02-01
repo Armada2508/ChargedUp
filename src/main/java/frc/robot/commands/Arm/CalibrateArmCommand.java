@@ -5,16 +5,16 @@ import frc.robot.subsystems.ArmSubsystem;
 
 public class CalibrateArmCommand extends CommandBase {
 
-    private ArmSubsystem subsystem;
+    private ArmSubsystem armSubsystem;
 
-    public CalibrateArmCommand(ArmSubsystem subsystem) {
-        this.subsystem = subsystem;
-        addRequirements(subsystem);
+    public CalibrateArmCommand(ArmSubsystem armSubsystem) {
+        this.armSubsystem = armSubsystem;
+        addRequirements(armSubsystem);
     }
 
     @Override
     public void initialize() {
-        subsystem.setPower(-0.1);
+        armSubsystem.setPower(-0.1);
     }
 
     @Override
@@ -23,13 +23,13 @@ public class CalibrateArmCommand extends CommandBase {
    
     @Override
     public void end(boolean interrupted) {
-        subsystem.setPower(0);
-        subsystem.calibrate();
+        armSubsystem.setPower(0);
+        armSubsystem.calibrate();
     }
 
     @Override
     public boolean isFinished() {
-        return subsystem.pollLimitSwitch();
+        return armSubsystem.pollLimitSwitch();
     }
     
 }

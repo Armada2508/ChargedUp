@@ -7,17 +7,17 @@ public class ArmCommand extends CommandBase {
 
     private final int degreesDeadband = 1;
     private double targetDegrees;
-    private ArmSubsystem subsystem;
+    private ArmSubsystem armSubsystem;
 
-    public ArmCommand(double theta, ArmSubsystem subsystem) {
+    public ArmCommand(double theta, ArmSubsystem armSubsystem) {
         targetDegrees = theta;
-        this.subsystem = subsystem;
-        addRequirements(subsystem);
+        this.armSubsystem = armSubsystem;
+        addRequirements(armSubsystem);
     }
 
     @Override
     public void initialize() {
-        subsystem.setPosition(targetDegrees);  
+        armSubsystem.setPosition(targetDegrees);  
     }
 
     @Override
@@ -26,12 +26,12 @@ public class ArmCommand extends CommandBase {
    
     @Override
     public void end(boolean interrupted) {
-        subsystem.setPower(0);
+        armSubsystem.setPower(0);
     }
 
     @Override
     public boolean isFinished() {
-        double currentDegrees = subsystem.getPosition();
+        double currentDegrees = armSubsystem.getPosition();
         return (Math.abs(currentDegrees) < targetDegrees+degreesDeadband);
     }
     

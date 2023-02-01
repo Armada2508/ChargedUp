@@ -57,10 +57,11 @@ public class Constants {
         public static final int gearboxRatio = 100;
         public static final double degreesPerEncoderUnit = (360/encoderUnits)/gearboxRatio;
 
-        public static final int minDegrees = 0;
+        public static final int minDegrees = -18;
         public static final int maxDegrees = 90;
+        public static final double gravityFeedForward = 0.07;
     }
-    //! gearbox ratio not finalized
+
     public static final class Wrist {
         public static final int motorID = 7;
         public static final int encoderUnits = 2048;
@@ -69,8 +70,9 @@ public class Constants {
 
         public static final int minDegrees = -30;
         public static final int maxDegrees = 30;
+        public static final double gravityFeedForward = 0.07;
     }
-    //! gearbox ratio not finalized
+
     public static final class Gripper {
         public static final int motorID = 6;
         public static final int encoderUnits = 2048;
@@ -82,16 +84,14 @@ public class Constants {
         // PID
         public static final double pitchkP = 0.015;
         public static final double pitchkI = 0;
-        public static final double pitchkD = 0.005;
-        public static final double rollkP = Drive.turnkP;
+        public static final double pitchkD = 0.003;
+        public static final double rollkP = 0.03;
         public static final double rollkI = 0;
         public static final double rollkD = 0;
-        // Tolerance
-        public static final double rollTolerance = 2;
         // Offsets
         public static final double rollOffset = -2;
         // Speeds
-        public static final double maxSpeed = 0.5;
+        public static final double maxSpeed = 0.4;
     }
 
     // ========================================

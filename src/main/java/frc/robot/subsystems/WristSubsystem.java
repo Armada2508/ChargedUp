@@ -9,7 +9,6 @@ import frc.robot.Constants.Wrist;
 
 public class WristSubsystem extends SubsystemBase {
 
-    private final double gravityConstant = 0.07;
     private WPI_TalonFX talonFX = new WPI_TalonFX(Wrist.motorID);
 
     /**
@@ -25,7 +24,7 @@ public class WristSubsystem extends SubsystemBase {
      * @param theta degrees to go to
      */
     public void setPosition(double theta) {
-        if (theta > Wrist.maxDegrees || theta < Wrist.minDegrees) throw new IllegalArgumentException("Degrees are not in acceptable range of " + Wrist.minDegrees + " and " + Wrist.maxDegrees);
+        if (theta > Wrist.maxDegrees || theta < Wrist.minDegrees) return;
         double targetPosition = theta / Wrist.degreesPerEncoderUnit;
         talonFX.set(TalonFXControlMode.Position, targetPosition, DemandType.ArbitraryFeedForward, getFeedForward());
     }
@@ -41,7 +40,7 @@ public class WristSubsystem extends SubsystemBase {
     private double getFeedForward() {
         double degrees = getPosition();
         double scalar = Math.cos(Math.toRadians(degrees));
-        return gravityConstant * scalar;
+        return Wrist.gravityFeedForward * scalar;
     }
 
     public void calibrate() {
