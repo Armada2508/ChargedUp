@@ -73,16 +73,16 @@ public class VisionSubsystem {
     /**
      * Calculates distance from the limelight to the selected Target in inches and with the angle given.
      * distance = (h2-h1) / tan(a1+a2)
-     * h2 = height of target, h1 = height of camera, a1 = camera angle, a2 = target angle
+     * h2 = height of target inches, h1 = height of camera inches, a1 = camera angle degrees, a2 = target angle degrees
      * @return distance in inches
      */
-    public double distanceFromTargetInInches(Target target, double angle) {;
+    public double distanceFromTargetInInches(Target target, double angleDeg) {;
         double targetHeight = switch(target) {
-            case CONE -> 0;
+            case GAME_PIECE -> 0;
             case MID_POLE -> Vision.midPoleHeightInches;
             case HIGH_POLE -> Vision.highPoleHeightInches;
         };
-        double radians = Math.toRadians(Vision.cameraAngleMountedDegrees + angle);
+        double radians = Math.toRadians(Vision.cameraAngleMountedDegrees + angleDeg);
         double distance = (targetHeight - Vision.cameraHeightInches) / Math.tan(radians);
         return distance;
     }
@@ -103,7 +103,7 @@ public class VisionSubsystem {
      * this gives you the angle of how far away you are of the poles being completely in line with each other  
      * @param distanceToPoleInches distance from the limelight to the rear pole in inches
      * @param angleBetweenPolesRadians angle between the two poles in radians
-     * @return Theta in radians, or NaN if the result cannot be computed
+     * @return Theta in radians, or 0 if the result cannot be computed
      */
     public double angleFromLinedUp(double distanceToPoleInches, double angleBetweenPolesRadians) {
         if (distanceToPoleInches <= 0 || angleBetweenPolesRadians == 0) return 0;
@@ -114,7 +114,7 @@ public class VisionSubsystem {
     }
 
     public enum Target {
-        CONE,
+        GAME_PIECE,
         MID_POLE,
         HIGH_POLE
     }

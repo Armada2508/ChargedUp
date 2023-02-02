@@ -69,6 +69,11 @@ public class RobotContainer {
         new JoystickButton(buttonBoard, 4).whileTrue(Commands.startEnd(() -> wristSubsystem.setPower(-0.1), () -> wristSubsystem.setPower(0), wristSubsystem));
         new JoystickButton(buttonBoard, 5).whileTrue(new GripperCommand(0, gripperSubsystem));
         new JoystickButton(buttonBoard, 6).whileTrue(new GripperCommand(1, gripperSubsystem));
+        new JoystickButton(buttonBoard, 7).whileTrue(new InstantCommand(() -> {
+            armSubsystem.calibrate();
+            wristSubsystem.calibrate();
+            gripperSubsystem.calibrate();
+        }));
     }
 
     private void configureShuffleboard() {

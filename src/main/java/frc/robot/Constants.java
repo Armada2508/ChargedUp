@@ -37,6 +37,7 @@ public class Constants {
     public static final class Vision {
         public static final String cameraName = "Camera";
         public static final double distanceBetweenPolesInches = 17;
+        public static final double distanceHighPoleToFrontInches = 39.75;
         // Target Heights
         public static final double highPoleHeightInches = 43.84375;
         public static final double midPoleHeightInches = 24.0625; 

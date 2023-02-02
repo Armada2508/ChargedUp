@@ -56,6 +56,7 @@ public class ArmSubsystem extends SubsystemBase {
 
     public void calibrate() {
         talonFX.setSelectedSensorPosition(0);
+        talonFXFollower.setSelectedSensorPosition(0);
     }
 
 }

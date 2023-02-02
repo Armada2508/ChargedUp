@@ -1,25 +1,31 @@
 package frc.robot.commands.Driving;
 
+import java.util.function.DoubleSupplier;
+
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.DriveSubsystem;
 
 public class AutoDriveCommand extends CommandBase {
 
     private final double distanceDeadband = 0.1;
-    private final double targetDistance;
+    private final DoubleSupplier targetDistance;
     private double absoluteTarget;
-    private DriveSubsystem subsystem;
+    private DriveSubsystem driveSubsystem;
 
-    public AutoDriveCommand(double distanceInches, DriveSubsystem subsystem) {
+    public AutoDriveCommand(double distanceInches, DriveSubsystem driveSubsystem) {
+        this(() -> distanceInches, driveSubsystem);
+    }
+
+    public AutoDriveCommand(DoubleSupplier distanceInches, DriveSubsystem driveSubsystem) {
         targetDistance = distanceInches;
-        this.subsystem = subsystem;
-        addRequirements(subsystem);
+        this.driveSubsystem = driveSubsystem;
+        addRequirements(driveSubsystem);
     }
 
     @Override
     public void initialize() {
-        absoluteTarget = subsystem.getRightPostition() + targetDistance;
-        subsystem.driveDistance(targetDistance);
+        absoluteTarget = driveSubsystem.getRightPostition() + targetDistance.getAsDouble();
+        driveSubsystem.driveDistance(targetDistance.getAsDouble());
     }
 
     @Override
@@ -28,12 +34,12 @@ public class AutoDriveCommand extends CommandBase {
 
     @Override
     public void end(boolean interrupted) {
-        subsystem.setPower(0, 0);
+        driveSubsystem.setPower(0, 0);
     }
 
     @Override
     public boolean isFinished() {
-        double currentPos = subsystem.getRightPostition();
+        double currentPos = driveSubsystem.getRightPostition();
         return (currentPos < absoluteTarget+distanceDeadband && currentPos > absoluteTarget-distanceDeadband);
     }
 

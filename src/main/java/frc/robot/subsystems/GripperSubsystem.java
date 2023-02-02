@@ -28,6 +28,10 @@ public class GripperSubsystem extends SubsystemBase {
         requiredEncoderUnits = requiredRevolutions * 2048; //change variable name (?)
         // create code to edit motors using required encoder units 
     }
+
+    public void calibrate() {
+        talonFX.setSelectedSensorPosition(0);
+    }
 }
 /* method to input number -1-1, -1 = gripper is open, 1 = gripper is closed, range between
   depending on the number between -1 and 1, change the gripper motors accordingly
