@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -10,6 +11,7 @@ public class GripperSubsystem extends SubsystemBase {
     public double requiredMovement;
     public double requiredRevolutions;
     public double requiredEncoderUnits;
+    public double FinalEncoderUnits;
 
     private WPI_TalonFX talonFX = new WPI_TalonFX(Gripper.motorID);
 
@@ -26,20 +28,9 @@ public class GripperSubsystem extends SubsystemBase {
         requiredMovement = positionInput - getPercentClosed();
         requiredRevolutions = (requiredMovement * 4);
         requiredEncoderUnits = requiredRevolutions * 2048; //change variable name (?)
-        // create code to edit motors using required encoder units 
-    }
+        FinalEncoderUnits = talonFX.getSelectedSensorPosition(); //change variable name (?)
 
-    public void calibrate() {
-        talonFX.setSelectedSensorPosition(0);
+        talonFX.set(TalonFXControlMode.Position, (FinalEncoderUnits + requiredEncoderUnits));
     }
 }
-/* method to input number -1-1, -1 = gripper is open, 1 = gripper is closed, range between
-  depending on the number between -1 and 1, change the gripper motors accordingly
-  save the range value as a variable and send that to change the motors
-  max open: 13in
-  convert positionInput into something the motor can use
-  convert required movement into revolutions (temp) then into encoder units, then change the motors that # of encoder units
-  if position input is out of range, throw an execption
-  guess 8 rotations to go from fully closed to fully opened and vice versa
- ! equations for rotations: f(x) = 4x
- */
+
