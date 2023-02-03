@@ -20,7 +20,7 @@ public class GripperSubsystem extends SubsystemBase {
     }
 
     public double getPercentClosed() { //finds where the gripper is now, get from the motor
-
+        
         return 0;
     }
 

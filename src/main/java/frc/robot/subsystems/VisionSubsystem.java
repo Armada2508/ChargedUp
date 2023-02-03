@@ -78,7 +78,7 @@ public class VisionSubsystem {
      */
     public double distanceFromTargetInInches(Target target, double angleDeg) {;
         double targetHeight = switch(target) {
-            case GAME_PIECE -> 0;
+            case GAME_PIECE -> 13;
             case MID_POLE -> Vision.midPoleHeightInches;
             case HIGH_POLE -> Vision.highPoleHeightInches;
         };

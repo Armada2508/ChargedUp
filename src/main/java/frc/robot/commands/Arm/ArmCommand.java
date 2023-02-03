@@ -9,6 +9,11 @@ public class ArmCommand extends CommandBase {
     private double targetDegrees;
     private ArmSubsystem armSubsystem;
 
+    /**
+     * 
+     * @param theta degree to go to, 0 is straight down
+     * @param armSubsystem
+     */
     public ArmCommand(double theta, ArmSubsystem armSubsystem) {
         targetDegrees = theta;
         this.armSubsystem = armSubsystem;
