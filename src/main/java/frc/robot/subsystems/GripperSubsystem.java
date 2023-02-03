@@ -32,5 +32,9 @@ public class GripperSubsystem extends SubsystemBase {
 
         talonFX.set(TalonFXControlMode.Position, (FinalEncoderUnits + requiredEncoderUnits));
     }
+
+    public void calibrate() {
+        talonFX.setSelectedSensorPosition(0);
+    }
 }
 
