@@ -9,6 +9,11 @@ public class WristCommand extends CommandBase {
     private double targetDegrees;
     private WristSubsystem wristSubsystem;
 
+    /**
+     * 
+     * @param theta degree to go to, 0 is flat wrist
+     * @param wristSubsystem
+     */
     public WristCommand(double theta, WristSubsystem wristSubsystem) {
         targetDegrees = theta;
         this.wristSubsystem = wristSubsystem;
