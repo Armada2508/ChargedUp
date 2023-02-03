@@ -2,6 +2,7 @@ package frc.robot.commands.Auto;
 
 import com.ctre.phoenix.sensors.PigeonIMU;
 
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.Constants.Arm;
 import frc.robot.commands.Arm.ArmCommand;
@@ -32,6 +33,9 @@ public class GetConeCommand {
             new GripperCommand(1, GripperSubsystem),
             new ArmCommand(Arm.minDegrees, ArmSubsystem)
         );
+    }
+    public Command getCommand() {
+        return group;
     }
 
 }
