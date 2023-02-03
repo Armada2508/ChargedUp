@@ -19,7 +19,7 @@
 - ~~Put a cube on a station command~~ !
 - ~~Put a game piece on the floor~~ !
 - Pick up a cone command
-- Pick up a cube command
+- ~~Pick up a cube command~~
 	
 # Subsystems:
 
@@ -31,7 +31,7 @@
 
 ## Vision:
 
-- Command to line up with a pole or cone or cube
+- Command to line up with a pole
 
 ## Constants:
 
