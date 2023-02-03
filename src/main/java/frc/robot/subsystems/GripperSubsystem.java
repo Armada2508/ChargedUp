@@ -34,7 +34,7 @@ public class GripperSubsystem extends SubsystemBase {
     }
 
     public void calibrate() {
-        talonFX.setSelectedSensorPosition(60);
+        talonFX.setSelectedSensorPosition(0);
     }
 }
 
