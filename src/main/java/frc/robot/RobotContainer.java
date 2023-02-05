@@ -19,6 +19,7 @@ import frc.robot.Constants.Drive;
 import frc.robot.Lib.motion.FollowTrajectory;
 import frc.robot.commands.AprilTagCommand;
 import frc.robot.commands.BalanceCommand;
+import frc.robot.commands.SeekCommand;
 import frc.robot.commands.Arm.GripperCommand;
 import frc.robot.commands.Driving.AutoDriveCommand;
 import frc.robot.commands.Driving.AutoTurnCommand;
@@ -26,6 +27,7 @@ import frc.robot.commands.Driving.DriveCommand;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.GripperSubsystem;
+import frc.robot.subsystems.PhotonSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.WristSubsystem;
 
@@ -34,6 +36,7 @@ public class RobotContainer {
     private final Joystick joystick = new Joystick(0);
     private final Joystick buttonBoard = new Joystick(1);
     private final VisionSubsystem vision = new VisionSubsystem();
+    private final PhotonSubsystem photonSubsystem = new PhotonSubsystem();
     private final ArmSubsystem armSubsystem = new ArmSubsystem();
     private final WristSubsystem wristSubsystem = new WristSubsystem();
     private final GripperSubsystem gripperSubsystem = new GripperSubsystem();
@@ -43,7 +46,7 @@ public class RobotContainer {
     RobotContainer() {
         FollowTrajectory.config(0, 0, 0, 2.0, 0.7, Drive.trackWidthMeters, new PIDController(Drive.kP, Drive.kI, Drive.kD), 0);
         this.driveSubsystem = new DriveSubsystem(pigeon);
-        driveSubsystem.setDefaultCommand(new DriveCommand(() -> joystick.getRawAxis(1)*-1, () -> joystick.getRawAxis(0)*-1, driveSubsystem)); // default to driving from joystick input
+        driveSubsystem.setDefaultCommand(new DriveCommand(() -> joystick.getRawAxis(1)*-1, () -> joystick.getRawAxis(2)*-1, driveSubsystem)); // default to driving from joystick input
         configureCamera();
         configureShuffleboard();
         configureButtons();
@@ -62,6 +65,7 @@ public class RobotContainer {
         new JoystickButton(joystick, 8).onTrue(new AutoTurnCommand(45, driveSubsystem, pigeon));
         new JoystickButton(joystick, 7).onTrue(new AutoTurnCommand(-45, driveSubsystem, pigeon));
         new JoystickButton(joystick, 6).onTrue(new AprilTagCommand(driveSubsystem, vision));
+        new JoystickButton(joystick, 2).onTrue(new SeekCommand(driveSubsystem, photonSubsystem, pigeon).getCommand());
         // Buttonboard 
         new JoystickButton(buttonBoard, 1).whileTrue(Commands.startEnd(() -> armSubsystem.setPower(0.1), () -> armSubsystem.setPower(0), armSubsystem));
         new JoystickButton(buttonBoard, 2).whileTrue(Commands.startEnd(() -> armSubsystem.setPower(-0.1), () -> armSubsystem.setPower(0), armSubsystem));

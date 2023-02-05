@@ -13,9 +13,9 @@ import frc.robot.subsystems.DriveSubsystem;
 public class AutoTurnCommand extends CommandBase {
 
     private final DoubleSupplier relativeDegrees;
-    private final double timeForFinish = 0.1; // seconds
-    private double currentTime;
-    private PIDController pid = new PIDController(Drive.turnkP, 0, 0);
+    // private final double timeForFinish = 0; // seconds
+    // private double currentTime;
+    private PIDController pid = new PIDController(Drive.turnkP, 0, Drive.turnkD);
     private double absoluteTarget;
     private DriveSubsystem driveSubsystem;
     private PigeonIMU pigeon;
@@ -46,7 +46,7 @@ public class AutoTurnCommand extends CommandBase {
     @Override
     public void initialize() {
         absoluteTarget = pigeon.getYaw() + relativeDegrees.getAsDouble();
-        currentTime = 0;
+        // currentTime = 0;
         pid.reset();
         pid.setSetpoint(absoluteTarget);
         pid.setTolerance(0.1);
@@ -66,10 +66,11 @@ public class AutoTurnCommand extends CommandBase {
     }
 
     @Override
-    public boolean isFinished() { 
-        if (pid.atSetpoint()) {
-            currentTime += 0.02;
-        }
-        return pid.atSetpoint() && currentTime >= timeForFinish;
+    public boolean isFinished() {
+        return pid.atSetpoint();
+        // if (pid.atSetpoint()) {
+        //     currentTime += 0.02;
+        // }
+        // return pid.atSetpoint() && currentTime >= timeForFinish;
     }
 }

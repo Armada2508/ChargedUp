@@ -2,6 +2,7 @@ package frc.robot.commands.Auto;
 
 import com.ctre.phoenix.sensors.PigeonIMU;
 
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.Constants.Arm;
 import frc.robot.commands.Arm.ArmCommand;
@@ -17,16 +18,15 @@ import frc.robot.subsystems.VisionSubsystem.Target;
 import frc.robot.subsystems.WristSubsystem;
 
 public class GetConeCommand {
-    private PigeonIMU pigeon;
     
     private SequentialCommandGroup group;
 
-    public GetConeCommand(VisionSubsystem visionSubsystem, DriveSubsystem driveSubsystem, ArmSubsystem ArmSubsystem, WristSubsystem WristSubsystem, GripperSubsystem GripperSubsystem) {
+    public GetConeCommand(VisionSubsystem visionSubsystem, DriveSubsystem driveSubsystem, PigeonIMU pigeon, ArmSubsystem ArmSubsystem, WristSubsystem WristSubsystem, GripperSubsystem GripperSubsystem) {
         group = new SequentialCommandGroup(
             new GripperCommand(0, GripperSubsystem),
             new ArmCommand(Arm.minDegrees, ArmSubsystem), 
             new AutoTurnCommand(visionSubsystem::getTargetX, driveSubsystem, pigeon),
-            new AutoDriveCommand(() -> visionSubsystem.distanceFromTargetInInches(Target.GAME_PIECE), driveSubsystem),
+            new AutoDriveCommand(() -> visionSubsystem.distanceFromTargetInInches(Target.CONE), driveSubsystem),
             new ArmCommand(20, ArmSubsystem), //theta value is a guess, change as needed
             new WristCommand(10, WristSubsystem), //theta value is a guess, change as needed
             new GripperCommand(1, GripperSubsystem),
@@ -34,5 +34,8 @@ public class GetConeCommand {
         );
     }
 
-}
+    public Command getCommand() {
+        return group;
+    }
 
+}

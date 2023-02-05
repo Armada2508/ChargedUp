@@ -15,18 +15,19 @@ public class Constants {
         public static final int turnAdjustment = 3;
 
         // Driving PID
-        public static final double kP = 0.01; 
+        public static final double kP = 0.25; 
         public static final double kI = 0;
-        public static final double kD = 0.01;
+        public static final double kD = 0;
 
         // Turning PID
         public static final double turnkP = 0.02;
+        public static final double turnkD = 0.005;
 
         public static final double minSpeed = 0.18;
         
         public static final double diameterInches = 6;
-        public static final int encoderUnits = 2048;
-        public static final double gearboxRatio = 10.7;
+        public static final int encoderUnits = 4096;
+        public static final double gearboxRatio = 12.75;
         public static final double trackWidthMeters = Util.inchesToMeters(23.5);
 
         public static final FeedbackConfig feedbackConfig = new FeedbackConfig(FeedbackDevice.IntegratedSensor, encoderUnits, gearboxRatio);
@@ -41,12 +42,12 @@ public class Constants {
         // Target Heights
         public static final double highPoleHeightInches = 43.84375;
         public static final double midPoleHeightInches = 24.0625; 
-        // Target Desired Distances
-        public static final int coneDistanceInches = 6;
-        // Limelight
-        public static final int cameraHeightInches = 18;
-        public static final int cameraAngleMountedDegrees = 0; 
-        // Limelight Pipelines
+        // public static final double coneHeightInches = 12.8125;
+        public static final double coneHeightInches = 40;
+        // Camera
+        public static final double cameraHeightInches = 50;
+        public static final double cameraAngleMountedDegrees = 0.5; 
+        // Camera Pipelines
         public static final int redPipeline = 0;
         public static final int bluePipeline = 1;
     }

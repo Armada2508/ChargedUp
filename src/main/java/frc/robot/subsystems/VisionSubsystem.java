@@ -3,12 +3,13 @@ package frc.robot.subsystems;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.Vision;
 
 /**
  * Used to interface with the limelight.
  */
-public class VisionSubsystem {
+public class VisionSubsystem extends SubsystemBase {
 
     private final NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
     private final NetworkTableEntry hasTarget = table.getEntry("tv");
@@ -19,6 +20,10 @@ public class VisionSubsystem {
     private final NetworkTableEntry pipeline = table.getEntry("pipeline");
     private final NetworkTableEntry tagID = table.getEntry("tid");
     private final NetworkTableEntry botPose = table.getEntry("botpose");
+
+    @Override
+    public void periodic() {
+    }
 
     public boolean hasTarget() {
         return hasTarget.getInteger(0) == 1;
@@ -78,7 +83,7 @@ public class VisionSubsystem {
      */
     public double distanceFromTargetInInches(Target target, double angleDeg) {;
         double targetHeight = switch(target) {
-            case GAME_PIECE -> 13;
+            case CONE -> Vision.coneHeightInches;
             case MID_POLE -> Vision.midPoleHeightInches;
             case HIGH_POLE -> Vision.highPoleHeightInches;
         };
@@ -114,7 +119,7 @@ public class VisionSubsystem {
     }
 
     public enum Target {
-        GAME_PIECE,
+        CONE,
         MID_POLE,
         HIGH_POLE
     }
