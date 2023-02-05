@@ -33,6 +33,9 @@ public class GetConeCommand {
             new ArmCommand(Arm.minDegrees, ArmSubsystem)
         );
     }
+    public Command getCommand() {
+        return group;
+    }
 
     public Command getCommand() {
         return group;
