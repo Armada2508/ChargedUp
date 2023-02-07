@@ -83,6 +83,7 @@ public class VisionSubsystem extends SubsystemBase {
      */
     public double distanceFromTargetInInches(Target target, double angleDeg) {;
         double targetHeight = switch(target) {
+            case CUBE -> Vision.cubeHeightInches;
             case CONE -> Vision.coneHeightInches;
             case MID_POLE -> Vision.midPoleHeightInches;
             case HIGH_POLE -> Vision.highPoleHeightInches;
@@ -119,6 +120,7 @@ public class VisionSubsystem extends SubsystemBase {
     }
 
     public enum Target {
+        CUBE,
         CONE,
         MID_POLE,
         HIGH_POLE

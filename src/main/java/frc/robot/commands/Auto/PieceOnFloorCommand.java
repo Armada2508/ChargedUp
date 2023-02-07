@@ -1,6 +1,5 @@
 package frc.robot.commands.Auto;
 
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.Constants.Arm;
 import frc.robot.Constants.Vision;
@@ -15,12 +14,10 @@ import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.VisionSubsystem.Target;
 import frc.robot.subsystems.WristSubsystem;
 
-public class PieceOnFloorCommand {
-
-    private SequentialCommandGroup group;
+public class PieceOnFloorCommand extends SequentialCommandGroup {
 
     public PieceOnFloorCommand(DriveSubsystem driveSubsystem, VisionSubsystem visionSubsystem, ArmSubsystem armSubsystem, WristSubsystem wristSubsystem, GripperSubsystem gripperSubsystem) {
-        group = new SequentialCommandGroup(
+        addCommands(
             new AutoDriveCommand(() -> {
                 return visionSubsystem.distanceFromTargetInInches(Target.HIGH_POLE)-Vision.distanceHighPoleToFrontInches;
             }, driveSubsystem),
@@ -29,11 +26,8 @@ public class PieceOnFloorCommand {
            new GripperCommand(0, gripperSubsystem),
            // Reverse
            new ArmCommand(Arm.minDegrees, armSubsystem)
-        ); 
-    }
-
-    public Command getCommand() {
-        return group;
+        );   
+       
     }
 
 }

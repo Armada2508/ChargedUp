@@ -17,18 +17,18 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Constants.Drive;
 import frc.robot.Lib.motion.FollowTrajectory;
-import frc.robot.commands.AprilTagCommand;
 import frc.robot.commands.BalanceCommand;
-import frc.robot.commands.SeekCommand;
 import frc.robot.commands.Arm.GripperCommand;
 import frc.robot.commands.Driving.AutoDriveCommand;
 import frc.robot.commands.Driving.AutoTurnCommand;
 import frc.robot.commands.Driving.DriveCommand;
+import frc.robot.commands.Driving.SeekCommand;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.GripperSubsystem;
 import frc.robot.subsystems.PhotonSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
+import frc.robot.subsystems.VisionSubsystem.Target;
 import frc.robot.subsystems.WristSubsystem;
 
 public class RobotContainer {
@@ -62,10 +62,9 @@ public class RobotContainer {
             }
         }));
         new JoystickButton(joystick, 11).onTrue(new BalanceCommand(driveSubsystem, pigeon));
+        new JoystickButton(joystick, 9).onTrue(new SeekCommand(driveSubsystem, photonSubsystem, pigeon, Target.CONE, 12));
         new JoystickButton(joystick, 8).onTrue(new AutoTurnCommand(45, driveSubsystem, pigeon));
         new JoystickButton(joystick, 7).onTrue(new AutoTurnCommand(-45, driveSubsystem, pigeon));
-        new JoystickButton(joystick, 6).onTrue(new AprilTagCommand(driveSubsystem, vision));
-        new JoystickButton(joystick, 2).onTrue(new SeekCommand(driveSubsystem, photonSubsystem, pigeon).getCommand());
         // Buttonboard 
         new JoystickButton(buttonBoard, 1).whileTrue(Commands.startEnd(() -> armSubsystem.setPower(0.1), () -> armSubsystem.setPower(0), armSubsystem));
         new JoystickButton(buttonBoard, 2).whileTrue(Commands.startEnd(() -> armSubsystem.setPower(-0.1), () -> armSubsystem.setPower(0), armSubsystem));

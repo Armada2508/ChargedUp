@@ -25,8 +25,7 @@ public class AutoDriveCommand extends CommandBase {
     @Override
     public void initialize() {
         absoluteTarget = driveSubsystem.getRightPostition() + targetDistance.getAsDouble();
-        // driveSubsystem.driveDistance(targetDistance.getAsDouble());
-        // System.out.println("====================================: " + targetDistance.getAsDouble());
+        driveSubsystem.driveDistance(targetDistance.getAsDouble());
     }
 
     @Override

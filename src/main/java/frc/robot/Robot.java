@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 public class Robot extends TimedRobot {
 
   private RobotContainer container; 
+  // private PigeonIMU pigeon = new PigeonIMU(Constants.pigeonID);
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -36,6 +37,7 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
+    // System.out.println("Pigeon: Yaw: " + pigeon.getYaw() + " Pitch: " + pigeon.getPitch() + " Roll: " + pigeon.getRoll());
   }
 
   /**

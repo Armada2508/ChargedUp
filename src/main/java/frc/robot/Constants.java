@@ -39,17 +39,19 @@ public class Constants {
         public static final String cameraName = "Camera";
         public static final double distanceBetweenPolesInches = 17;
         public static final double distanceHighPoleToFrontInches = 39.75;
+        public static final double distanceToBumperInches = 12.5;
         // Target Heights
         public static final double highPoleHeightInches = 43.84375;
         public static final double midPoleHeightInches = 24.0625; 
-        // public static final double coneHeightInches = 12.8125;
-        public static final double coneHeightInches = 40;
+        public static final double coneHeightInches = 0;
+        public static final double cubeHeightInches = 4.75;
         // Camera
         public static final double cameraHeightInches = 50;
         public static final double cameraAngleMountedDegrees = 0.5; 
         // Camera Pipelines
-        public static final int redPipeline = 0;
-        public static final int bluePipeline = 1;
+        public static final int coneLandscape = 0;
+        public static final int cube = 1;
+        public static final int conePortrait = 2;
     }
 
     public static final class Arm {

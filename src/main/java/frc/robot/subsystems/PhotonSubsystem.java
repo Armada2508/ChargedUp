@@ -1,9 +1,12 @@
 package frc.robot.subsystems;
 
+import java.util.List;
+
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonUtils;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
+import org.photonvision.targeting.TargetCorner;
 
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -30,7 +33,11 @@ public class PhotonSubsystem extends SubsystemBase {
     }
 
     public PhotonTrackedTarget getBestTarget() {
-        return getLatestResult().getBestTarget();
+        return (hasTargets()) ? getLatestResult().getBestTarget() : new PhotonTrackedTarget();
+    }
+
+    public void setPipeline(int index) {
+        camera.setPipelineIndex(index);
     }
 
     /**
@@ -40,6 +47,7 @@ public class PhotonSubsystem extends SubsystemBase {
     public double getDistanceToTargetInches(Target target) {
         if (!hasTargets()) return Double.NaN;
         double targetHeight = switch(target) {
+            case CUBE -> Vision.cubeHeightInches;
             case CONE -> Vision.coneHeightInches;
             case MID_POLE -> Vision.midPoleHeightInches;
             case HIGH_POLE -> Vision.highPoleHeightInches;
@@ -48,19 +56,43 @@ public class PhotonSubsystem extends SubsystemBase {
             Units.inchesToMeters(Vision.cameraHeightInches), 
             Units.inchesToMeters(targetHeight), 
             Units.degreesToRadians(Vision.cameraAngleMountedDegrees), 
-            Units.degreesToRadians(getBestTarget().getPitch())
+            Units.degreesToRadians(getTargetPitch())
         );
-        return Units.metersToInches(distanceMeters);
+        return Units.metersToInches(distanceMeters) - Vision.distanceToBumperInches;
     }
 
     public double getTargetPitch() {
-        if (!hasTargets()) return 0;
         return getBestTarget().getPitch();
     }
 
     public double getTargetYaw() {
-        if (!hasTargets()) return 0;
         return getBestTarget().getYaw();
     }
+
+    public Orientation getActualOrientation() {
+        final double offset = 10; // pixels
+        List<TargetCorner> corners = getBestTarget().getMinAreaRectCorners();
+        double x1 = Math.abs(corners.get(0).x - corners.get(1).x);
+        double x2 = Math.abs(corners.get(0).x - corners.get(2).x);
+        double y1 = Math.abs(corners.get(0).y - corners.get(1).y);
+        double y2 = Math.abs(corners.get(0).y - corners.get(2).y);
+        double width = Math.max(x1, x2); // in pixels
+        double height = Math.max(y1, y2); // in pixels
+        // System.out.println(width + " " + height);
+        if (height > (width + offset)) return Orientation.PORTRAIT;
+        return Orientation.LANDSCAPE;
+    }
+
+    public void correctConePipeline() {
+        int index = (getActualOrientation() == Orientation.PORTRAIT) ? Vision.conePortrait : Vision.coneLandscape;
+        setPipeline(index);
+    }
+
+    public enum Orientation {
+        LANDSCAPE,
+        PORTRAIT
+    }
+
+
 
 }
