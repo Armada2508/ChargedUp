@@ -70,7 +70,6 @@ public class PhotonSubsystem extends SubsystemBase {
     }
 
     public Orientation getActualOrientation() {
-        final double offset = 10; // pixels
         List<TargetCorner> corners = getBestTarget().getMinAreaRectCorners();
         double x1 = Math.abs(corners.get(0).x - corners.get(1).x);
         double x2 = Math.abs(corners.get(0).x - corners.get(2).x);
@@ -78,8 +77,7 @@ public class PhotonSubsystem extends SubsystemBase {
         double y2 = Math.abs(corners.get(0).y - corners.get(2).y);
         double width = Math.max(x1, x2); // in pixels
         double height = Math.max(y1, y2); // in pixels
-        // System.out.println(width + " " + height);
-        if (height > (width + offset)) return Orientation.PORTRAIT;
+        if (height > width) return Orientation.PORTRAIT;
         return Orientation.LANDSCAPE;
     }
 

@@ -15,21 +15,13 @@ public class SeekCommand extends SequentialCommandGroup {
 
     public SeekCommand(DriveSubsystem driveSubsystem, PhotonSubsystem photonSubsystem, PigeonIMU pigeon, Target target, double distanceFromTargetInches) {
         Command command = new InstantCommand();
-        if (target != Target.CUBE) command = new InstantCommand(photonSubsystem::correctConePipeline);
+        if (target == Target.CONE) command = new InstantCommand(photonSubsystem::correctConePipeline);
         addCommands(
             new AutoTurnCommand(photonSubsystem::getTargetYaw, driveSubsystem, pigeon),
             command,
             new WaitCommand(0.1),
             new DriveUntilCommand(driveSubsystem, photonSubsystem, target),
             new AutoDriveCommand(() -> photonSubsystem.getDistanceToTargetInches(target) - distanceFromTargetInches, driveSubsystem)
-            // new ConditionalCommand(
-            //     new AutoDriveCommand(() -> photonSubsystem.getDistanceToTargetInches(target) - distanceFromTargetInches, driveSubsystem),
-            //     new SequentialCommandGroup(
-            //         new AutoDriveCommand(() -> photonSubsystem.getDistanceToTargetInches(target) - distanceFromTargetInches, driveSubsystem),
-            //         // new AutoDriveCommand(() -> photonSubsystem.getDistanceToTargetInches(target) - distanceFromTargetInches, driveSubsystem)
-            //     ),
-            //     () -> photonSubsystem.getDistanceToTargetInches(target) < 3*12
-            // )
         );
     }
 
@@ -48,10 +40,6 @@ public class SeekCommand extends SequentialCommandGroup {
         @Override
         public void initialize() {
             driveSubsystem.setPower(.5, .5);
-        }
-
-        @Override
-        public void execute() {
         }
 
         @Override

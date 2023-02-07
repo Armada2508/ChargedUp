@@ -15,16 +15,18 @@ import frc.robot.subsystems.PhotonSubsystem;
 import frc.robot.subsystems.VisionSubsystem.Target;
 import frc.robot.subsystems.WristSubsystem;
 
-public class GetConeCommand extends SequentialCommandGroup {
+public class AutoPickupCommand extends SequentialCommandGroup {
     
-    public GetConeCommand(PhotonSubsystem photonSubsystem, DriveSubsystem driveSubsystem, PigeonIMU pigeon, ArmSubsystem ArmSubsystem, WristSubsystem WristSubsystem, GripperSubsystem GripperSubsystem) {
+    public AutoPickupCommand(PhotonSubsystem photonSubsystem, DriveSubsystem driveSubsystem, PigeonIMU pigeon, ArmSubsystem ArmSubsystem, WristSubsystem WristSubsystem, GripperSubsystem GripperSubsystem) {
         addCommands(
             new GripperCommand(0, GripperSubsystem),
             new ArmCommand(Arm.minDegrees, ArmSubsystem), 
+            //!
             new SeekCommand(driveSubsystem, photonSubsystem, pigeon, Target.CONE, 12),
             new ArmCommand(20, ArmSubsystem), // theta value is a guess, change as needed
             new WristCommand(10, WristSubsystem), // theta value is a guess, change as needed
             new GripperCommand(1, GripperSubsystem),
+            //!
             new ArmCommand(Arm.minDegrees, ArmSubsystem)
         );
     }
