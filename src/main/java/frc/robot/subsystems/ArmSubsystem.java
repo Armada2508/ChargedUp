@@ -12,7 +12,7 @@ public class ArmSubsystem extends SubsystemBase {
     
     private WPI_TalonFX talonFX = new WPI_TalonFX(Arm.motorID);
     private WPI_TalonFX talonFXFollower = new WPI_TalonFX(Arm.motorIDFollow);
-    private DigitalInput limitSwitch = new DigitalInput(0);
+    private DigitalInput limitSwitch = new DigitalInput(Arm.limitSwitchID);
 
     public ArmSubsystem() {
         talonFXFollower.follow(talonFX);

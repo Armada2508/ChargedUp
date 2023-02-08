@@ -67,6 +67,7 @@ public class Constants {
     public static final class Arm {
         public static final int motorID = 4;
         public static final int motorIDFollow = 5;
+        public static final int limitSwitchID = 0;
         public static final int encoderUnits = 2048;
         public static final int gearboxRatio = 100;
         public static final double degreesPerEncoderUnit = (360/encoderUnits)/gearboxRatio;
@@ -78,6 +79,7 @@ public class Constants {
 
     public static final class Wrist {
         public static final int motorID = 6;
+        public static final int limitSwitchID = 1;
         public static final int encoderUnits = 2048;
         public static final int gearboxRatio = 100;
         public static final double degreesPerEncoderUnit = (360/encoderUnits)/gearboxRatio;

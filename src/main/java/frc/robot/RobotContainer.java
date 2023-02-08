@@ -141,7 +141,8 @@ public class RobotContainer {
         return new SequentialCommandGroup(
             new AutoTurnCommand(90, driveSubsystem, pigeon),
             new AutoDriveCommand(24, driveSubsystem),
-            new AutoTurnCommand(-90, driveSubsystem, pigeon)
+            new AutoTurnCommand(-90, driveSubsystem, pigeon),
+            new BalanceCommand(driveSubsystem, pigeon)
         );
     }
 
