@@ -39,7 +39,7 @@ public class BalanceCommand extends CommandBase {
         double currentPitch = 0;
         double currentRoll = 0;
         if (pigeon.getState() == PigeonState.Ready) {
-            currentPitch = pigeon.getPitch();
+            currentPitch = pigeon.getPitch() + Balance.pitchOffset;
             currentRoll = pigeon.getRoll() + Balance.rollOffset;
             // System.out.println("Pitch: " + currentPitch + " Roll: " + currentRoll);
         }

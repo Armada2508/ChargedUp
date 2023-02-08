@@ -72,7 +72,7 @@ public class PhotonSubsystem extends SubsystemBase {
         return getBestTarget().getYaw();
     }
 
-    public Orientation getActualOrientation() {
+    private Orientation getActualOrientation() {
         List<TargetCorner> corners = getBestTarget().getMinAreaRectCorners();
         double x1 = Math.abs(corners.get(0).x - corners.get(1).x);
         double x2 = Math.abs(corners.get(0).x - corners.get(2).x);
@@ -84,7 +84,7 @@ public class PhotonSubsystem extends SubsystemBase {
         return Orientation.LANDSCAPE;
     }
 
-    public void correctConePipeline() {
+    private void correctConePipeline() {
         int index = (getActualOrientation() == Orientation.PORTRAIT) ? Vision.conePortraitPipeline : Vision.coneLandscapePipeline;
         setPipeline(index);
     }

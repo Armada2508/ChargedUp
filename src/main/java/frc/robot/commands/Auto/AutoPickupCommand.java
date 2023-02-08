@@ -20,6 +20,8 @@ import frc.robot.subsystems.WristSubsystem;
 
 public class AutoPickupCommand extends SequentialCommandGroup {
 
+    private Target lastTarget = Target.CONE;
+
     public AutoPickupCommand(PhotonSubsystem photonSubsystem, DriveSubsystem driveSubsystem, PigeonIMU pigeon, ArmSubsystem ArmSubsystem, WristSubsystem WristSubsystem, GripperSubsystem GripperSubsystem) {
         addCommands(
             new GripperCommand(0, GripperSubsystem),
@@ -39,13 +41,21 @@ public class AutoPickupCommand extends SequentialCommandGroup {
     }
 
     private Target getTarget(PhotonSubsystem photonSubsystem) {
+        Target target = Target.CONE;
         if (photonSubsystem.getPipeline() == Vision.cubePipeline) {
             photonSubsystem.getDistanceToTargetInches(Target.CUBE);
-            return Target.CUBE;
+            target = Target.CUBE;
         }
         else {
             photonSubsystem.getDistanceToTargetInches(Target.CONE);
-            return Target.CONE;
+            target = Target.CONE;
         }
+        lastTarget = target;
+        return target;
     }
+
+    public Target getPreviousTarget() {
+        return lastTarget;
+    }
+
 }

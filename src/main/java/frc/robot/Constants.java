@@ -1,11 +1,10 @@
 package frc.robot;
 
-import com.ctre.phoenix.motorcontrol.FeedbackDevice;
-
-import frc.robot.Lib.config.FeedbackConfig;
 import frc.robot.Lib.util.Util;
 
 public class Constants {
+
+    public static final int pigeonID = 8;
     
     public static final class Drive {
         public static final int RID = 0;
@@ -21,24 +20,35 @@ public class Constants {
 
         // Turning PID
         public static final double turnkP = 0.02;
+        public static final double turnkI = 0;
         public static final double turnkD = 0.005;
-
-        public static final double minSpeed = 0.18;
+        public static final double maxSpeed = 0.5;
         
         public static final double diameterInches = 6;
-        public static final int encoderUnits = 4096;
-        public static final double gearboxRatio = 12.75;
+        public static final int encoderUnits = 2048;
+        public static final double gearboxRatio = 10.7;
         public static final double trackWidthMeters = Util.inchesToMeters(23.5);
-
-        public static final FeedbackConfig feedbackConfig = new FeedbackConfig(FeedbackDevice.IntegratedSensor, encoderUnits, gearboxRatio);
     }
 
-    public static final int pigeonID = 8;
+    public static final class Balance {
+        // PID
+        public static final double pitchkP = 0.015;
+        public static final double pitchkI = 0;
+        public static final double pitchkD = 0.003;
+        public static final double rollkP = 0.03;
+        public static final double rollkI = 0;
+        public static final double rollkD = 0;
+        // Offsets
+        public static final double pitchOffset = 0;
+        public static final double rollOffset = -2;
+        // Speeds
+        public static final double maxSpeed = 0.25;
+    }
 
     public static final class Vision {
         public static final String cameraName = "Camera";
+        // Distances
         public static final double distanceBetweenPolesInches = 17;
-        public static final double distanceHighPoleToFrontInches = 39.75;
         public static final double distanceToBumperInches = 12.5;
         // Target Heights
         public static final double highPoleHeightInches = 43.84375;
@@ -67,7 +77,7 @@ public class Constants {
     }
 
     public static final class Wrist {
-        public static final int motorID = 7;
+        public static final int motorID = 6;
         public static final int encoderUnits = 2048;
         public static final int gearboxRatio = 100;
         public static final double degreesPerEncoderUnit = (360/encoderUnits)/gearboxRatio;
@@ -78,24 +88,10 @@ public class Constants {
     }
 
     public static final class Gripper {
-        public static final int motorID = 6;
+        public static final int motorID = 7;
         public static final int encoderUnits = 2048;
         public static final int gearboxRatio = 100;
         public static final double degreesPerEncoderUnit = (360/encoderUnits)/gearboxRatio;
-    }
-
-    public static final class Balance {
-        // PID
-        public static final double pitchkP = 0.015;
-        public static final double pitchkI = 0;
-        public static final double pitchkD = 0.003;
-        public static final double rollkP = 0.03;
-        public static final double rollkI = 0;
-        public static final double rollkD = 0;
-        // Offsets
-        public static final double rollOffset = -2;
-        // Speeds
-        public static final double maxSpeed = 0.4;
     }
 
     // ========================================
