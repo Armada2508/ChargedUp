@@ -40,6 +40,10 @@ public class PhotonSubsystem extends SubsystemBase {
         camera.setPipelineIndex(index);
     }
 
+    public int getPipeline() {
+        return camera.getPipelineIndex();
+    }
+
     /**
      * @param target that you're looking for
      * @return distance to current target in inches or NaN if no targets found.
