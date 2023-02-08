@@ -18,8 +18,7 @@
 - ~~Put a cone on pole command~~ !
 - ~~Put a cube on a station command~~ !
 - ~~Put a game piece on the floor~~ !
-- Pick up a cone command
-- Pick up a cube command
+- AutoPickupCommand
 	
 # Subsystems:
 

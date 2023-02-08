@@ -11,29 +11,25 @@ import org.photonvision.targeting.TargetCorner;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.Vision;
-import frc.robot.subsystems.VisionSubsystem.Target;
 
 public class PhotonSubsystem extends SubsystemBase {
 
     private final PhotonCamera camera = new PhotonCamera(Vision.cameraName);
+    private PhotonPipelineResult currentResult;
 
     @Override
     public void periodic() {
-        if (hasTargets()) {
-            System.out.println(getDistanceToTargetInches(Target.CONE));
-        }
-    }
-
-    private PhotonPipelineResult getLatestResult() {
-        return camera.getLatestResult();
+        if (camera.getPipelineIndex() != Vision.cubePipeline) correctConePipeline();
+        currentResult = camera.getLatestResult();
+        if (camera.getPipelineIndex() != Vision.cubePipeline) correctConePipeline();
     }
 
     public boolean hasTargets() {
-        return getLatestResult().hasTargets();
+        return currentResult.hasTargets();
     }
 
     public PhotonTrackedTarget getBestTarget() {
-        return (hasTargets()) ? getLatestResult().getBestTarget() : new PhotonTrackedTarget();
+        return hasTargets() ? currentResult.getBestTarget() : null;
     }
 
     public void setPipeline(int index) {
@@ -66,10 +62,12 @@ public class PhotonSubsystem extends SubsystemBase {
     }
 
     public double getTargetPitch() {
+        if (!hasTargets()) return Double.NaN;
         return getBestTarget().getPitch();
     }
 
     public double getTargetYaw() {
+        if (!hasTargets()) return Double.NaN;
         return getBestTarget().getYaw();
     }
 
@@ -86,7 +84,7 @@ public class PhotonSubsystem extends SubsystemBase {
     }
 
     public void correctConePipeline() {
-        int index = (getActualOrientation() == Orientation.PORTRAIT) ? Vision.conePortrait : Vision.coneLandscape;
+        int index = (getActualOrientation() == Orientation.PORTRAIT) ? Vision.conePortraitPipeline : Vision.coneLandscapePipeline;
         setPipeline(index);
     }
 
@@ -95,6 +93,11 @@ public class PhotonSubsystem extends SubsystemBase {
         PORTRAIT
     }
 
-
+    public enum Target {
+        CUBE,
+        CONE,
+        MID_POLE,
+        HIGH_POLE
+    }
 
 }

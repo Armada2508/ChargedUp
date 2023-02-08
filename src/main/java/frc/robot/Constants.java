@@ -49,9 +49,9 @@ public class Constants {
         public static final double cameraHeightInches = 50;
         public static final double cameraAngleMountedDegrees = 0.5; 
         // Camera Pipelines
-        public static final int coneLandscape = 0;
-        public static final int cube = 1;
-        public static final int conePortrait = 2;
+        public static final int coneLandscapePipeline = 0;
+        public static final int cubePipeline = 1;
+        public static final int conePortraitPipeline = 2;
     }
 
     public static final class Arm {
