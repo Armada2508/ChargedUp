@@ -19,9 +19,10 @@ public class PhotonSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        if (camera.getPipelineIndex() != Vision.cubePipeline) correctConePipeline();
         currentResult = camera.getLatestResult();
-        if (camera.getPipelineIndex() != Vision.cubePipeline) correctConePipeline();
+        if (camera.getPipelineIndex() != Vision.cubePipeline && currentResult.hasTargets()) {
+            correctConePipeline();
+        }
     }
 
     public boolean hasTargets() {

@@ -1,5 +1,7 @@
 package frc.robot.commands.Driving;
 
+import java.util.function.Supplier;
+
 import com.ctre.phoenix.sensors.PigeonIMU;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
@@ -11,10 +13,14 @@ import frc.robot.subsystems.PhotonSubsystem.Target;
 public class SeekCommand extends SequentialCommandGroup {
 
     public SeekCommand(DriveSubsystem driveSubsystem, PhotonSubsystem photonSubsystem, PigeonIMU pigeon, Target target, double distanceFromTargetInches) {
+        this(driveSubsystem, photonSubsystem, pigeon, () -> target, distanceFromTargetInches);
+    }
+
+    public SeekCommand(DriveSubsystem driveSubsystem, PhotonSubsystem photonSubsystem, PigeonIMU pigeon, Supplier<Target> target, double distanceFromTargetInches) {
         addCommands(
             new AutoTurnCommand(photonSubsystem::getTargetYaw, driveSubsystem, pigeon),
-            new DriveUntilCommand(driveSubsystem, photonSubsystem, target),
-            new AutoDriveCommand(() -> photonSubsystem.getDistanceToTargetInches(target) - distanceFromTargetInches, driveSubsystem)
+            new DriveUntilCommand(driveSubsystem, photonSubsystem, target.get()),
+            new AutoDriveCommand(() -> photonSubsystem.getDistanceToTargetInches(target.get()) - distanceFromTargetInches, driveSubsystem)
         );
     }
 
