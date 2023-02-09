@@ -8,12 +8,16 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants.Drive;
+import frc.robot.RobotContainer;
 import frc.robot.subsystems.DriveSubsystem;
 
 public class AutoTurnCommand extends CommandBase {
 
+    private static final PIDController pid = new PIDController(Drive.turnkP, Drive.turnkI, Drive.turnkD);
+    static {
+        RobotContainer.addPIDToShuffleBoard(pid, "Turning");
+    }
     private final DoubleSupplier relativeDegrees;
-    private PIDController pid = new PIDController(Drive.turnkP, Drive.turnkI, Drive.turnkD);
     private double absoluteTarget;
     private DriveSubsystem driveSubsystem;
     private PigeonIMU pigeon;

@@ -7,6 +7,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants.Balance;
+import frc.robot.RobotContainer;
 import frc.robot.subsystems.DriveSubsystem;
 
 /**
@@ -14,8 +15,12 @@ import frc.robot.subsystems.DriveSubsystem;
  */
 public class BalanceCommand extends CommandBase {
     
-    private PIDController pitchController = new PIDController(Balance.pitchkP, Balance.pitchkI, Balance.pitchkD);
-    private PIDController rollController = new PIDController(Balance.rollkP, Balance.rollkI, Balance.rollkD);
+    private static final PIDController pitchController = new PIDController(Balance.pitchkP, Balance.pitchkI, Balance.pitchkD);
+    private static final PIDController rollController = new PIDController(Balance.rollkP, Balance.rollkI, Balance.rollkD);
+    static {
+        RobotContainer.addPIDToShuffleBoard(pitchController, "Balance Pitch");
+        RobotContainer.addPIDToShuffleBoard(rollController, "Balance Roll");
+    }
     private DriveSubsystem driveSubsystem;
     private PigeonIMU pigeon;
 

@@ -16,6 +16,9 @@ public class ArmSubsystem extends SubsystemBase {
 
     public ArmSubsystem() {
         talonFXFollower.follow(talonFX);
+        talonFX.config_kP(0, Arm.kP);
+        talonFX.config_kI(0, Arm.kI);
+        talonFX.config_kD(0, Arm.kD);
     }
 
     /**

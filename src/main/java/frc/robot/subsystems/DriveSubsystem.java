@@ -1,7 +1,6 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.TalonSRXControlMode;
 import com.ctre.phoenix.motorcontrol.can.BaseTalon;
@@ -38,8 +37,6 @@ public class DriveSubsystem extends SubsystemBase {
         configureMotor(TalonFXR);
         // TalonFXR.setInverted(true);
         // TalonFXRfollow.setInverted(true);
-        TalonFXL.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder);
-        TalonFXR.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder);
         TalonFXLfollow.follow(TalonFXL);
         TalonFXRfollow.follow(TalonFXR);
         left =  new MotorControllerGroup(TalonFXL, TalonFXLfollow);
