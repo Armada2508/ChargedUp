@@ -19,6 +19,10 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Constants.Drive;
 import frc.robot.Lib.motion.FollowTrajectory;
 import frc.robot.commands.BalanceCommand;
+import frc.robot.commands.Auto.AutoPickupCommand;
+import frc.robot.commands.Auto.PieceOnFloorCommand;
+import frc.robot.commands.Auto.PieceOnTopCommand;
+import frc.robot.commands.Auto.PieceOnTopCommand.Height;
 import frc.robot.commands.Driving.AutoDriveCommand;
 import frc.robot.commands.Driving.AutoTurnCommand;
 import frc.robot.commands.Driving.DriveCommand;
@@ -54,11 +58,17 @@ public class RobotContainer {
     @SuppressWarnings("resource")
     private void configureButtons() {
         // Joystick
-        new JoystickButton(joystick, 12).onTrue(new InstantCommand(CommandScheduler.getInstance()::cancelAll)); // AutoStop 
-        new JoystickButton(joystick, 11).onTrue(new BalanceCommand(driveSubsystem, pigeon));
+        final AutoPickupCommand pickup = new AutoPickupCommand(photonSubsystem, driveSubsystem, pigeon, armSubsystem, wristSubsystem, gripperSubsystem);
+        new JoystickButton(buttonBoard, 12).onTrue(new PieceOnTopCommand(pickup::getPreviousTarget, Height.HIGH, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem)); 
+        new JoystickButton(buttonBoard, 11).onTrue(new PieceOnTopCommand(pickup::getPreviousTarget, Height.MID, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem)); 
+        new JoystickButton(buttonBoard, 10).onTrue(new PieceOnFloorCommand(driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem));
         new JoystickButton(joystick, 9).onTrue(new SeekCommand(driveSubsystem, photonSubsystem, pigeon, Target.CONE, 12));
-        new JoystickButton(joystick, 8).onTrue(new AutoTurnCommand(45, driveSubsystem, pigeon));
-        new JoystickButton(joystick, 7).onTrue(new AutoTurnCommand(-45, driveSubsystem, pigeon));
+        new JoystickButton(joystick, 8).onTrue(pickup);
+        
+        new JoystickButton(joystick, 6).onTrue(new AutoDriveCommand(12, driveSubsystem));
+        new JoystickButton(joystick, 5).onTrue(new AutoTurnCommand(45, driveSubsystem, pigeon));
+        new JoystickButton(joystick, 4).onTrue(new AutoDriveCommand(-12, driveSubsystem));
+        new JoystickButton(joystick, 3).onTrue(new AutoTurnCommand(-45, driveSubsystem, pigeon));
         // Buttonboard 
         new JoystickButton(buttonBoard, 1).whileTrue(Commands.startEnd(() -> armSubsystem.setPower(0.1), () -> armSubsystem.setPower(0), armSubsystem));
         new JoystickButton(buttonBoard, 2).whileTrue(Commands.startEnd(() -> armSubsystem.setPower(-0.1), () -> armSubsystem.setPower(0), armSubsystem));
@@ -71,11 +81,13 @@ public class RobotContainer {
             wristSubsystem.calibrate();
             gripperSubsystem.calibrate();
         }));
+        new JoystickButton(buttonBoard, 11).onTrue(new BalanceCommand(driveSubsystem, pigeon));
+        new JoystickButton(buttonBoard, 12).onTrue(new InstantCommand(CommandScheduler.getInstance()::cancelAll)); // AutoStop 
         // Combo Button Example
         // new JoystickButton(joystick, 7).and(new JoystickButton(joystick, 9)).and(new JoystickButton(joystick, 11)).whileTrue(new BalanceCommand(driveSubsystem, pigeon));
     }
 
-    private void configureShuffleboard() {
+    private void configureShuffleboard() { 
         // Pigeon
         Shuffleboard.getTab("Pigeon")
             .addDouble("Pigeon Yaw", () -> pigeon.getYaw())
@@ -95,37 +107,22 @@ public class RobotContainer {
             .withWidget(BuiltInWidgets.kNumberBar)
             .withProperties(Map.of("min", -90, "max", 90))
             .withSize(4, 3);
-
         // Vision
-        /*
-        Shuffleboard.getTab("Vision")
-            .addBoolean("Target Found", vision::hasTarget)
-            .withPosition(0, 0)
-            .withSize(4, 3);
-        Shuffleboard.getTab("Vision")
-            .addNumber("Target X", vision::getTargetX)
-            .withPosition(4, 0)
-            .withSize(4, 3)
-            .withProperties(Map.of("min", -29.8, "max", 29.8))
-            .withWidget(BuiltInWidgets.kNumberBar);
-        Shuffleboard.getTab("Vision")
-            .addNumber("Target Y", vision::getTargetY)
-            .withPosition(8, 0)
-            .withSize(4, 3)
-            .withProperties(Map.of("min", -24.85, "max", 24.85))
-            .withWidget(BuiltInWidgets.kNumberBar);
-        Shuffleboard.getTab("Vision")
-            .addNumber("Target Area", vision::getTargetArea)
-            .withPosition(12, 0)
-            .withSize(4, 3)
-            .withProperties(Map.of("min", 0, "max", 100))
-            .withWidget(BuiltInWidgets.kNumberBar);
-        */
         Shuffleboard.getTab("Vision")
             .add(CameraServer.getVideo().getSource())
             .withPosition(0, 4)
             .withSize(4, 3)
             .withWidget(BuiltInWidgets.kCameraStream);
+    }
+
+    private static int i = 0;
+    public static void addPIDToShuffleBoard(PIDController pid, String name) {
+        Shuffleboard.getTab("PID Tuning")
+            .add(name + " PID Controller", pid)
+            .withPosition(i*7, 0)
+            .withWidget(BuiltInWidgets.kPIDController)
+            .withSize(7, 4);
+        i++;
     }
 
     private void configureCamera() {

@@ -8,27 +8,27 @@ import frc.robot.Constants.Gripper;
 
 public class GripperSubsystem extends SubsystemBase {
     
-    public double requiredMovement;
-    public double requiredRevolutions;
-    public double requiredEncoderUnits;
-    public double FinalEncoderUnits;
-
     private WPI_TalonFX talonFX = new WPI_TalonFX(Gripper.motorID);
+
+    public GripperSubsystem() {
+        talonFX.config_kP(0, Gripper.kP);
+        talonFX.config_kI(0, Gripper.kI);
+        talonFX.config_kD(0, Gripper.kD);
+    }
 
     public void setPower(double powerInput) {
         talonFX.set(powerInput);
     }
 
     public double getPercentClosed() { //finds where the gripper is now, get from the motor
-        
         return 0;
     }
 
     public void setPercentClosed(double positionInput) {//finds the ammount you want to travel (difference), sets the gripper to the desired position using the difference
-        requiredMovement = positionInput - getPercentClosed();
-        requiredRevolutions = (requiredMovement * 4);
-        requiredEncoderUnits = requiredRevolutions * 2048; //change variable name (?)
-        FinalEncoderUnits = talonFX.getSelectedSensorPosition(); //change variable name (?)
+        double requiredMovement = positionInput - getPercentClosed();
+        double requiredRevolutions = (requiredMovement * 4);
+        double requiredEncoderUnits = requiredRevolutions * 2048; //change variable name (?)
+        double FinalEncoderUnits = talonFX.getSelectedSensorPosition(); //change variable name (?)
 
         talonFX.set(TalonFXControlMode.Position, (FinalEncoderUnits + requiredEncoderUnits));
     }

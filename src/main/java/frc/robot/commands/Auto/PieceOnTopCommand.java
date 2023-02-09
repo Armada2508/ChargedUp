@@ -12,7 +12,7 @@ import frc.robot.subsystems.WristSubsystem;
 
 public class PieceOnTopCommand extends SequentialCommandGroup {
 
-    PieceOnTopCommand(Supplier<Target> target, Height height, DriveSubsystem driveSubsystem, ArmSubsystem armSubsystem, WristSubsystem wristSubsystem, GripperSubsystem gripperSubsystem) {
+    public PieceOnTopCommand(Supplier<Target> target, Height height, DriveSubsystem driveSubsystem, ArmSubsystem armSubsystem, WristSubsystem wristSubsystem, GripperSubsystem gripperSubsystem) {
         addCommands(
             new ConditionalCommand(
                 new ConeOnPoleCommand(height, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem),

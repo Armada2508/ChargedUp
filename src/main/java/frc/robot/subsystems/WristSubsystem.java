@@ -13,6 +13,12 @@ public class WristSubsystem extends SubsystemBase {
     private WPI_TalonFX talonFX = new WPI_TalonFX(Wrist.motorID);
     private DigitalInput limitSwitch = new DigitalInput(Wrist.limitSwitchID);
 
+    public WristSubsystem() {
+        talonFX.config_kP(0, Wrist.kP);
+        talonFX.config_kI(0, Wrist.kI);
+        talonFX.config_kD(0, Wrist.kD);
+    }
+
     /**
      * 
      * @param power to set the motor between -1.0 and 1.0
