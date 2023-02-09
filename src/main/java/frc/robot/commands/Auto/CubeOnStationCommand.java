@@ -12,14 +12,13 @@ import frc.robot.commands.Driving.AutoDriveCommand;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.GripperSubsystem;
-import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.WristSubsystem;
 
 public class CubeOnStationCommand extends SequentialCommandGroup {
 
     private final int initialDistance = 6;
 
-    public CubeOnStationCommand(Height height, VisionSubsystem visionSubsystem, DriveSubsystem driveSubsystem, ArmSubsystem armSubsystem, WristSubsystem wristSubsystem, GripperSubsystem gripperSubsystem) {
+    public CubeOnStationCommand(Height height, DriveSubsystem driveSubsystem, ArmSubsystem armSubsystem, WristSubsystem wristSubsystem, GripperSubsystem gripperSubsystem) {
         if (height == Height.MID) addCommands(
             new WristCommand(Wrist.maxDegrees, wristSubsystem), // Don't hit station
             new ArmCommand(70, armSubsystem),

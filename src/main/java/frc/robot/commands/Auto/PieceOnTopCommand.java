@@ -8,16 +8,15 @@ import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.GripperSubsystem;
 import frc.robot.subsystems.PhotonSubsystem.Target;
-import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.WristSubsystem;
 
 public class PieceOnTopCommand extends SequentialCommandGroup {
 
-    PieceOnTopCommand(Supplier<Target> target, Height height, DriveSubsystem driveSubsystem, VisionSubsystem visionSubsystem, ArmSubsystem armSubsystem, WristSubsystem wristSubsystem, GripperSubsystem gripperSubsystem) {
+    PieceOnTopCommand(Supplier<Target> target, Height height, DriveSubsystem driveSubsystem, ArmSubsystem armSubsystem, WristSubsystem wristSubsystem, GripperSubsystem gripperSubsystem) {
         addCommands(
             new ConditionalCommand(
-                new ConeOnPoleCommand(height, driveSubsystem, visionSubsystem, armSubsystem, wristSubsystem, gripperSubsystem),
-                new CubeOnStationCommand(height, visionSubsystem, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem),
+                new ConeOnPoleCommand(height, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem),
+                new CubeOnStationCommand(height, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem),
                 () -> target.get() == Target.CONE
             )
         );

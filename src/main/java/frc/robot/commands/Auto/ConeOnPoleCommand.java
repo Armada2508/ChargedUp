@@ -12,14 +12,13 @@ import frc.robot.commands.Driving.AutoDriveCommand;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.GripperSubsystem;
-import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.WristSubsystem;
 
 public class ConeOnPoleCommand extends SequentialCommandGroup {
 
     private final int initialDistance = 6;
 
-    public ConeOnPoleCommand(Height height, DriveSubsystem driveSubsystem, VisionSubsystem visionSubsystem, ArmSubsystem armSubsystem, WristSubsystem wristSubsystem, GripperSubsystem gripperSubsystem) {
+    public ConeOnPoleCommand(Height height, DriveSubsystem driveSubsystem, ArmSubsystem armSubsystem, WristSubsystem wristSubsystem, GripperSubsystem gripperSubsystem) {
         if (height == Height.MID) addCommands(
             new WristCommand(Wrist.maxDegrees, wristSubsystem), // Don't hit pole
             new ArmCommand(80, armSubsystem),
