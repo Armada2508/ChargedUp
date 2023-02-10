@@ -96,6 +96,8 @@ public class PhotonSubsystem extends SubsystemBase {
         setPipeline(index);
     }
 
+
+
     public enum Orientation {
         LANDSCAPE,
         PORTRAIT
