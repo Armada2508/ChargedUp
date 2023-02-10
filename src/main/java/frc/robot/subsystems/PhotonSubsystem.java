@@ -48,10 +48,9 @@ public class PhotonSubsystem extends SubsystemBase {
     public double getDistanceToTargetInches(Target target) {
         if (!hasTargets()) return Double.NaN;
         double targetHeight = switch(target) {
+            case NONE -> 0;
             case CUBE -> Vision.cubeHeightInches;
             case CONE -> Vision.coneHeightInches;
-            case MID_POLE -> Vision.midPoleHeightInches;
-            case HIGH_POLE -> Vision.highPoleHeightInches;
         };
         double distanceMeters = PhotonUtils.calculateDistanceToTargetMeters(
             Units.inchesToMeters(Vision.cameraHeightInches), 
@@ -70,6 +69,14 @@ public class PhotonSubsystem extends SubsystemBase {
     public double getTargetYaw() {
         if (!hasTargets()) return Double.NaN;
         return getBestTarget().getYaw();
+    }
+
+    /**
+     * Assume this method is finished and works
+     * @return Landscape when cone is knocked over and portrait when cone is upright
+     */
+    public Orientation getConeOrientation() {
+        return Orientation.LANDSCAPE;
     }
 
     private Orientation getActualOrientation() {
@@ -95,10 +102,9 @@ public class PhotonSubsystem extends SubsystemBase {
     }
 
     public enum Target {
+        NONE,
         CUBE,
-        CONE,
-        MID_POLE,
-        HIGH_POLE
+        CONE
     }
 
 }
