@@ -1,12 +1,14 @@
 package frc.robot.commands.Arm;
 
+import java.util.function.DoubleSupplier;
+
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.WristSubsystem;
 
 public class WristCommand extends CommandBase {
 
     private final int degreesDeadband = 1;
-    private double targetDegrees;
+    private DoubleSupplier targetDegrees;
     private WristSubsystem wristSubsystem;
 
     /**
@@ -15,6 +17,15 @@ public class WristCommand extends CommandBase {
      * @param wristSubsystem
      */
     public WristCommand(double theta, WristSubsystem wristSubsystem) {
+       this(() -> theta, wristSubsystem);
+    }
+
+    /**
+     * 
+     * @param theta degree to go to, 0 is flat wrist
+     * @param wristSubsystem
+     */
+    public WristCommand(DoubleSupplier theta, WristSubsystem wristSubsystem) {
         targetDegrees = theta;
         this.wristSubsystem = wristSubsystem;
         addRequirements(wristSubsystem);
@@ -22,7 +33,7 @@ public class WristCommand extends CommandBase {
 
     @Override
     public void initialize() {
-        wristSubsystem.setPosition(targetDegrees);  
+        wristSubsystem.setPosition(targetDegrees.getAsDouble());  
     }
 
     @Override
@@ -37,6 +48,6 @@ public class WristCommand extends CommandBase {
     @Override
     public boolean isFinished() {
         double currentDegrees = wristSubsystem.getPosition();
-        return (Math.abs(currentDegrees) < targetDegrees+degreesDeadband);
+        return (Math.abs(currentDegrees) < targetDegrees.getAsDouble()+degreesDeadband);
     }
 }

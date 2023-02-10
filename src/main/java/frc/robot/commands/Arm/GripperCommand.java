@@ -1,15 +1,21 @@
 package frc.robot.commands.Arm;
 
+import java.util.function.DoubleSupplier;
+
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.GripperSubsystem;
 
 public class GripperCommand extends CommandBase {
 
     private final int degreesDeadband = 1;
-    private double percentClosed;
+    private DoubleSupplier percentClosed;
     private GripperSubsystem gripperSubsystem;
 
     public GripperCommand(double percentClosed, GripperSubsystem gripperSubsystem) {
+       this(() -> percentClosed, gripperSubsystem);
+    }
+
+    public GripperCommand(DoubleSupplier percentClosed, GripperSubsystem gripperSubsystem) {
         this.percentClosed = percentClosed;
         this.gripperSubsystem = gripperSubsystem;
         addRequirements(gripperSubsystem);
@@ -17,7 +23,7 @@ public class GripperCommand extends CommandBase {
 
     @Override
     public void initialize() {
-        gripperSubsystem.setPercentClosed(percentClosed);  
+        gripperSubsystem.setPercentClosed(percentClosed.getAsDouble());  
     }
 
     @Override
@@ -32,7 +38,7 @@ public class GripperCommand extends CommandBase {
     @Override
     public boolean isFinished() {
         double currentDegrees = gripperSubsystem.getPercentClosed();
-        return (Math.abs(currentDegrees) < percentClosed+degreesDeadband);
+        return (Math.abs(currentDegrees) < percentClosed.getAsDouble()+degreesDeadband);
     }
 
 }

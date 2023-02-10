@@ -1,12 +1,14 @@
 package frc.robot.commands.Arm;
 
+import java.util.function.DoubleSupplier;
+
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.ArmSubsystem;
 
 public class ArmCommand extends CommandBase {
 
     private final int degreesDeadband = 1;
-    private double targetDegrees;
+    private DoubleSupplier targetDegrees;
     private ArmSubsystem armSubsystem;
 
     /**
@@ -15,6 +17,15 @@ public class ArmCommand extends CommandBase {
      * @param armSubsystem
      */
     public ArmCommand(double theta, ArmSubsystem armSubsystem) {
+        this(() -> theta, armSubsystem);
+    }
+
+    /**
+     * 
+     * @param theta degree to go to, 0 is straight down
+     * @param armSubsystem
+     */
+    public ArmCommand(DoubleSupplier theta, ArmSubsystem armSubsystem) {
         targetDegrees = theta;
         this.armSubsystem = armSubsystem;
         addRequirements(armSubsystem);
@@ -22,7 +33,7 @@ public class ArmCommand extends CommandBase {
 
     @Override
     public void initialize() {
-        armSubsystem.setPosition(targetDegrees);  
+        armSubsystem.setPosition(targetDegrees.getAsDouble());  
     }
 
     @Override
@@ -37,7 +48,7 @@ public class ArmCommand extends CommandBase {
     @Override
     public boolean isFinished() {
         double currentDegrees = armSubsystem.getPosition();
-        return (Math.abs(currentDegrees) < targetDegrees+degreesDeadband);
+        return (Math.abs(currentDegrees) < targetDegrees.getAsDouble()+degreesDeadband);
     }
     
 }

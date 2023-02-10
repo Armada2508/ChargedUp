@@ -16,16 +16,27 @@ import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.GripperSubsystem;
 import frc.robot.subsystems.PhotonSubsystem;
+import frc.robot.subsystems.PhotonSubsystem.Orientation;
 import frc.robot.subsystems.PhotonSubsystem.Target;
 import frc.robot.subsystems.WristSubsystem;
 
 public class AutoPickupCommand extends SequentialCommandGroup {
 
+    private final double armCube = 0.0;
+    private final double wristCube = 0.0;
+    private final double gripperCube = 0.0;
+    private final double armConePortrait = 0.0;
+    private final double wristConePortrait = 0.0;
+    private final double gripperConePortrait = 0.0;
+    private final double armConeLandscape = 0.0;
+    private final double wristConeLandscape = 0.0;
+    private final double gripperConeLandscape = 0.0;
+
     private Target lastTarget = Target.CONE;
+    private double cubeDistance = 0.0;
+    private double coneDistance = 0.0;
 
-    private double cubeDistance;
-    private double coneDistance;
-
+    // TODO check wait times
     public AutoPickupCommand(PhotonSubsystem photonSubsystem, DriveSubsystem driveSubsystem, PigeonIMU pigeon, ArmSubsystem ArmSubsystem, WristSubsystem WristSubsystem, GripperSubsystem GripperSubsystem) {
         addCommands(
             new GripperCommand(0, GripperSubsystem),
@@ -33,45 +44,58 @@ public class AutoPickupCommand extends SequentialCommandGroup {
             new SequentialCommandGroup(
                 new InstantCommand(() -> photonSubsystem.setPipeline(Vision.cubePipeline), photonSubsystem),
                 new WaitCommand(0.1),
-                new InstantCommand(() -> coneDistance = photonSubsystem.getDistanceToTargetInches(Target.CONE)),
+                new InstantCommand(() -> cubeDistance = photonSubsystem.getDistanceToTargetInches(Target.CUBE)),
                 new InstantCommand(() -> photonSubsystem.setPipeline(Vision.coneLandscapePipeline), photonSubsystem),
                 new WaitCommand(0.1),
-                new InstantCommand(() -> cubeDistance = photonSubsystem.getDistanceToTargetInches(Target.CONE))
+                new InstantCommand(() -> coneDistance = photonSubsystem.getDistanceToTargetInches(Target.CONE))
             ),
             new ConditionalCommand(
                 new SequentialCommandGroup(
                     new SeekCommand(driveSubsystem, photonSubsystem, pigeon, () -> getTarget(photonSubsystem), 12),
-                    new ArmCommand(20, ArmSubsystem), // theta value is a guess, change as needed
-                    new WristCommand(10, WristSubsystem), // theta value is a guess, change as needed
-                    new GripperCommand(1, GripperSubsystem),
+
+                    new ArmCommand(() -> { /* change values as needed after testing */
+                        if (lastTarget == Target.CUBE) return armCube;
+                        else if (photonSubsystem.getConeOrientation()== Orientation.LANDSCAPE) return armConeLandscape;
+                        else return armConePortrait; //Portrait Orentation
+                    }, 
+                    ArmSubsystem),
+
+                    new WristCommand(() -> { /* change values as needed after testing */
+                        if (lastTarget == Target.CUBE) return wristCube;
+                        else if (photonSubsystem.getConeOrientation()== Orientation.LANDSCAPE) return wristConeLandscape;
+                        else return wristConePortrait; //Portrait Orentation
+                    }, WristSubsystem), 
+
+                    new GripperCommand(() -> { /* change values as needed after testing */ 
+                        if (lastTarget == Target.CUBE) return gripperCube;
+                        else if (photonSubsystem.getConeOrientation()== Orientation.LANDSCAPE) return gripperConeLandscape;
+                        else return gripperConePortrait; //Portrait Orentation
+                    }, GripperSubsystem),
+
                     new ArmCommand(Arm.minDegrees, ArmSubsystem) /* On True for Conditional, Starts at InstantCommand*/
                 ),
                 new InstantCommand(), /* On False for Conditional */ 
-                photonSubsystem::hasTargets /* Boolean Supplier for Conditional */
+                () -> getTarget(photonSubsystem) != Target.NONE /* Boolean Supplier for Conditional */
             )
         );
     }
 
-    //~ new WaitCommand(seconds),
-    //// switch to cube pipeline, wait 0.1 seconds, grab distance and store in a var
-    //// switch to cone pipeline, wait 0.1 seconds, grab distance and store in a var
-    // getTarget(coneDistance, cubeDistance)
-    // check if the distances are NaN from Double.NaN. 
-    // if one is NaN and one isn't, then seek to that one
-    // if both are NaN do nothing,
-    // if both have distances go to the one closer
-
-    private Target getTarget(double coneDistance, double cubeDistance, PhotonSubsystem photonSubsystem) {
+    private Target getTarget(PhotonSubsystem photonSubsystem) {
+        Target target = Target.CONE;
         if ((cubeDistance == Double.NaN) && (coneDistance != Double.NaN)) {
-            return Target.CUBE;
+            target = Target.CONE;
         }
         else if ((cubeDistance != Double.NaN) && (coneDistance == Double.NaN)) {
-            return Target.CONE;
+            target = Target.CUBE;
         }
         else if ((cubeDistance != Double.NaN) && (coneDistance != Double.NaN)) {
-            
+            if (cubeDistance > coneDistance) {
+                target = Target.CUBE;
+            }
+            target = Target.CONE;
         }
         else { /*both cubeDistance and coneDistance are NaN */
+            target = Target.NONE;
 
         }
         lastTarget = target;

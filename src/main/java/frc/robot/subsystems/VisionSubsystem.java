@@ -87,8 +87,7 @@ public class VisionSubsystem extends SubsystemBase {
         double targetHeight = switch(target) {
             case CUBE -> Vision.cubeHeightInches;
             case CONE -> Vision.coneHeightInches;
-            case MID_POLE -> Vision.midPoleHeightInches;
-            case HIGH_POLE -> Vision.highPoleHeightInches;
+            case NONE -> 0;
         };
         double radians = Math.toRadians(Vision.cameraAngleMountedDegrees + angleDeg);
         double distance = (targetHeight - Vision.cameraHeightInches) / Math.tan(radians);
