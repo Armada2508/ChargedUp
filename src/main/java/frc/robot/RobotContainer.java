@@ -59,6 +59,8 @@ public class RobotContainer {
         configureShuffleboard();
         configureButtons();
         // new CalibrateArmCommand(armSubsystem).schedule();
+        // new CalibrateWristCommand(wristSubsystem).schedule();
+        // new CalibrateGripperCommand(gripperSubsystem).schedule();
     }
 
     @SuppressWarnings("resource")

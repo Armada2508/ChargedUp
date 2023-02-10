@@ -18,7 +18,7 @@
 - ~~Put a cone on pole command~~ !
 - ~~Put a cube on a station command~~ !
 - ~~Put a game piece on the floor~~ !
-- ~~AutoPickupCommand~~
+- ~~AutoPickupCommand~~ Add Inverse Kinematics
 - ~~GamePieceOnTopCommand~~
 	
 # Subsystems:

@@ -101,6 +101,7 @@ public class Constants {
 
     public static final class Gripper {
         public static final int motorID = 7;
+        public static final int limitSwitchID = 2;
         public static final int encoderUnitsPerRev = 2048;
         public static final int gearboxRatio = 100;
         // PID

@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.Gripper;
 
@@ -10,6 +11,7 @@ public class GripperSubsystem extends SubsystemBase {
     
     private final double positionScalar = 4;
     private WPI_TalonFX talonFX = new WPI_TalonFX(Gripper.motorID);
+    private DigitalInput limitSwitch = new DigitalInput(Gripper.limitSwitchID);
 
     public GripperSubsystem() {
         talonFX.config_kP(0, Gripper.kP);
@@ -41,6 +43,10 @@ public class GripperSubsystem extends SubsystemBase {
 
     public void calibrate() {
         talonFX.setSelectedSensorPosition(0);
+    }
+
+    public boolean pollLimitSwitch() {
+        return !limitSwitch.get(); // Switches are held high
     }
 
 }
