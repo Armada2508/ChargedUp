@@ -2,9 +2,9 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
-import com.ctre.phoenix.motorcontrol.TalonSRXControlMode;
+import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
 import com.ctre.phoenix.motorcontrol.can.BaseTalon;
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.ctre.phoenix.sensors.PigeonIMU;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -21,10 +21,10 @@ import frc.robot.Lib.util.Util;
 
 public class DriveSubsystem extends SubsystemBase {
 
-    private WPI_TalonSRX TalonFXL = new WPI_TalonSRX(Drive.LID); 
-    private WPI_TalonSRX TalonFXLfollow = new WPI_TalonSRX(Drive.LFID);  
-    private WPI_TalonSRX TalonFXR = new WPI_TalonSRX(Drive.RID); 
-    private WPI_TalonSRX TalonFXRfollow = new WPI_TalonSRX(Drive.RFID);
+    private WPI_TalonFX TalonFXL = new WPI_TalonFX(Drive.LID); 
+    private WPI_TalonFX TalonFXLfollow = new WPI_TalonFX(Drive.LFID);  
+    private WPI_TalonFX TalonFXR = new WPI_TalonFX(Drive.RID); 
+    private WPI_TalonFX TalonFXRfollow = new WPI_TalonFX(Drive.RFID);
     private MotorControllerGroup left;
     private MotorControllerGroup right;
     private final DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(Drive.trackWidthMeters); 
@@ -56,8 +56,8 @@ public class DriveSubsystem extends SubsystemBase {
 
     public void driveDistance(double distanceInches) {
         double sensorUnits = Encoder.fromDistance(distanceInches, Drive.encoderUnits, Drive.gearboxRatio, Drive.diameterInches);
-        TalonFXL.set(TalonSRXControlMode.Position, TalonFXL.getSelectedSensorPosition()+sensorUnits);
-        TalonFXR.set(TalonSRXControlMode.Position, TalonFXR.getSelectedSensorPosition()+sensorUnits);
+        TalonFXL.set(TalonFXControlMode.Position, TalonFXL.getSelectedSensorPosition()+sensorUnits);
+        TalonFXR.set(TalonFXControlMode.Position, TalonFXR.getSelectedSensorPosition()+sensorUnits);
     }
 
     public ControlMode getMode() {
