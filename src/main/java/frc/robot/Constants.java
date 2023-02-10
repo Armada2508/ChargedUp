@@ -76,8 +76,8 @@ public class Constants {
         public static final double kD = 0;
         public static final double gravityFeedForward = 0.07;
 
-        public static final int minDegrees = -18;
-        public static final int maxDegrees = 90;
+        public static final int minDegrees = -108;
+        public static final int maxDegrees = 45;
         
         public static final double jointLengthInches = 35.75;
     }

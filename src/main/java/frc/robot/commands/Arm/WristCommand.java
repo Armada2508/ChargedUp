@@ -13,7 +13,7 @@ public class WristCommand extends CommandBase {
 
     /**
      * 
-     * @param theta degree to go to, 0 is flat wrist
+     * @param theta degree to go to, 0 is straight out.
      * @param wristSubsystem
      */
     public WristCommand(double theta, WristSubsystem wristSubsystem) {
@@ -22,7 +22,7 @@ public class WristCommand extends CommandBase {
 
     /**
      * 
-     * @param theta degree to go to, 0 is flat wrist
+     * @param theta degree to go to, 0 is straight out.
      * @param wristSubsystem
      */
     public WristCommand(DoubleSupplier theta, WristSubsystem wristSubsystem) {

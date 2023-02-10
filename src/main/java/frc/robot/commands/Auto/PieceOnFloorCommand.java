@@ -14,7 +14,7 @@ public class PieceOnFloorCommand extends SequentialCommandGroup {
 
     public PieceOnFloorCommand(DriveSubsystem driveSubsystem, ArmSubsystem armSubsystem, WristSubsystem wristSubsystem, GripperSubsystem gripperSubsystem) {
         addCommands(
-           new ArmCommand(0, armSubsystem),
+           new ArmCommand(-90, armSubsystem),
            new WristCommand(0, wristSubsystem),
            new GripperCommand(0, gripperSubsystem),
            // Reverse

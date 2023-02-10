@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants.Arm;
 import frc.robot.Constants.Wrist;
+import frc.robot.InverseKinematics;
 import frc.robot.commands.Arm.ArmCommand;
 import frc.robot.commands.Arm.GripperCommand;
 import frc.robot.commands.Arm.WristCommand;
@@ -19,31 +20,25 @@ public class ConeOnPoleCommand extends SequentialCommandGroup {
     private final int initialDistance = 6;
 
     public ConeOnPoleCommand(Height height, DriveSubsystem driveSubsystem, ArmSubsystem armSubsystem, WristSubsystem wristSubsystem, GripperSubsystem gripperSubsystem) {
-        if (height == Height.MID) addCommands(
-            new WristCommand(Wrist.maxDegrees, wristSubsystem), // Don't hit pole
-            new ArmCommand(80, armSubsystem),
+        double x = 0, y = 0;
+        if (height == Height.MID) {
+            x = 0;
+            y = 0;
+        } else {
+            // 43.947, 14
+            x = 43.947;
+            y = 14;
+        }
+        addCommands(
+            InverseKinematics.getIKPositionCommand(x, y, armSubsystem, wristSubsystem),
             new AutoDriveCommand(initialDistance, driveSubsystem),
-            new WristCommand(0, wristSubsystem),
             new GripperCommand(0, gripperSubsystem),
-            new WaitCommand(1),
-            // Reverse
-            new WristCommand(Wrist.maxDegrees, wristSubsystem),
-            new AutoDriveCommand(-initialDistance, driveSubsystem),
-            new ArmCommand(Arm.minDegrees, armSubsystem)
-        );
-        else addCommands(
-            new WristCommand(Wrist.maxDegrees, wristSubsystem), // Don't hit pole
-            new ArmCommand(90, armSubsystem),
-            new AutoDriveCommand(initialDistance, driveSubsystem),
-            new WristCommand(0, wristSubsystem),
-            new GripperCommand(0, gripperSubsystem),
-            new WaitCommand(1),
+            new WaitCommand(.5),
             // Reverse
             new WristCommand(Wrist.maxDegrees, wristSubsystem),
             new AutoDriveCommand(-initialDistance, driveSubsystem),
             new ArmCommand(Arm.minDegrees, armSubsystem)
         );
     }
-    
 
 }

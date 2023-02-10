@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants.Arm;
 import frc.robot.Constants.Wrist;
+import frc.robot.InverseKinematics;
 import frc.robot.commands.Arm.ArmCommand;
 import frc.robot.commands.Arm.GripperCommand;
 import frc.robot.commands.Arm.WristCommand;
@@ -19,23 +20,19 @@ public class CubeOnStationCommand extends SequentialCommandGroup {
     private final int initialDistance = 6;
 
     public CubeOnStationCommand(Height height, DriveSubsystem driveSubsystem, ArmSubsystem armSubsystem, WristSubsystem wristSubsystem, GripperSubsystem gripperSubsystem) {
-        if (height == Height.MID) addCommands(
-            new WristCommand(Wrist.maxDegrees, wristSubsystem), // Don't hit station
-            new ArmCommand(70, armSubsystem),
-            new WristCommand(0, wristSubsystem),
+        double x = 0, y = 0;
+        if (height == Height.MID) {
+            x = 0;
+            y = 0;
+        } else {
+            x = 0;
+            y = 0;
+        }
+        addCommands(
+            InverseKinematics.getIKPositionCommand(x, y, armSubsystem, wristSubsystem),
+            new AutoDriveCommand(initialDistance, driveSubsystem),
             new GripperCommand(0, gripperSubsystem),
-            new WaitCommand(1),
-            // Reverse
-            new WristCommand(Wrist.maxDegrees, wristSubsystem),
-            new AutoDriveCommand(-initialDistance, driveSubsystem),
-            new ArmCommand(Arm.minDegrees, armSubsystem)
-        ); 
-        else addCommands(
-            new WristCommand(Wrist.maxDegrees, wristSubsystem), // Don't hit station
-            new ArmCommand(80, armSubsystem),
-            new WristCommand(0, wristSubsystem),
-            new GripperCommand(0, gripperSubsystem),
-            new WaitCommand(1),
+            new WaitCommand(.5),
             // Reverse
             new WristCommand(Wrist.maxDegrees, wristSubsystem),
             new AutoDriveCommand(-initialDistance, driveSubsystem),
