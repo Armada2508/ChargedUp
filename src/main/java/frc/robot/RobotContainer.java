@@ -16,7 +16,9 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import frc.robot.Constants.Arm;
 import frc.robot.Constants.Drive;
+import frc.robot.Constants.Wrist;
 import frc.robot.Lib.motion.FollowTrajectory;
 import frc.robot.commands.BalanceCommand;
 import frc.robot.commands.Auto.AutoPickupCommand;
@@ -47,9 +49,10 @@ public class RobotContainer {
 
     public RobotContainer() {
         FollowTrajectory.config(0, 0, 0, 2.0, 0.7, Drive.trackWidthMeters, new PIDController(Drive.kP, Drive.kI, Drive.kD), 0);
+        InverseKinematics.config(Arm.jointLengthInches, Wrist.jointLengthInches);
         this.driveSubsystem = new DriveSubsystem(pigeon);
         driveSubsystem.setDefaultCommand(new DriveCommand(() -> joystick.getRawAxis(1)*-1, () -> joystick.getRawAxis(2)*-1, driveSubsystem)); // default to driving from joystick input
-        configureCamera();
+        // configureCamera();
         configureShuffleboard();
         configureButtons();
         // new CalibrateArmCommand(armSubsystem).schedule();
@@ -107,12 +110,6 @@ public class RobotContainer {
             .withWidget(BuiltInWidgets.kNumberBar)
             .withProperties(Map.of("min", -90, "max", 90))
             .withSize(4, 3);
-        // Vision
-        Shuffleboard.getTab("Vision")
-            .add(CameraServer.getVideo().getSource())
-            .withPosition(0, 4)
-            .withSize(4, 3)
-            .withWidget(BuiltInWidgets.kCameraStream);
     }
 
     private static int i = 0;
@@ -130,6 +127,11 @@ public class RobotContainer {
         camera.setExposureManual(25);
         camera.setFPS(12);
         camera.setResolution(426, 240);
+        Shuffleboard.getTab("Vision")
+            .add(CameraServer.getVideo().getSource())
+            .withPosition(0, 4)
+            .withSize(4, 3)
+            .withWidget(BuiltInWidgets.kCameraStream);
     }
 
     public Command getAutoCommand() {

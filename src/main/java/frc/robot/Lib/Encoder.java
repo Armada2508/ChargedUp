@@ -130,4 +130,26 @@ public class Encoder {
         return RPM * ((double)encoderUnitsPerRev / 60.0) * time * gearRatio;
     }
 
+    /**
+     * Converts sensor units to a rotational angle in degrees 
+     * @param sensorPosition The current value read from the sensor
+     * @param encoderUnitsPerRev The number of encoder units sensed per revolution of the output shaft of the gearbox
+     * @param gearRatio The ratio of gearing from the output shaft of the gearbox to the wheel
+     * @return Angle in degrees
+     */
+    public static double toRotationalAngle(double sensorPosition, double encoderUnitsPerRev, double gearRatio) {
+        return sensorPosition * (360.0 / encoderUnitsPerRev) / gearRatio;
+    }
+
+    /**
+     * Converts sensor units to a rotational angle in degrees 
+     * @param sensorPosition The current value read from the sensor
+     * @param encoderUnitsPerRev The number of encoder units sensed per revolution of the output shaft of the gearbox
+     * @param gearRatio The ratio of gearing from the output shaft of the gearbox to the wheel
+     * @return Angle in encoder units
+     */
+    public static double fromRotationalAngle(double angleDegrees, double encoderUnitsPerRev, double gearRatio) {
+        return angleDegrees * (encoderUnitsPerRev / 360.0) * gearRatio;
+    }
+
 }

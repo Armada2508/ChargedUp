@@ -68,42 +68,43 @@ public class Constants {
         public static final int motorID = 4;
         public static final int motorIDFollow = 5;
         public static final int limitSwitchID = 0;
-        public static final int encoderUnits = 2048;
+        public static final int encoderUnitsPerRev = 2048;
         public static final int gearboxRatio = 100;
-        public static final double degreesPerEncoderUnit = (360/encoderUnits)/gearboxRatio;
         // PID
-        public static final double kP = 0.01;
+        public static final double kP = 0.1;
         public static final double kI = 0;
         public static final double kD = 0;
         public static final double gravityFeedForward = 0.07;
 
         public static final int minDegrees = -18;
         public static final int maxDegrees = 90;
+        
+        public static final double jointLengthInches = 35.75;
     }
 
     public static final class Wrist {
         public static final int motorID = 6;
         public static final int limitSwitchID = 1;
-        public static final int encoderUnits = 2048;
+        public static final int encoderUnitsPerRev = 2048;
         public static final int gearboxRatio = 100;
-        public static final double degreesPerEncoderUnit = (360/encoderUnits)/gearboxRatio;
         // PID
-        public static final double kP = 0.01;
+        public static final double kP = 0.1;
         public static final double kI = 0;
         public static final double kD = 0;
         public static final double gravityFeedForward = 0.07;
 
         public static final int minDegrees = -30;
         public static final int maxDegrees = 30;
+
+        public static final double jointLengthInches = 13;
     }
 
     public static final class Gripper {
         public static final int motorID = 7;
-        public static final int encoderUnits = 2048;
+        public static final int encoderUnitsPerRev = 2048;
         public static final int gearboxRatio = 100;
-        public static final double degreesPerEncoderUnit = (360/encoderUnits)/gearboxRatio;
         // PID
-        public static final double kP = 0.01;
+        public static final double kP = 0.1;
         public static final double kI = 0;
         public static final double kD = 0;
     }

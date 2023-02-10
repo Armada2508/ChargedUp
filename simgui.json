@@ -1,0 +1,10 @@
+{
+  "NTProvider": {
+    "types": {
+      "/FMSInfo": "FMSInfo",
+      "/Shuffleboard/PID Tuning/Balance Pitch PID Controller": "PIDController",
+      "/Shuffleboard/PID Tuning/Balance Roll PID Controller": "PIDController",
+      "/Shuffleboard/PID Tuning/Turning PID Controller": "PIDController"
+    }
+  }
+}

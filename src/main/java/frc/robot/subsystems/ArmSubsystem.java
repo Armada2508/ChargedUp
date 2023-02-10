@@ -7,6 +7,8 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.Arm;
+import frc.robot.InverseKinematics;
+import frc.robot.Lib.Encoder;
 
 public class ArmSubsystem extends SubsystemBase {
     
@@ -19,6 +21,10 @@ public class ArmSubsystem extends SubsystemBase {
         talonFX.config_kP(0, Arm.kP);
         talonFX.config_kI(0, Arm.kI);
         talonFX.config_kD(0, Arm.kD);
+    }
+
+    public void periodic() {
+        System.out.println(InverseKinematics.coordinatesToAngles(40, 20));
     }
 
     /**
@@ -35,16 +41,23 @@ public class ArmSubsystem extends SubsystemBase {
      */
     public void setPosition(double theta) {
         if (theta > Arm.maxDegrees || theta < Arm.minDegrees) return;
-        double targetPosition = theta / Arm.degreesPerEncoderUnit;
+        double targetPosition = fromAngle(theta);
         talonFX.set(TalonFXControlMode.Position, targetPosition, DemandType.ArbitraryFeedForward, getFeedForward());
     }
 
     /**
-     * 
      * @return Arm's current position in degrees
      */
     public double getPosition() {
-        return talonFX.getSelectedSensorPosition() * Arm.degreesPerEncoderUnit;
+        return toAngle(talonFX.getSelectedSensorPosition());
+    }
+
+    public double toAngle(double sensorUnits) {
+        return Encoder.toRotationalAngle(sensorUnits, Arm.encoderUnitsPerRev, Arm.gearboxRatio);
+    }
+
+    public double fromAngle(double theta) {
+        return Encoder.fromRotationalAngle(theta, Arm.encoderUnitsPerRev, Arm.gearboxRatio);
     }
 
     private double getFeedForward() {

@@ -8,6 +8,7 @@ import frc.robot.Constants.Gripper;
 
 public class GripperSubsystem extends SubsystemBase {
     
+    private final double positionScalar = 4;
     private WPI_TalonFX talonFX = new WPI_TalonFX(Gripper.motorID);
 
     public GripperSubsystem() {
@@ -16,21 +17,26 @@ public class GripperSubsystem extends SubsystemBase {
         talonFX.config_kD(0, Gripper.kD);
     }
 
-    public void setPower(double powerInput) {
-        talonFX.set(powerInput);
+    public void setPower(double power) {
+        talonFX.set(power);
     }
 
-    public double getPercentClosed() { //finds where the gripper is now, get from the motor
-        return 0;
+    /**
+     * 
+     * @return Grippers percent being closed, 1 is fully closed, 0 is fully open
+     */
+    public double getPercentClosed() { 
+        return talonFX.getSelectedSensorPosition() / Gripper.encoderUnitsPerRev / positionScalar;
     }
 
-    public void setPercentClosed(double positionInput) {//finds the ammount you want to travel (difference), sets the gripper to the desired position using the difference
-        double requiredMovement = positionInput - getPercentClosed();
-        double requiredRevolutions = (requiredMovement * 4);
-        double requiredEncoderUnits = requiredRevolutions * 2048; //change variable name (?)
-        double FinalEncoderUnits = talonFX.getSelectedSensorPosition(); //change variable name (?)
-
-        talonFX.set(TalonFXControlMode.Position, (FinalEncoderUnits + requiredEncoderUnits));
+    /**
+     * Sets percent closed of the gripper, 1 is fully closed, 0 is fully open
+     * @param percent
+     */
+    public void setPercentClosed(double percent) {
+        if (percent < 0 || percent > 1) return;
+        double targetPosition = percent * positionScalar * Gripper.encoderUnitsPerRev;
+        talonFX.set(TalonFXControlMode.Position, targetPosition);
     }
 
     public void calibrate() {

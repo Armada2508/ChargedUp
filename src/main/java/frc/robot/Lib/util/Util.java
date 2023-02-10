@@ -228,13 +228,4 @@ public class Util {
         return new Pair<Double,Double>(x, y);
     }
 
-    /**
-     * Converts cartesian coordinates into angles for your joints for a 2 joint system.
-     * @param x coordinate
-     * @param y coordinate
-     * @return Angle pair for joints, q1 and q2.
-     */
-    public static Pair<Double, Double> inverseKinematics2Joint(double x, double y) {
-        return new Pair<Double, Double>(0.0, 0.0);
-    } 
 }

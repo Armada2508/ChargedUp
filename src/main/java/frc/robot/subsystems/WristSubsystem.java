@@ -7,6 +7,7 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.Wrist;
+import frc.robot.Lib.Encoder;
 
 public class WristSubsystem extends SubsystemBase {
 
@@ -33,7 +34,7 @@ public class WristSubsystem extends SubsystemBase {
      */
     public void setPosition(double theta) {
         if (theta > Wrist.maxDegrees || theta < Wrist.minDegrees) return;
-        double targetPosition = theta / Wrist.degreesPerEncoderUnit;
+        double targetPosition = fromAngle(theta);
         talonFX.set(TalonFXControlMode.Position, targetPosition, DemandType.ArbitraryFeedForward, getFeedForward());
     }
 
@@ -42,7 +43,15 @@ public class WristSubsystem extends SubsystemBase {
      * @return Wrist's current position in degrees
      */
     public double getPosition() {
-        return talonFX.getSelectedSensorPosition() * Wrist.degreesPerEncoderUnit;
+        return toAngle(talonFX.getSelectedSensorPosition());
+    }
+
+    public double toAngle(double sensorUnits) {
+        return Encoder.toRotationalAngle(sensorUnits, Wrist.encoderUnitsPerRev, Wrist.gearboxRatio);
+    }
+
+    public double fromAngle(double theta) {
+        return Encoder.fromRotationalAngle(theta, Wrist.encoderUnitsPerRev, Wrist.gearboxRatio);
     }
     
     private double getFeedForward() {
