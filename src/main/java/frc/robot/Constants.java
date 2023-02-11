@@ -55,6 +55,7 @@ public class Constants {
         public static final double midPoleHeightInches = 24.0625; 
         public static final double coneHeightInches = 0;
         public static final double cubeHeightInches = 4.75;
+        public static final double aprilTagHeightInches = 0; //change
         // Camera
         public static final double cameraHeightInches = 50;
         public static final double cameraAngleMountedDegrees = 0.5; 
