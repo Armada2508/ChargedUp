@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import com.ctre.phoenix.sensors.PigeonIMU;
+
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
@@ -16,7 +18,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 public class Robot extends TimedRobot {
 
   private RobotContainer container; 
-  // private PigeonIMU pigeon = new PigeonIMU(Constants.pigeonID);
+  private PigeonIMU pigeon = new PigeonIMU(Constants.pigeonID);
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -52,6 +54,8 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
+    Constants.Balance.pitchOffset = pigeon.getPitch();
+    Constants.Balance.rollOffset = pigeon.getRoll();
     container.getAutoCommand().schedule();
   }
 

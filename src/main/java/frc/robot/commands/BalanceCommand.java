@@ -42,14 +42,13 @@ public class BalanceCommand extends CommandBase {
         if (pigeon.getState() == PigeonState.Ready) {
             currentPitch = pigeon.getPitch() + Balance.pitchOffset;
             currentRoll = pigeon.getRoll() + Balance.rollOffset;
-            // System.out.println("Pitch: " + currentPitch + " Roll: " + currentRoll);
         }
         if (Math.abs(currentPitch) < Balance.balanceAngle) {
             driveSubsystem.setPower(0, 0);
         } else {
-            double pitchSpeed = -Balance.pitchSpeed * Math.signum(currentPitch);
+            double pitchSpeed = Balance.pitchSpeed * -Math.signum(currentPitch);
             double rollSpeed = rollController.calculate(currentRoll);
-            if (currentPitch > 0) rollSpeed *= -1;
+            if (currentPitch > 0) rollSpeed *= -1; // Roll is opposite in the other direction for some reason.
             // Clamp maximum
             double leftSpeed = MathUtil.clamp(pitchSpeed+rollSpeed, -Balance.maxSpeed, Balance.maxSpeed);
             double rightSpeed = MathUtil.clamp(pitchSpeed-rollSpeed, -Balance.maxSpeed, Balance.maxSpeed);

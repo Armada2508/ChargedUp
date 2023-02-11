@@ -12,14 +12,15 @@ public class Constants {
         public static final int LID = 2;
         public static final int LFID = 3;
         public static final int turnAdjustment = 3;
+        public static final double speedMultiplier = 1; // For Fredy
 
         // Driving PID
-        public static final double kP = 0.25; 
+        public static final double kP = 0.1; 
         public static final double kI = 0;
         public static final double kD = 0;
 
         // Turning PID
-        public static final double turnkP = 0.02;
+        public static final double turnkP = 0.01;
         public static final double turnkI = 0;
         public static final double turnkD = 0.005;
         public static final double maxSpeed = 0.5;
@@ -36,8 +37,8 @@ public class Constants {
         public static final double rollkI = 0;
         public static final double rollkD = 0;
         // Offsets
-        public static final double pitchOffset = 0;
-        public static final double rollOffset = -2;
+        public static double pitchOffset = 0;
+        public static double rollOffset = -2;
         // Speeds
         public static final double maxSpeed = 0.15;
         public static final double pitchSpeed = 0.12;

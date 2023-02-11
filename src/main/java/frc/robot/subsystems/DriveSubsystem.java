@@ -80,6 +80,7 @@ public class DriveSubsystem extends SubsystemBase {
         motor.config_kI(0, Drive.kI);
         motor.config_kD(0, Drive.kD);
         motor.configNeutralDeadband(0.04);
+        motor.configClosedLoopPeakOutput(0, .5);
     }
     
     public void callibrate() {

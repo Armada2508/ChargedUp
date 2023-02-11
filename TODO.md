@@ -46,3 +46,8 @@
 ### Key: <br>
 ! = test <br>
 ? = review
+
+## poo poo
+
+constant curvature
+closed loop driving
