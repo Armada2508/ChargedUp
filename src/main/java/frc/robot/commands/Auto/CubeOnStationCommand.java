@@ -22,11 +22,11 @@ public class CubeOnStationCommand extends SequentialCommandGroup {
     public CubeOnStationCommand(Height height, DriveSubsystem driveSubsystem, ArmSubsystem armSubsystem, WristSubsystem wristSubsystem, GripperSubsystem gripperSubsystem) {
         double x = 0, y = 0;
         if (height == Height.MID) {
-            x = 0;
-            y = 0;
+            x = 14.25; //change as needed during testing
+            y = 23.5; //change as needed during testing
         } else {
-            x = 0;
-            y = 0;
+            x = 31.625; //change as needed during testing
+            y = 35.5; //change as needed during testing
         }
         addCommands(
             InverseKinematics.getIKPositionCommand(x, y, armSubsystem, wristSubsystem),
