@@ -20,7 +20,7 @@ public class PhotonSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         currentResult = camera.getLatestResult();
-        if (camera.getPipelineIndex() != Vision.cubePipeline && currentResult.hasTargets()) {
+        if (camera.getPipelineIndex() != Vision.cubePipeline && currentResult.hasTargets()) { /*update to include if its targeted onto an april tag */
             correctConePipeline();
         }
     }
@@ -51,6 +51,7 @@ public class PhotonSubsystem extends SubsystemBase {
             case NONE -> 0;
             case CUBE -> Vision.cubeHeightInches;
             case CONE -> Vision.coneHeightInches;
+            case APRILTAG -> 0; //change
         };
         double distanceMeters = PhotonUtils.calculateDistanceToTargetMeters(
             Units.inchesToMeters(Vision.cameraHeightInches), 
@@ -96,8 +97,6 @@ public class PhotonSubsystem extends SubsystemBase {
         setPipeline(index);
     }
 
-
-
     public enum Orientation {
         LANDSCAPE,
         PORTRAIT
@@ -106,7 +105,8 @@ public class PhotonSubsystem extends SubsystemBase {
     public enum Target {
         NONE,
         CUBE,
-        CONE
+        CONE,
+        APRILTAG
     }
 
 }

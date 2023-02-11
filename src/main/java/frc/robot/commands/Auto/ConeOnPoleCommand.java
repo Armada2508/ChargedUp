@@ -22,8 +22,8 @@ public class ConeOnPoleCommand extends SequentialCommandGroup {
     public ConeOnPoleCommand(Height height, DriveSubsystem driveSubsystem, ArmSubsystem armSubsystem, WristSubsystem wristSubsystem, GripperSubsystem gripperSubsystem) {
         double x = 0, y = 0;
         if (height == Height.MID) {
-            x = 0;
-            y = 0;
+            x = 34.75; //change as needed during testing
+            y = 34; //change as needed during testing 
         } else {
             // 43.947, 14
             x = 43.947;

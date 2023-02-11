@@ -8,9 +8,9 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants.Arm;
 import frc.robot.Constants.Vision;
+import frc.robot.InverseKinematics;
 import frc.robot.commands.Arm.ArmCommand;
 import frc.robot.commands.Arm.GripperCommand;
-import frc.robot.commands.Arm.WristCommand;
 import frc.robot.commands.Driving.SeekCommand;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
@@ -22,19 +22,14 @@ import frc.robot.subsystems.WristSubsystem;
 
 public class AutoPickupCommand extends SequentialCommandGroup {
 
-    private final double armCube = 0.0;
-    private final double wristCube = 0.0;
     private final double gripperCube = 0.0;
-    private final double armConePortrait = 0.0;
-    private final double wristConePortrait = 0.0;
     private final double gripperConePortrait = 0.0;
-    private final double armConeLandscape = 0.0;
-    private final double wristConeLandscape = 0.0;
     private final double gripperConeLandscape = 0.0;
 
     private Target lastTarget = Target.CONE;
     private double cubeDistance = 0.0;
     private double coneDistance = 0.0;
+    private final double distanceFromTargetInches = 12;
 
     // TODO check wait times
     public AutoPickupCommand(PhotonSubsystem photonSubsystem, DriveSubsystem driveSubsystem, PigeonIMU pigeon, ArmSubsystem ArmSubsystem, WristSubsystem WristSubsystem, GripperSubsystem GripperSubsystem) {
@@ -51,27 +46,16 @@ public class AutoPickupCommand extends SequentialCommandGroup {
             ),
             new ConditionalCommand(
                 new SequentialCommandGroup(
-                    new SeekCommand(driveSubsystem, photonSubsystem, pigeon, () -> getTarget(photonSubsystem), 12),
-
-                    new ArmCommand(() -> { /* change values as needed after testing */
-                        if (lastTarget == Target.CUBE) return armCube;
-                        else if (photonSubsystem.getConeOrientation()== Orientation.LANDSCAPE) return armConeLandscape;
-                        else return armConePortrait; //Portrait Orentation
-                    }, 
-                    ArmSubsystem),
-
-                    new WristCommand(() -> { /* change values as needed after testing */
-                        if (lastTarget == Target.CUBE) return wristCube;
-                        else if (photonSubsystem.getConeOrientation()== Orientation.LANDSCAPE) return wristConeLandscape;
-                        else return wristConePortrait; //Portrait Orentation
-                    }, WristSubsystem), 
-
-                    new GripperCommand(() -> { /* change values as needed after testing */ 
-                        if (lastTarget == Target.CUBE) return gripperCube;
-                        else if (photonSubsystem.getConeOrientation()== Orientation.LANDSCAPE) return gripperConeLandscape;
-                        else return gripperConePortrait; //Portrait Orentation
-                    }, GripperSubsystem),
-
+                    new SeekCommand(driveSubsystem, photonSubsystem, pigeon, () -> getTarget(photonSubsystem), distanceFromTargetInches),
+                    new ConditionalCommand(
+                        new ConditionalCommand(
+                            InverseKinematics.getIKPositionCommand(12.0, 0.0, ArmSubsystem, WristSubsystem), /*On True  | Landscape Orientation*/
+                            InverseKinematics.getIKPositionCommand(12.0, 0.0, ArmSubsystem, WristSubsystem), /*On False | Portrait Orientation*/
+                            () -> photonSubsystem.getConeOrientation() == Orientation.LANDSCAPE  /*Boolean Supplier*/
+                            ), /*On True  | Target.Cone*/
+                        InverseKinematics.getIKPositionCommand(12.0, 0.0, ArmSubsystem, WristSubsystem), /*On False | Target.Cube*/
+                        () -> getTarget(photonSubsystem) == Target.CONE  /*Boolean Supplier*/
+                    ),
                     new ArmCommand(Arm.minDegrees, ArmSubsystem) /* On True for Conditional, Starts at InstantCommand*/
                 ),
                 new InstantCommand(), /* On False for Conditional */ 
