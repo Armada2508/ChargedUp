@@ -35,8 +35,10 @@ public class DriveSubsystem extends SubsystemBase {
         this.pigeon = pigeon;
         configureMotor(TalonFXL);
         configureMotor(TalonFXR);
-        // TalonFXR.setInverted(true);
-        // TalonFXRfollow.setInverted(true);
+        configureMotor(TalonFXLfollow);
+        configureMotor(TalonFXRfollow);
+        TalonFXR.setInverted(true);
+        TalonFXRfollow.setInverted(true);
         TalonFXLfollow.follow(TalonFXL);
         TalonFXRfollow.follow(TalonFXR);
         left =  new MotorControllerGroup(TalonFXL, TalonFXLfollow);
@@ -77,6 +79,7 @@ public class DriveSubsystem extends SubsystemBase {
         motor.config_kP(0, Drive.kP);
         motor.config_kI(0, Drive.kI);
         motor.config_kD(0, Drive.kD);
+        motor.configNeutralDeadband(0.04);
     }
     
     public void callibrate() {

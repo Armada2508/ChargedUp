@@ -32,17 +32,17 @@ public class Constants {
 
     public static final class Balance {
         // PID
-        public static final double pitchkP = 0.015;
-        public static final double pitchkI = 0;
-        public static final double pitchkD = 0.003;
-        public static final double rollkP = 0.03;
+        public static final double rollkP = 0.05;
         public static final double rollkI = 0;
         public static final double rollkD = 0;
         // Offsets
         public static final double pitchOffset = 0;
         public static final double rollOffset = -2;
         // Speeds
-        public static final double maxSpeed = 0.25;
+        public static final double maxSpeed = 0.15;
+        public static final double pitchSpeed = 0.12;
+
+        public static final double balanceAngle = 10;
     }
 
     public static final class Vision {

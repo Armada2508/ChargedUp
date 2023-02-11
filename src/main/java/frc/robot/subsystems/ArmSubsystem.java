@@ -7,7 +7,6 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.Arm;
-import frc.robot.InverseKinematics;
 import frc.robot.Lib.Encoder;
 
 public class ArmSubsystem extends SubsystemBase {
@@ -24,7 +23,6 @@ public class ArmSubsystem extends SubsystemBase {
     }
 
     public void periodic() {
-        System.out.println(InverseKinematics.coordinatesToAngles(40, 20));
     }
 
     /**
