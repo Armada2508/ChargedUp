@@ -57,7 +57,7 @@ public class RobotContainer {
         this.driveSubsystem = new DriveSubsystem(pigeon);
         driveSubsystem.setDefaultCommand(new DriveCommand(() -> joystick.getRawAxis(1)*-1 * Drive.speedMultiplier, () -> joystick.getRawAxis(0)*-1 * Drive.speedMultiplier, driveSubsystem)); // default to driving from joystick input
         if (RobotBase.isReal()) {
-            // configureCamera();
+            configureCamera();
         }
         configureShuffleboard();
         configureButtons();

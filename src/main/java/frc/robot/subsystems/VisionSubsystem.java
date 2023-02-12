@@ -5,8 +5,8 @@ import org.photonvision.PhotonUtils;
 
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.NetworkTableValue;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.Vision;
 import frc.robot.subsystems.PhotonSubsystem.Target;
@@ -17,9 +17,9 @@ import frc.robot.subsystems.PhotonSubsystem.Target;
 public class VisionSubsystem extends SubsystemBase {
 
     private final NetworkTable table = NetworkTableInstance.getDefault().getTable("Vision");
-    private final NetworkTableEntry hasTarget = table.getEntry("HasTarget");
-    private final NetworkTableEntry pitch = table.getEntry("Pitch"); // Left is negative, right is positive, in degrees
-    private final NetworkTableEntry yaw = table.getEntry("Yaw"); // In degrees
+    private final NetworkTableValue hasTarget = table.getValue("HasTarget");
+    private final NetworkTableValue pitch = table.getValue("Pitch"); // Left is negative, right is positive, in degrees
+    private final NetworkTableValue yaw = table.getValue("Yaw"); // In degrees
 
     public VisionSubsystem() {
         super();
@@ -27,22 +27,21 @@ public class VisionSubsystem extends SubsystemBase {
     
     @Override
     public void periodic() {
-        System.out.println(table.getTopics());
         // System.out.println("Pitch: " + getTargetPitch() + " Yaw: " + getTargetYaw());
     }
 
     public boolean hasTarget() {
-        return hasTarget.getBoolean(false);
+        return hasTarget.getBoolean();
     }
 
     public double getTargetPitch() {
         if (!hasTarget()) return Double.NaN;
-        return pitch.getDouble(0);
+        return pitch.getDouble();
     }
 
     public double getTargetYaw() {
         if (!hasTarget()) return Double.NaN;
-        return yaw.getDouble(0);
+        return yaw.getDouble();
     }
 
     /**

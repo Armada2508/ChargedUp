@@ -328,10 +328,10 @@ def main(): # Image proccessing user code
             binary_img = cv2.drawContours(binary_img, mainContour, -1, color = (255, 0, 0), thickness = 2)
             binary_img = cv2.rectangle(binary_img, (x, y), (x + w, y + h), color = (0, 0, 255), thickness = 2)
             binary_img = cv2.circle(binary_img, center = crosshair, radius = 10, color = (0, 255, 0), thickness = -1)
-            outputStream.putFrame(binary_img)
+            outputStream.putFrame(binary_img) # Stream Video
         else:
             nt.putBoolean(haveTargetNT, False)
-        originalStream.putFrame(input_img)
+        originalStream.putFrame(input_img) # Stream Video
 
 
 ###################################################################################################################
