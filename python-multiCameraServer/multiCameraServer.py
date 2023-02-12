@@ -216,7 +216,14 @@ def startSwitchedCamera(config):
 
 ###################################################################################################################
 
+# Camera
+resolutionWidth: Final[int] = 1280
+resolutionHeight: Final[int] = 720
+tableName: Final[str] = "Vision"
+verticalFOV: Final[float] = 45
+horizontalFOV: Final[float] = 68
 
+# Processing
 hueMin: Final[int] = 8
 hueMax: Final[int] = 40
 saturationMin: Final[int] = 150
@@ -226,13 +233,34 @@ valueMax: Final[int] = 255
 erodeIterations: Final[int] = 1
 dilateIterations: Final[int] = 1
 
+def pointToPitchAndYaw(Px: int, Py: int): # Converts a point in pixel system to a pitch and a yaw and returns that.
+    Ax: float = (Px - (resolutionWidth/2)) / (resolutionWidth / 2)
+    Ay: float = (Py - (resolutionHeight/2)) / (resolutionHeight / 2)
+    pitch: float = (Ay/2) * verticalFOV
+    yaw: float = (Ax/2) * horizontalFOV
+    return (pitch, yaw)
+
+def setupNetworkTables():
+    nt: NetworkTable = NetworkTableInstance.getDefault().getTable(tableName)
+    nt.putNumber("hueMin", hueMin)
+    nt.putNumber("saturationMin", saturationMin)
+    nt.putNumber("valueMin", valueMin)
+    nt.putNumber("hueMax", hueMax)
+    nt.putNumber("saturationMax", saturationMax)
+    nt.putNumber("valueMax", valueMax)
+    nt.putNumber("erodeIterations", erodeIterations)
+    nt.putNumber("dilateIterations", dilateIterations)
+    nt.putNumber("Pitch", 0)
+    nt.putNumber("Yaw", 0)
 
 def main(): # Image proccessing user code
+    setupNetworkTables()
     CameraServer.enableLogging()
     cvSink = CameraServer.getVideo()
-    outputStream = CameraServer.putVideo("Proccessed Video", 1280, 720)
-    img = np.zeros(shape=(1280, 720, 3), dtype=np.uint8)
-    nt: NetworkTable = NetworkTableInstance.getTable('vision')
+    outputStream = CameraServer.putVideo("Proccessed Video", resolutionWidth, resolutionHeight)
+    originalStream = CameraServer.putVideo("Original Video", resolutionWidth, resolutionHeight)
+    img = np.zeros(shape=(resolutionWidth, resolutionHeight, 3), dtype=np.uint8)
+    nt: NetworkTable = NetworkTableInstance.getDefault().getTable(tableName)
     # loop forever
     while True:
         time, input_img = cvSink.grabFrame(img)
@@ -255,11 +283,11 @@ def main(): # Image proccessing user code
         
         # Eroding
         kernel = np.ones((3, 3), np.uint8)
-        binary_img = cv2.erode(binary_img, kernel, iterations = nt.getNumber("erodeIterations", erodeIterations))
+        binary_img = cv2.erode(binary_img, kernel, iterations = int(nt.getNumber("erodeIterations", erodeIterations)))
         
         # Dilating
         kernel = np.ones((3, 3), np.uint8)
-        binary_img = cv2.dilate(binary_img, kernel, iterations = nt.getNumber("dilateIterations", dilateIterations))
+        binary_img = cv2.dilate(binary_img, kernel, iterations = int(nt.getNumber("dilateIterations", dilateIterations)))
         
         # Contours
         contours, hierarchy = cv2.findContours(binary_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -268,21 +296,24 @@ def main(): # Image proccessing user code
             for contour in contours:
                 if cv2.contourArea(contour) > cv2.contourArea(mainContour):
                     mainContour = contour
-            # Center
-            rect = cv2.minAreaRect(mainContour)
-            center, size, angle = rect
-            center = [int(dim) for dim in center] # Convert to int so we can draw
-            # Corners
-            # corners = cv2.convexHull(contour)
-            # corners = cv2.approxPolyDP(corners, 0.1 * cv2.arcLength(contour), True)
-            # # Rotation
-            # _, _, rotation = cv2.fitEllipse(contour)
+            if (cv2.contourArea(contour) < 15):
+                return
+            # Bounding Rectangle
+            rect = cv2.boundingRect(mainContour)
+            x, y, w, h = rect
+            center = (int(x + 1/2*w), int(y + 1/2*h)) # Center of bounding rectangle
+            crosshair = (int(x + 1/2*w), int(y + h)) # Crosshair on bottom for measurements 
+            
+            # pitch, yaw = pointToPitchAndYaw(crosshair[0], crosshair[1])
+            # nt.putNumber("Pitch", pitch)
+            # nt.putNumber("Yaw", yaw)
             # Convert to color to draw stuff
             binary_img = cv2.cvtColor(binary_img, cv2.COLOR_GRAY2BGR)
-            binary_img = cv2.drawContours(binary_img, mainContour, -1, color = (0, 0, 255), thickness = 3)
-            binary_img = cv2.circle(binary_img, center = center, radius = 10, color = (0, 255, 0), thickness = 2)
+            binary_img = cv2.drawContours(binary_img, mainContour, -1, color = (255, 0, 0), thickness = 2)
+            binary_img = cv2.rectangle(binary_img, (x, y), (x + w, y + h), color = (0, 0, 255), thickness = 2)
+            binary_img = cv2.circle(binary_img, center = crosshair, radius = 10, color = (0, 255, 0), thickness = -1)
             outputStream.putFrame(binary_img)
-            
+        originalStream.putFrame(input_img)
 
 
 ###################################################################################################################
