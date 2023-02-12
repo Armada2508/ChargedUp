@@ -220,8 +220,8 @@ def startSwitchedCamera(config):
 resolutionWidth: Final[int] = 1280
 resolutionHeight: Final[int] = 720
 tableName: Final[str] = "Vision"
-verticalFOV: Final[float] = 45
-horizontalFOV: Final[float] = 68
+verticalFOV: Final[int] = 45
+horizontalFOV: Final[int] = 68
 
 # Processing
 hueMin: Final[int] = 8
@@ -297,16 +297,16 @@ def main(): # Image proccessing user code
                 if cv2.contourArea(contour) > cv2.contourArea(mainContour):
                     mainContour = contour
             if (cv2.contourArea(contour) < 15):
-                return
+                continue
             # Bounding Rectangle
             rect = cv2.boundingRect(mainContour)
             x, y, w, h = rect
             center = (int(x + 1/2*w), int(y + 1/2*h)) # Center of bounding rectangle
             crosshair = (int(x + 1/2*w), int(y + h)) # Crosshair on bottom for measurements 
             
-            # pitch, yaw = pointToPitchAndYaw(crosshair[0], crosshair[1])
-            # nt.putNumber("Pitch", pitch)
-            # nt.putNumber("Yaw", yaw)
+            pitch, yaw = pointToPitchAndYaw(crosshair[0], crosshair[1])
+            nt.putNumber("Pitch", pitch)
+            nt.putNumber("Yaw", yaw)
             # Convert to color to draw stuff
             binary_img = cv2.cvtColor(binary_img, cv2.COLOR_GRAY2BGR)
             binary_img = cv2.drawContours(binary_img, mainContour, -1, color = (255, 0, 0), thickness = 2)
@@ -338,13 +338,10 @@ if __name__ == "__main__":
         ntinst.startClient4("wpilibpi")
         ntinst.setServerTeam(team)
         ntinst.startDSClient()
-
     # start cameras
     for config in cameraConfigs:
         cameras.append(startCamera(config))
-
     # start switched cameras
     for config in switchedCameraConfigs:
         startSwitchedCamera(config)
-        
     main() # start user code
