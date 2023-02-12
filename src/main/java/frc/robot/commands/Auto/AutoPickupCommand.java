@@ -22,14 +22,10 @@ import frc.robot.subsystems.WristSubsystem;
 
 public class AutoPickupCommand extends SequentialCommandGroup {
 
-    private final double gripperCube = 0.0;
-    private final double gripperConePortrait = 0.0;
-    private final double gripperConeLandscape = 0.0;
-
+    private final double distanceFromTargetInches = 12;
     private Target lastTarget = Target.CONE;
     private double cubeDistance = 0.0;
     private double coneDistance = 0.0;
-    private final double distanceFromTargetInches = 12;
 
     // TODO check wait times
     public AutoPickupCommand(PhotonSubsystem photonSubsystem, DriveSubsystem driveSubsystem, PigeonIMU pigeon, ArmSubsystem ArmSubsystem, WristSubsystem WristSubsystem, GripperSubsystem GripperSubsystem) {
