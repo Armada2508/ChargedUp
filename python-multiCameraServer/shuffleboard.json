@@ -167,6 +167,61 @@
               "Colors/Color when true": "#7CFC00FF",
               "Colors/Color when false": "#8B0000FF"
             }
+          },
+          "21,0": {
+            "size": [
+              19,
+              11
+            ],
+            "content": {
+              "_type": "Camera Stream",
+              "_source0": "camera_server://Proccessed Video",
+              "_title": "Proccessed Video",
+              "_glyph": 148,
+              "_showGlyph": false,
+              "Crosshair/Show crosshair": true,
+              "Crosshair/Crosshair color": "#FFFFFFFF",
+              "Controls/Show controls": true,
+              "Controls/Rotation": "NONE",
+              "compression": -1.0,
+              "fps": -1,
+              "imageWidth": -1,
+              "imageHeight": -1
+            }
+          },
+          "6,3": {
+            "size": [
+              3,
+              3
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///Vision/Pipeline",
+              "_title": "/Vision/Pipeline",
+              "_glyph": 148,
+              "_showGlyph": false
+            }
+          },
+          "6,12": {
+            "size": [
+              20,
+              7
+            ],
+            "content": {
+              "_type": "Camera Stream",
+              "_source0": "camera_server://Original Video",
+              "_title": "Original Video",
+              "_glyph": 148,
+              "_showGlyph": false,
+              "Crosshair/Show crosshair": true,
+              "Crosshair/Crosshair color": "#FFFFFFFF",
+              "Controls/Show controls": true,
+              "Controls/Rotation": "NONE",
+              "compression": -1.0,
+              "fps": -1,
+              "imageWidth": -1,
+              "imageHeight": -1
+            }
           }
         }
       }

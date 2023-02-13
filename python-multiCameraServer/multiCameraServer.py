@@ -5,55 +5,14 @@
 # the WPILib BSD license file in the root directory of this project.
 
 import json
+import math
 import sys
-import time
 from typing import Final
 
 import cv2
 import numpy as np
 from cscore import CameraServer, MjpegServer, UsbCamera, VideoSource
 from ntcore import EventFlags, NetworkTable, NetworkTableInstance
-
-#   JSON format:
-#   {
-#       "team": <team number>,
-#       "ntmode": <"client" or "server", "client" if unspecified>
-#       "cameras": [
-#           {
-#               "name": <camera name>
-#               "path": <path, e.g. "/dev/video0">
-#               "pixel format": <"MJPEG", "YUYV", etc>   // optional
-#               "width": <video mode width>              // optional
-#               "height": <video mode height>            // optional
-#               "fps": <video mode fps>                  // optional
-#               "brightness": <percentage brightness>    // optional
-#               "white balance": <"auto", "hold", value> // optional
-#               "exposure": <"auto", "hold", value>      // optional
-#               "properties": [                          // optional
-#                   {
-#                       "name": <property name>
-#                       "value": <property value>
-#                   }
-#               ],
-#               "stream": {                              // optional
-#                   "properties": [
-#                       {
-#                           "name": <stream property name>
-#                           "value": <stream property value>
-#                       }
-#                   ]
-#               }
-#           }
-#       ]
-#       "switched cameras": [
-#           {
-#               "name": <virtual camera name>
-#               "key": <network table key used for selection>
-#               // if NT value is a string, it's treated as a name
-#               // if NT value is a double, it's treated as an integer index
-#           }
-#       ]
-#   }
 
 configFile = "/boot/frc.json"
 
@@ -216,21 +175,32 @@ def startSwitchedCamera(config):
 
 ###################################################################################################################
 
+class Pipeline:
+    
+    def __init__(self, hueMin: int, hueMax: int, saturationMin: int, saturationMax: int, valueMin: int, valueMax: int, erodeIterations: int, dilateIterations: int, pipelineIndex: int):
+        self.hueMin: Final[int] = hueMin
+        self.hueMax: Final[int] = hueMax
+        self.saturationMin: Final[int] = saturationMin
+        self.saturationMax: Final[int] = saturationMax
+        self.valueMin: Final[int] = valueMin
+        self.valueMax: Final[int] = valueMax
+        self.erodeIterations: Final[int] = erodeIterations
+        self.dilateIterations: Final[int] = dilateIterations
+        self.pipelineIndex: Final[int] = pipelineIndex
+        
 # Camera
 resolutionWidth: Final[int] = 1280
 resolutionHeight: Final[int] = 720
-verticalFOV: Final[int] = 45
-horizontalFOV: Final[int] = 68
+verticalFOV: Final[int] = 0.644550094 # rad
+horizontalFOV: Final[int] = 1.07145763 # rad
 
 # Processing
-hueMin: Final[int] = 8
-hueMax: Final[int] = 40
-saturationMin: Final[int] = 150
-saturationMax: Final[int] = 255
-valueMin: Final[int] = 160
-valueMax: Final[int] = 255
-erodeIterations: Final[int] = 1
-dilateIterations: Final[int] = 1
+currentPipeline: int = 0
+conePipelineIndex: Final[int] = 0
+cubePipelineIndex: Final[int] = 1
+aprilTagsPipelineIndex: Final[int] = 2
+conePipeline: Pipeline = Pipeline(8, 40, 120, 255, 160, 255, 1, 1, conePipelineIndex)
+cubePipeline: Pipeline = Pipeline(120, 150, 30, 255, 120, 255, 1, 3, cubePipelineIndex)
 
 # NetworkTables
 networkTableName: Final[str] = "Vision"
@@ -242,67 +212,92 @@ valueMinNT: Final[str] = "valueMin"
 valueMaxNT: Final[str] = "valueMax"
 erodeIterationsNT: Final[str] = "erodeIterations"
 dilateIterationsNT: Final[str] = "dilateIterations"
+pipelineNT: Final[str] = "Pipeline"
 pitchNT: Final[str] = "Pitch"
 yawNT: Final[str] = "Yaw"
 haveTargetNT: Final[str] = "HaveTarget"
 
-def pointToPitchAndYaw(Px: int, Py: int): # Converts a point in pixel system to a pitch and a yaw and returns that.
-    Ax: float = (Px - (resolutionWidth/2)) / (resolutionWidth / 2)
-    Ay: float = (Py - (resolutionHeight/2)) / (resolutionHeight / 2)
-    pitch: float = (Ay/2) * verticalFOV * -1
-    yaw: float = (Ax/2) * horizontalFOV
+def pointToPitchAndYaw(px: int, py: int): # Converts a point in pixel system to a pitch and a yaw and returns that.
+    nx: float = (2/resolutionWidth) * (px - ((resolutionWidth/2) - 0.5))
+    ny: float = (2/resolutionHeight) * (((resolutionHeight/2) - 0.5) - py)
+    vpw: float = 2.0*math.tan(horizontalFOV/2)
+    vph: float = 2.0*math.tan(verticalFOV/2)
+    x: float = vpw/2 * nx
+    y: float = vph/2 * ny
+    ax: float = math.atan(x/1)
+    ay: float = math.atan(y/1)
+    yaw: float = math.degrees(ax)
+    pitch: float = math.degrees(ay) * -1
     return (pitch, yaw)
 
-def setupNetworkTables():
+def aprilTagPipeline():
+    pass
+
+def executePipeline(input_img, pipeline: Pipeline):
+    global currentPipeline
+    if (pipeline.pipelineIndex != currentPipeline):
+        setupNetworkTables(pipeline)
     nt: NetworkTable = NetworkTableInstance.getDefault().getTable(networkTableName)
-    nt.putNumber(hueMinNT, hueMin)
-    nt.putNumber(hueMaxNT, hueMax)
-    nt.putNumber(saturationMinNT, saturationMin)
-    nt.putNumber(saturationMaxNT, saturationMax)
-    nt.putNumber(valueMinNT, valueMin)
-    nt.putNumber(valueMaxNT, valueMax)
-    nt.putNumber(erodeIterationsNT, erodeIterations)
-    nt.putNumber(dilateIterationsNT, dilateIterations)
+    # Color Converting
+    hsv_img = cv2.cvtColor(input_img, cv2.COLOR_BGR2HSV)
+    # Color Thresholding
+    binary_img = cv2.inRange(hsv_img, (
+        nt.getNumber(hueMinNT, pipeline.hueMin),
+        nt.getNumber(saturationMinNT, pipeline.saturationMin) , 
+        nt.getNumber(valueMinNT, pipeline.valueMin)
+    ), (
+        nt.getNumber(hueMaxNT, pipeline.hueMax), 
+        nt.getNumber(saturationMaxNT, pipeline.saturationMax), 
+        nt.getNumber(valueMaxNT, pipeline.valueMax)
+    ))
+    # Eroding
+    kernel = np.ones((3, 3), np.uint8)
+    binary_img = cv2.erode(binary_img, kernel, iterations = int(nt.getNumber(erodeIterationsNT, pipeline.erodeIterations)))
+    # Dilating
+    kernel = np.ones((3, 3), np.uint8)
+    binary_img = cv2.dilate(binary_img, kernel, iterations = int(nt.getNumber(dilateIterationsNT, pipeline.dilateIterations)))
+    currentPipeline = pipeline.pipelineIndex
+    return binary_img
+        
+def setupNetworkTables(pipeline: Pipeline):
+    nt: NetworkTable = NetworkTableInstance.getDefault().getTable(networkTableName)
+    nt.putNumber(hueMinNT, pipeline.hueMin)
+    nt.putNumber(hueMaxNT, pipeline.hueMax)
+    nt.putNumber(saturationMinNT, pipeline.saturationMin)
+    nt.putNumber(saturationMaxNT, pipeline.saturationMax)
+    nt.putNumber(valueMinNT, pipeline.valueMin)
+    nt.putNumber(valueMaxNT, pipeline.valueMax)
+    nt.putNumber(erodeIterationsNT, pipeline.erodeIterations)
+    nt.putNumber(dilateIterationsNT, pipeline.dilateIterations)
+    nt.putNumber(pipelineNT, pipeline.pipelineIndex)
     nt.putNumber(pitchNT, 0)
     nt.putNumber(yawNT, 0)
     nt.putBoolean(haveTargetNT, False)
 
 def main(): # Image proccessing user code
-    setupNetworkTables()
     CameraServer.enableLogging()
     cvSink = CameraServer.getVideo()
     outputStream = CameraServer.putVideo("Proccessed Video", resolutionWidth, resolutionHeight)
     originalStream = CameraServer.putVideo("Original Video", resolutionWidth, resolutionHeight)
     img = np.zeros(shape=(resolutionWidth, resolutionHeight, 3), dtype=np.uint8)
     nt: NetworkTable = NetworkTableInstance.getDefault().getTable(networkTableName)
+    setupNetworkTables(conePipeline)
     # loop forever
     while True:
+        global currentPipeline
         time, input_img = cvSink.grabFrame(img)
-
         if time == 0: # There is an error
-            outputStream.notifyError(cvSink.getError());
+            outputStream.notifyError(cvSink.getError())
             continue
-        
-        # Color thresholding
-        hsv_img = cv2.cvtColor(input_img, cv2.COLOR_BGR2HSV)
-        binary_img = cv2.inRange(hsv_img, (
-            nt.getNumber(hueMinNT, hueMin),
-            nt.getNumber(saturationMinNT, saturationMin) , 
-            nt.getNumber(valueMinNT, valueMin)
-        ), (
-            nt.getNumber(hueMaxNT, hueMax), 
-            nt.getNumber(saturationMaxNT, saturationMax), 
-            nt.getNumber(valueMaxNT, valueMax)
-        ))
-        
-        # Eroding
-        kernel = np.ones((3, 3), np.uint8)
-        binary_img = cv2.erode(binary_img, kernel, iterations = int(nt.getNumber(erodeIterationsNT, erodeIterations)))
-        
-        # Dilating
-        kernel = np.ones((3, 3), np.uint8)
-        binary_img = cv2.dilate(binary_img, kernel, iterations = int(nt.getNumber(dilateIterationsNT, dilateIterations)))
-        
+        index = nt.getNumber(pipelineNT, conePipelineIndex)
+        if (index == conePipelineIndex):
+            binary_img = executePipeline(input_img, conePipeline)
+        elif (index == cubePipelineIndex):
+            binary_img = executePipeline(input_img, cubePipeline)
+        elif (index == aprilTagsPipelineIndex):
+            binary_img = aprilTagPipeline()
+        else:
+            binary_img = executePipeline(input_img, conePipeline)
         # Contours
         contours, hierarchy = cv2.findContours(binary_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         if len(contours) > 0:
@@ -328,9 +323,9 @@ def main(): # Image proccessing user code
             binary_img = cv2.drawContours(binary_img, mainContour, -1, color = (255, 0, 0), thickness = 2)
             binary_img = cv2.rectangle(binary_img, (x, y), (x + w, y + h), color = (0, 0, 255), thickness = 2)
             binary_img = cv2.circle(binary_img, center = crosshair, radius = 10, color = (0, 255, 0), thickness = -1)
-            outputStream.putFrame(binary_img) # Stream Video
         else:
             nt.putBoolean(haveTargetNT, False)
+        outputStream.putFrame(binary_img) # Stream Video
         originalStream.putFrame(input_img) # Stream Video
 
 

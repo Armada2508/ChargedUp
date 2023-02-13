@@ -1,0 +1,18 @@
+{
+  "NetworkTables": {
+    "transitory": {
+      "Vision": {
+        "open": true
+      }
+    },
+    "types": {
+      "/FMSInfo": "FMSInfo",
+      "/Shuffleboard/PID Tuning/Balance Roll PID Controller": "PIDController",
+      "/Shuffleboard/PID Tuning/Turning PID Controller": "PIDController"
+    }
+  },
+  "NetworkTables Settings": {
+    "mode": "Client (NT4)",
+    "serverTeam": "2508"
+  }
+}
