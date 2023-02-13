@@ -33,9 +33,9 @@ import frc.robot.commands.Driving.SeekCommand;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.GripperSubsystem;
-import frc.robot.subsystems.PhotonSubsystem;
-import frc.robot.subsystems.PhotonSubsystem.Target;
 import frc.robot.subsystems.VisionSubsystem;
+//!import frc.robot.subsystems.PhotonSubsystem;
+import frc.robot.subsystems.VisionSubsystem.Target;
 import frc.robot.subsystems.WristSubsystem;
 
 public class RobotContainer {
@@ -43,7 +43,7 @@ public class RobotContainer {
     private final Joystick joystick = new Joystick(0);
     private final Joystick buttonBoard = new Joystick(1);
     private final VisionSubsystem visionSubsystem = new VisionSubsystem();
-    private final PhotonSubsystem photonSubsystem = new PhotonSubsystem();
+    //!private final PhotonSubsystem photonSubsystem = new PhotonSubsystem();
     private final ArmSubsystem armSubsystem = new ArmSubsystem();
     private final WristSubsystem wristSubsystem = new WristSubsystem();
     private final GripperSubsystem gripperSubsystem = new GripperSubsystem();
@@ -69,13 +69,13 @@ public class RobotContainer {
     @SuppressWarnings("resource")
     private void configureButtons() {
         // Joystick
-        final AutoPickupCommand pickup = new AutoPickupCommand(photonSubsystem, driveSubsystem, pigeon, armSubsystem, wristSubsystem, gripperSubsystem);
+        final AutoPickupCommand pickup = new AutoPickupCommand(visionSubsystem, driveSubsystem, pigeon, armSubsystem, wristSubsystem, gripperSubsystem);
         new JoystickButton(joystick, 12).onTrue(runOnce(CommandScheduler.getInstance()::cancelAll)); // AutoStop 
         new JoystickButton(joystick, 11).onTrue(new BalanceCommand(driveSubsystem, pigeon));
         // new JoystickButton(buttonBoard, 12).onTrue(new PieceOnTopCommand(pickup::getPreviousTarget, Height.HIGH, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem)); 
         // new JoystickButton(buttonBoard, 11).onTrue(new PieceOnTopCommand(pickup::getPreviousTarget, Height.MID, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem)); 
         new JoystickButton(buttonBoard, 10).onTrue(new PieceOnFloorCommand(driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem));
-        new JoystickButton(joystick, 9).onTrue(new SeekCommand(driveSubsystem, photonSubsystem, pigeon, Target.CONE, 12));
+        new JoystickButton(joystick, 9).onTrue(new SeekCommand(driveSubsystem, visionSubsystem, pigeon, Target.CONE, 12));
         new JoystickButton(joystick, 8).onTrue(pickup);
         new JoystickButton(joystick, 7).onTrue(Commands.run(() -> driveSubsystem.setPower(.25, .25), driveSubsystem));
         new JoystickButton(joystick, 6).onTrue(new AutoDriveCommand(12, driveSubsystem));

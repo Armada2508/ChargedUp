@@ -15,9 +15,9 @@ import frc.robot.commands.Driving.SeekCommand;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.GripperSubsystem;
-import frc.robot.subsystems.PhotonSubsystem;
-import frc.robot.subsystems.PhotonSubsystem.Orientation;
-import frc.robot.subsystems.PhotonSubsystem.Target;
+import frc.robot.subsystems.VisionSubsystem;
+import frc.robot.subsystems.VisionSubsystem.Orientation;
+import frc.robot.subsystems.VisionSubsystem.Target;
 import frc.robot.subsystems.WristSubsystem;
 
 public class AutoPickupCommand extends SequentialCommandGroup {
@@ -28,39 +28,39 @@ public class AutoPickupCommand extends SequentialCommandGroup {
     private double coneDistance = 0.0;
 
     // TODO check wait times
-    public AutoPickupCommand(PhotonSubsystem photonSubsystem, DriveSubsystem driveSubsystem, PigeonIMU pigeon, ArmSubsystem ArmSubsystem, WristSubsystem WristSubsystem, GripperSubsystem GripperSubsystem) {
+    public AutoPickupCommand(VisionSubsystem visionSubsystem, DriveSubsystem driveSubsystem, PigeonIMU pigeon, ArmSubsystem ArmSubsystem, WristSubsystem WristSubsystem, GripperSubsystem GripperSubsystem) {
         addCommands(
             new GripperCommand(0, GripperSubsystem),
             new ArmCommand(Arm.minDegrees, ArmSubsystem),
             new SequentialCommandGroup(
-                new InstantCommand(() -> photonSubsystem.setPipeline(Vision.cubePipeline), photonSubsystem),
+                new InstantCommand(() ->visionSubsystem.setPipeline(Vision.cubePipeline),visionSubsystem),
                 new WaitCommand(0.1),
-                new InstantCommand(() -> cubeDistance = photonSubsystem.getDistanceToTargetInches(Target.CUBE)),
-                new InstantCommand(() -> photonSubsystem.setPipeline(Vision.coneLandscapePipeline), photonSubsystem),
+                new InstantCommand(() -> cubeDistance =visionSubsystem.distanceFromTargetInInches(Target.CUBE)),
+                new InstantCommand(() ->visionSubsystem.setPipeline(Vision.coneLandscapePipeline),visionSubsystem),
                 new WaitCommand(0.1),
-                new InstantCommand(() -> coneDistance = photonSubsystem.getDistanceToTargetInches(Target.CONE))
+                new InstantCommand(() -> coneDistance =visionSubsystem.distanceFromTargetInInches(Target.CONE))
             ),
             new ConditionalCommand(
                 new SequentialCommandGroup(
-                    new SeekCommand(driveSubsystem, photonSubsystem, pigeon, () -> getTarget(photonSubsystem), distanceFromTargetInches),
+                    new SeekCommand(driveSubsystem, visionSubsystem, pigeon, () -> getTarget(visionSubsystem), distanceFromTargetInches),
                     new ConditionalCommand(
                         new ConditionalCommand(
                             InverseKinematics.getIKPositionCommand(12.0, 0.0, ArmSubsystem, WristSubsystem), /*On True  | Landscape Orientation*/
                             InverseKinematics.getIKPositionCommand(12.0, 0.0, ArmSubsystem, WristSubsystem), /*On False | Portrait Orientation*/
-                            () -> photonSubsystem.getConeOrientation() == Orientation.LANDSCAPE  /*Boolean Supplier*/
+                            () -> visionSubsystem.getConeOrientation() == Orientation.LANDSCAPE  /*Boolean Supplier*/
                             ), /*On True  | Target.Cone*/
                         InverseKinematics.getIKPositionCommand(12.0, 0.0, ArmSubsystem, WristSubsystem), /*On False | Target.Cube*/
-                        () -> getTarget(photonSubsystem) == Target.CONE  /*Boolean Supplier*/
+                        () -> getTarget(visionSubsystem) == Target.CONE  /*Boolean Supplier*/
                     ),
                     new ArmCommand(Arm.minDegrees, ArmSubsystem) /* On True for Conditional, Starts at InstantCommand*/
                 ),
                 new InstantCommand(), /* On False for Conditional */ 
-                () -> getTarget(photonSubsystem) != Target.NONE /* Boolean Supplier for Conditional */
+                () -> getTarget(visionSubsystem) != Target.NONE /* Boolean Supplier for Conditional */
             )
         );
     }
 
-    private Target getTarget(PhotonSubsystem photonSubsystem) {
+    private Target getTarget(VisionSubsystem visionSubsystem) {
         Target target = Target.CONE;
         if ((cubeDistance == Double.NaN) && (coneDistance != Double.NaN)) {
             target = Target.CONE;

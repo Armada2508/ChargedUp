@@ -11,6 +11,8 @@ import org.photonvision.targeting.TargetCorner;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.Vision;
+import frc.robot.subsystems.VisionSubsystem.Orientation;
+import frc.robot.subsystems.VisionSubsystem.Target;
 
 public class PhotonSubsystem extends SubsystemBase {
 
@@ -97,16 +99,6 @@ public class PhotonSubsystem extends SubsystemBase {
         setPipeline(index);
     }
 
-    public enum Orientation {
-        LANDSCAPE,
-        PORTRAIT
-    }
-
-    public enum Target {
-        NONE,
-        CUBE,
-        CONE,
-        APRILTAG
-    }
+    
 
 }

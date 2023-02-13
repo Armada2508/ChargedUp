@@ -7,32 +7,32 @@ import com.ctre.phoenix.sensors.PigeonIMU;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.DriveSubsystem;
-import frc.robot.subsystems.PhotonSubsystem;
-import frc.robot.subsystems.PhotonSubsystem.Target;
+import frc.robot.subsystems.VisionSubsystem;
+import frc.robot.subsystems.VisionSubsystem.Target;
 
 public class SeekCommand extends SequentialCommandGroup {
 
-    public SeekCommand(DriveSubsystem driveSubsystem, PhotonSubsystem photonSubsystem, PigeonIMU pigeon, Target target, double distanceFromTargetInches) {
-        this(driveSubsystem, photonSubsystem, pigeon, () -> target, distanceFromTargetInches);
+    public SeekCommand(DriveSubsystem driveSubsystem, VisionSubsystem visionSubsystem, PigeonIMU pigeon, Target target, double distanceFromTargetInches) {
+        this(driveSubsystem, visionSubsystem, pigeon, () -> target, distanceFromTargetInches);
     }
 
-    public SeekCommand(DriveSubsystem driveSubsystem, PhotonSubsystem photonSubsystem, PigeonIMU pigeon, Supplier<Target> target, double distanceFromTargetInches) {
+    public SeekCommand(DriveSubsystem driveSubsystem, VisionSubsystem visionSubsystem, PigeonIMU pigeon, Supplier<Target> target, double distanceFromTargetInches) {
         addCommands(
-            new AutoTurnCommand(photonSubsystem::getTargetYaw, driveSubsystem, pigeon),
-            new DriveUntilCommand(driveSubsystem, photonSubsystem, target.get()),
-            new AutoDriveCommand(() -> photonSubsystem.getDistanceToTargetInches(target.get()) - distanceFromTargetInches, driveSubsystem)
+            new AutoTurnCommand(visionSubsystem::getTargetYaw, driveSubsystem, pigeon),
+            new DriveUntilCommand(driveSubsystem, visionSubsystem, target.get()),
+            new AutoDriveCommand(() -> visionSubsystem.distanceFromTargetInInches(target.get()) - distanceFromTargetInches, driveSubsystem)
         );
     }
 
     private class DriveUntilCommand extends CommandBase {
 
         private DriveSubsystem driveSubsystem;
-        private PhotonSubsystem photonSubsystem;
+        private VisionSubsystem visionSubsystem;
         private Target target;
 
-        DriveUntilCommand(DriveSubsystem driveSubsystem, PhotonSubsystem photonSubsystem, Target target) {
+        DriveUntilCommand(DriveSubsystem driveSubsystem, VisionSubsystem visionSubsystem, Target target) {
             this.driveSubsystem = driveSubsystem;
-            this.photonSubsystem = photonSubsystem;
+            this.visionSubsystem = visionSubsystem;
             this.target = target;
         }
 
@@ -48,7 +48,7 @@ public class SeekCommand extends SequentialCommandGroup {
 
         @Override
         public boolean isFinished() {
-            return photonSubsystem.getDistanceToTargetInches(target) <= 3*12;
+            return visionSubsystem.distanceFromTargetInInches(target) <= 3*12;
         }
 
     }

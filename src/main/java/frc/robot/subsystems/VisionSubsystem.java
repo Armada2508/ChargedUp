@@ -9,7 +9,6 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTableValue;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.Vision;
-import frc.robot.subsystems.PhotonSubsystem.Target;
 
 /**
  * Used to interface with the raspberry pi.
@@ -17,6 +16,8 @@ import frc.robot.subsystems.PhotonSubsystem.Target;
 public class VisionSubsystem extends SubsystemBase {
 
     private final NetworkTable table = NetworkTableInstance.getDefault().getTable("Vision");
+    private final NetworkTableValue pipeline = table.getValue("Pipeline");
+    private final NetworkTableValue orientation = table.getValue("Orientation");
     private final NetworkTableValue hasTarget = table.getValue("HasTarget");
     private final NetworkTableValue pitch = table.getValue("Pitch"); // Left is negative, right is positive, in degrees
     private final NetworkTableValue yaw = table.getValue("Yaw"); // In degrees
@@ -65,6 +66,25 @@ public class VisionSubsystem extends SubsystemBase {
             Units.degreesToRadians(getTargetPitch())
         );
         return Units.metersToInches(distanceMeters) - Vision.distanceToBumperInches;
+    }
+
+    public void setPipeline(int index) {
+        pipeline.makeInteger(index);
+    }
+    public Orientation getConeOrientation() {
+        return Orientation.LANDSCAPE;
+    }
+
+    public enum Orientation {
+        LANDSCAPE,
+        PORTRAIT
+    }
+
+    public enum Target {
+        NONE,
+        CUBE,
+        CONE,
+        APRILTAG
     }
 
 }
