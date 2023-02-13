@@ -23,7 +23,7 @@ public class Constants {
         public static final double turnkP = 0.01;
         public static final double turnkI = 0;
         public static final double turnkD = 0.005;
-        public static final double maxSpeed = 0.5;
+        public static final double maxTurnSpeed = 0.5;
         
         public static final double diameterInches = 6;
         public static final int encoderUnits = 2048;
