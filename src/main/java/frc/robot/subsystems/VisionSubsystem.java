@@ -6,7 +6,6 @@ import org.photonvision.PhotonUtils;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.NetworkTableValue;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.Vision;
 
@@ -16,11 +15,11 @@ import frc.robot.Constants.Vision;
 public class VisionSubsystem extends SubsystemBase {
 
     private final NetworkTable table = NetworkTableInstance.getDefault().getTable("Vision");
-    private final NetworkTableValue pipeline = table.getValue("Pipeline");
-    private final NetworkTableValue orientation = table.getValue("Orientation");
-    private final NetworkTableValue hasTarget = table.getValue("HasTarget");
-    private final NetworkTableValue pitch = table.getValue("Pitch"); // Left is negative, right is positive, in degrees
-    private final NetworkTableValue yaw = table.getValue("Yaw"); // In degrees
+    private final String hasTarget = "HaveTarget";
+    private final String pitch = "Pitch"; // Left is negative, right is positive, in degrees
+    private final String yaw = "Yaw"; // In degrees
+    private final String pipeline = "Pipeline";
+    private final String orientation = "Orientation";
 
     public VisionSubsystem() {
         super();
@@ -28,21 +27,21 @@ public class VisionSubsystem extends SubsystemBase {
     
     @Override
     public void periodic() {
-        // System.out.println("Pitch: " + getTargetPitch() + " Yaw: " + getTargetYaw());
+        System.out.println("Pitch: " + getTargetPitch() + " Yaw: " + getTargetYaw());
     }
 
     public boolean hasTarget() {
-        return hasTarget.getBoolean();
+        return table.getValue(hasTarget).getBoolean();
     }
 
     public double getTargetPitch() {
         if (!hasTarget()) return Double.NaN;
-        return pitch.getDouble();
+        return table.getValue(pitch).getDouble();
     }
 
     public double getTargetYaw() {
         if (!hasTarget()) return Double.NaN;
-        return yaw.getDouble();
+        return table.getValue(yaw).getDouble();
     }
 
     /**
@@ -69,10 +68,15 @@ public class VisionSubsystem extends SubsystemBase {
     }
 
     public void setPipeline(int index) {
-        pipeline.makeInteger(index);
+        // table.putValue("Pipeline", hasTarget);
     }
+
     public Orientation getConeOrientation() {
-        return Orientation.LANDSCAPE;
+        return switch( (int) table.getValue(orientation).getInteger()) {
+            case 0 -> Orientation.LANDSCAPE;
+            case 1 -> Orientation.PORTRAIT;
+            default -> throw new IllegalArgumentException("Invalid number for orientation. - VisionSubsystem");
+        };
     }
 
     public enum Orientation {

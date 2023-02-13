@@ -297,7 +297,7 @@ def main(): # Image proccessing user code
         elif (index == aprilTagsPipelineIndex):
             binary_img = aprilTagPipeline()
         else:
-            binary_img = executePipeline(input_img, conePipeline)
+            continue
         # Contours
         contours, hierarchy = cv2.findContours(binary_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         if len(contours) > 0:
