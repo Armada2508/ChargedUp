@@ -4,6 +4,9 @@ package frc.robot.subsystems;
 import org.photonvision.PhotonUtils;
 
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.BooleanEntry;
+import edu.wpi.first.networktables.FloatEntry;
+import edu.wpi.first.networktables.IntegerEntry;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -15,11 +18,12 @@ import frc.robot.Constants.Vision;
 public class VisionSubsystem extends SubsystemBase {
 
     private final NetworkTable table = NetworkTableInstance.getDefault().getTable("Vision");
-    private final String hasTarget = "HaveTarget";
-    private final String pitch = "Pitch"; // Left is negative, right is positive, in degrees
-    private final String yaw = "Yaw"; // In degrees
-    private final String pipeline = "Pipeline";
-    private final String orientation = "Orientation";
+    private final IntegerEntry pipeline = table.getIntegerTopic("Pipeline").getEntry(0);
+    private final IntegerEntry orientation = table.getIntegerTopic("Orientation").getEntry(0);
+    private final BooleanEntry hasTarget = table.getBooleanTopic("HaveTarget").getEntry(false);
+    private final FloatEntry pitch = table.getFloatTopic("Pitch").getEntry(0); // Left is negative, right is positive, in degrees
+    private final FloatEntry yaw = table.getFloatTopic("Yaw").getEntry(0); // In degrees
+    private PipelineResult currentResult = new PipelineResult(false, 0, 0, 0, 0);
 
     public VisionSubsystem() {
         super();
@@ -27,21 +31,22 @@ public class VisionSubsystem extends SubsystemBase {
     
     @Override
     public void periodic() {
-        System.out.println("Pitch: " + getTargetPitch() + " Yaw: " + getTargetYaw());
+        currentResult = new PipelineResult(hasTarget.get(), pitch.get(), yaw.get(), pipeline.get(), orientation.get());
+        System.out.println("Pitch: " + getTargetPitch() + " Yaw: " + getTargetYaw() + " Distance: " + distanceFromTargetInInches(Target.CONE));
     }
 
     public boolean hasTarget() {
-        return table.getValue(hasTarget).getBoolean();
+        return currentResult.haveTarget();
     }
 
     public double getTargetPitch() {
         if (!hasTarget()) return Double.NaN;
-        return table.getValue(pitch).getDouble();
+        return currentResult.pitch();
     }
 
     public double getTargetYaw() {
         if (!hasTarget()) return Double.NaN;
-        return table.getValue(yaw).getDouble();
+        return currentResult.yaw();
     }
 
     /**
@@ -67,12 +72,16 @@ public class VisionSubsystem extends SubsystemBase {
         return Units.metersToInches(distanceMeters) - Vision.distanceToBumperInches;
     }
 
+    public int getPipeline() {
+        return (int) currentResult.pipeline();
+    }
+
     public void setPipeline(int index) {
-        // table.putValue("Pipeline", hasTarget);
+        pipeline.set(index);
     }
 
     public Orientation getConeOrientation() {
-        return switch( (int) table.getValue(orientation).getInteger()) {
+        return switch( (int) currentResult.orientation()) {
             case 0 -> Orientation.LANDSCAPE;
             case 1 -> Orientation.PORTRAIT;
             default -> throw new IllegalArgumentException("Invalid number for orientation. - VisionSubsystem");
@@ -90,5 +99,13 @@ public class VisionSubsystem extends SubsystemBase {
         CONE,
         APRILTAG
     }
+
+    private record PipelineResult(
+        boolean haveTarget,
+        double pitch,
+        double yaw,
+        long pipeline,
+        long orientation
+    ) {}
 
 }

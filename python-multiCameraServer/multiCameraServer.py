@@ -204,18 +204,19 @@ cubePipeline: Pipeline = Pipeline(120, 150, 30, 255, 120, 255, 1, 3, cubePipelin
 
 # NetworkTables
 networkTableName: Final[str] = "Vision"
-hueMinNT: Final[str] = "hueMin"
-hueMaxNT: Final[str] = "hueMax"
-saturationMinNT: Final[str] = "saturationMin"
-saturationMaxNT: Final[str] = "saturationMax"
-valueMinNT: Final[str] = "valueMin"
-valueMaxNT: Final[str] = "valueMax"
-erodeIterationsNT: Final[str] = "erodeIterations"
-dilateIterationsNT: Final[str] = "dilateIterations"
-pipelineNT: Final[str] = "Pipeline"
-pitchNT: Final[str] = "Pitch"
-yawNT: Final[str] = "Yaw"
-haveTargetNT: Final[str] = "HaveTarget"
+nt: NetworkTable = NetworkTableInstance.getDefault().getTable(networkTableName)
+hueMinNT: Final = nt.getIntegerTopic("hueMin").getEntry(0)
+hueMaxNT: Final = nt.getIntegerTopic("hueMax").getEntry(0)
+saturationMinNT: Final = nt.getIntegerTopic("saturationMin").getEntry(0)
+saturationMaxNT: Final = nt.getIntegerTopic("saturationMax").getEntry(0)
+valueMinNT: Final = nt.getIntegerTopic("valueMin").getEntry(0)
+valueMaxNT: Final = nt.getIntegerTopic("valueMax").getEntry(0)
+erodeIterationsNT: Final = nt.getIntegerTopic("erodeIterations").getEntry(0)
+dilateIterationsNT: Final = nt.getIntegerTopic("dilateIterations").getEntry(0)
+pipelineNT: Final = nt.getIntegerTopic("Pipeline").getEntry(0)
+pitchNT: Final = nt.getFloatTopic("Pitch").getEntry(0)
+yawNT: Final = nt.getFloatTopic("Yaw").getEntry(0)
+haveTargetNT: Final = nt.getBooleanTopic("HaveTarget").getEntry(False)
 
 def pointToPitchAndYaw(px: int, py: int): # Converts a point in pixel system to a pitch and a yaw and returns that.
     nx: float = (2/resolutionWidth) * (px - ((resolutionWidth/2) - 0.5))
@@ -242,37 +243,37 @@ def executePipeline(input_img, pipeline: Pipeline):
     hsv_img = cv2.cvtColor(input_img, cv2.COLOR_BGR2HSV)
     # Color Thresholding
     binary_img = cv2.inRange(hsv_img, (
-        nt.getNumber(hueMinNT, pipeline.hueMin),
-        nt.getNumber(saturationMinNT, pipeline.saturationMin) , 
-        nt.getNumber(valueMinNT, pipeline.valueMin)
+        hueMinNT.get(pipeline.hueMin),
+        saturationMinNT.get(pipeline.saturationMin) , 
+        valueMinNT.get(pipeline.valueMin)
     ), (
-        nt.getNumber(hueMaxNT, pipeline.hueMax), 
-        nt.getNumber(saturationMaxNT, pipeline.saturationMax), 
-        nt.getNumber(valueMaxNT, pipeline.valueMax)
+        hueMaxNT.get(pipeline.hueMax), 
+        saturationMaxNT.get(pipeline.saturationMax), 
+        valueMaxNT.get(pipeline.valueMax)
     ))
     # Eroding
     kernel = np.ones((3, 3), np.uint8)
-    binary_img = cv2.erode(binary_img, kernel, iterations = int(nt.getNumber(erodeIterationsNT, pipeline.erodeIterations)))
+    binary_img = cv2.erode(binary_img, kernel, iterations = int(erodeIterationsNT.get(pipeline.erodeIterations)))
     # Dilating
     kernel = np.ones((3, 3), np.uint8)
-    binary_img = cv2.dilate(binary_img, kernel, iterations = int(nt.getNumber(dilateIterationsNT, pipeline.dilateIterations)))
+    binary_img = cv2.dilate(binary_img, kernel, iterations = int(dilateIterationsNT.get(pipeline.dilateIterations)))
     currentPipeline = pipeline.pipelineIndex
     return binary_img
         
 def setupNetworkTables(pipeline: Pipeline):
     nt: NetworkTable = NetworkTableInstance.getDefault().getTable(networkTableName)
-    nt.putNumber(hueMinNT, pipeline.hueMin)
-    nt.putNumber(hueMaxNT, pipeline.hueMax)
-    nt.putNumber(saturationMinNT, pipeline.saturationMin)
-    nt.putNumber(saturationMaxNT, pipeline.saturationMax)
-    nt.putNumber(valueMinNT, pipeline.valueMin)
-    nt.putNumber(valueMaxNT, pipeline.valueMax)
-    nt.putNumber(erodeIterationsNT, pipeline.erodeIterations)
-    nt.putNumber(dilateIterationsNT, pipeline.dilateIterations)
-    nt.putNumber(pipelineNT, pipeline.pipelineIndex)
-    nt.putNumber(pitchNT, 0)
-    nt.putNumber(yawNT, 0)
-    nt.putBoolean(haveTargetNT, False)
+    hueMinNT.set(pipeline.hueMin)
+    hueMaxNT.set(pipeline.hueMax)
+    saturationMinNT.set(pipeline.saturationMin)
+    saturationMaxNT.set(pipeline.saturationMax)
+    valueMinNT.set(pipeline.valueMin)
+    valueMaxNT.set(pipeline.valueMax)
+    erodeIterationsNT.set(pipeline.erodeIterations)
+    dilateIterationsNT.set(pipeline.dilateIterations)
+    pipelineNT.set(pipeline.pipelineIndex)
+    pitchNT.set(0)
+    yawNT.set(0)
+    haveTargetNT.set(False)
 
 def main(): # Image proccessing user code
     CameraServer.enableLogging()
@@ -289,7 +290,7 @@ def main(): # Image proccessing user code
         if time == 0: # There is an error
             outputStream.notifyError(cvSink.getError())
             continue
-        index = nt.getNumber(pipelineNT, conePipelineIndex)
+        index = pipelineNT.get(conePipelineIndex)
         if (index == conePipelineIndex):
             binary_img = executePipeline(input_img, conePipeline)
         elif (index == cubePipelineIndex):
@@ -306,9 +307,9 @@ def main(): # Image proccessing user code
                 if cv2.contourArea(contour) > cv2.contourArea(mainContour):
                     mainContour = contour
             if (cv2.contourArea(mainContour) < 15):
-                nt.putBoolean(haveTargetNT, False)
+                haveTargetNT.set(False)
                 continue
-            nt.putBoolean(haveTargetNT, True)
+            haveTargetNT.set(True)
             # Bounding Rectangle
             rect = cv2.boundingRect(mainContour)
             x, y, w, h = rect
@@ -316,15 +317,15 @@ def main(): # Image proccessing user code
             crosshair = (int(x + 1/2*w), int(y + h)) # Crosshair on bottom for measurements 
             
             pitch, yaw = pointToPitchAndYaw(crosshair[0], crosshair[1])
-            nt.putNumber(pitchNT, pitch)
-            nt.putNumber(yawNT, yaw)
+            pitchNT.set(pitch)
+            yawNT.set(yaw)
             # Convert to color to draw stuff
             binary_img = cv2.cvtColor(binary_img, cv2.COLOR_GRAY2BGR)
             binary_img = cv2.drawContours(binary_img, mainContour, -1, color = (255, 0, 0), thickness = 2)
             binary_img = cv2.rectangle(binary_img, (x, y), (x + w, y + h), color = (0, 0, 255), thickness = 2)
             binary_img = cv2.circle(binary_img, center = crosshair, radius = 10, color = (0, 255, 0), thickness = -1)
         else:
-            nt.putBoolean(haveTargetNT, False)
+            haveTargetNT.set(False)
         outputStream.putFrame(binary_img) # Stream Video
         originalStream.putFrame(input_img) # Stream Video
 

@@ -36,7 +36,7 @@ public class AutoPickupCommand extends SequentialCommandGroup {
                 new InstantCommand(() ->visionSubsystem.setPipeline(Vision.cubePipeline),visionSubsystem),
                 new WaitCommand(0.1),
                 new InstantCommand(() -> cubeDistance =visionSubsystem.distanceFromTargetInInches(Target.CUBE)),
-                new InstantCommand(() ->visionSubsystem.setPipeline(Vision.coneLandscapePipeline),visionSubsystem),
+                new InstantCommand(() ->visionSubsystem.setPipeline(Vision.conePipeline),visionSubsystem),
                 new WaitCommand(0.1),
                 new InstantCommand(() -> coneDistance =visionSubsystem.distanceFromTargetInInches(Target.CONE))
             ),

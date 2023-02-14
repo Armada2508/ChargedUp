@@ -77,9 +77,12 @@ public class RobotContainer {
         new JoystickButton(joystick, 8).onTrue(pickup);
         new JoystickButton(joystick, 7).onTrue(Commands.run(() -> driveSubsystem.setPower(.25, .25), driveSubsystem));
         new JoystickButton(joystick, 6).onTrue(new AutoDriveCommand(12, driveSubsystem));
-        new JoystickButton(joystick, 5).onTrue(new AutoTurnCommand(45, driveSubsystem, pigeon));
-        new JoystickButton(joystick, 4).onTrue(new AutoDriveCommand(-12, driveSubsystem));
-        new JoystickButton(joystick, 3).onTrue(new AutoTurnCommand(-45, driveSubsystem, pigeon));
+        // new JoystickButton(joystick, 5).onTrue(new AutoTurnCommand(45, driveSubsystem, pigeon));
+        // new JoystickButton(joystick, 4).onTrue(new AutoDriveCommand(-12, driveSubsystem));
+        // new JoystickButton(joystick, 3).onTrue(new AutoTurnCommand(-45, driveSubsystem, pigeon));
+        new JoystickButton(joystick, 5).onTrue(runOnce(() -> new AutoTurnCommand(visionSubsystem::getTargetYaw, driveSubsystem, pigeon)));
+        new JoystickButton(joystick, 4).onTrue(runOnce(() -> visionSubsystem.setPipeline(0)));
+        new JoystickButton(joystick, 3).onTrue(runOnce(() -> visionSubsystem.setPipeline(1)));
         // Buttonboard 
         new JoystickButton(buttonBoard, 1).whileTrue(Commands.startEnd(() -> armSubsystem.setPower(0.1), () -> armSubsystem.setPower(0), armSubsystem));
         new JoystickButton(buttonBoard, 2).whileTrue(Commands.startEnd(() -> armSubsystem.setPower(-0.1), () -> armSubsystem.setPower(0), armSubsystem));
