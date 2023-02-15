@@ -55,14 +55,13 @@ public class Constants {
         public static final double midPoleHeightInches = 24.0625; 
         public static final double coneHeightInches = 0;
         public static final double cubeHeightInches = 0;
-        public static final double aprilTagHeightInches = 0; //change
+        public static final double aprilTagHeightInches = 0;
         // Camera
         public static final double cameraHeightInches = 50;
         public static final double cameraAngleMountedDegrees = 0.5; 
         // Camera Pipelines
-        public static final int coneLandscapePipeline = 0;
+        public static final int conePipeline = 0;
         public static final int cubePipeline = 1;
-        public static final int conePortraitPipeline = 2;
     }
 
     public static final class Arm {

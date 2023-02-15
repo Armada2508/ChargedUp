@@ -34,7 +34,6 @@ import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.GripperSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
-//!import frc.robot.subsystems.PhotonSubsystem;
 import frc.robot.subsystems.VisionSubsystem.Target;
 import frc.robot.subsystems.WristSubsystem;
 
@@ -43,7 +42,6 @@ public class RobotContainer {
     private final Joystick joystick = new Joystick(0);
     private final Joystick buttonBoard = new Joystick(1);
     private final VisionSubsystem visionSubsystem = new VisionSubsystem();
-    //!private final PhotonSubsystem photonSubsystem = new PhotonSubsystem();
     private final ArmSubsystem armSubsystem = new ArmSubsystem();
     private final WristSubsystem wristSubsystem = new WristSubsystem();
     private final GripperSubsystem gripperSubsystem = new GripperSubsystem();
@@ -79,9 +77,12 @@ public class RobotContainer {
         new JoystickButton(joystick, 8).onTrue(pickup);
         new JoystickButton(joystick, 7).onTrue(Commands.run(() -> driveSubsystem.setPower(.25, .25), driveSubsystem));
         new JoystickButton(joystick, 6).onTrue(new AutoDriveCommand(12, driveSubsystem));
-        new JoystickButton(joystick, 5).onTrue(new AutoTurnCommand(45, driveSubsystem, pigeon));
-        new JoystickButton(joystick, 4).onTrue(new AutoDriveCommand(-12, driveSubsystem));
-        new JoystickButton(joystick, 3).onTrue(new AutoTurnCommand(-45, driveSubsystem, pigeon));
+        // new JoystickButton(joystick, 5).onTrue(new AutoTurnCommand(45, driveSubsystem, pigeon));
+        // new JoystickButton(joystick, 4).onTrue(new AutoDriveCommand(-12, driveSubsystem));
+        // new JoystickButton(joystick, 3).onTrue(new AutoTurnCommand(-45, driveSubsystem, pigeon));
+        new JoystickButton(joystick, 5).onTrue(runOnce(() -> new AutoTurnCommand(visionSubsystem::getTargetYaw, driveSubsystem, pigeon)));
+        new JoystickButton(joystick, 4).onTrue(runOnce(() -> visionSubsystem.setPipeline(0)));
+        new JoystickButton(joystick, 3).onTrue(runOnce(() -> visionSubsystem.setPipeline(1)));
         // Buttonboard 
         new JoystickButton(buttonBoard, 1).whileTrue(Commands.startEnd(() -> armSubsystem.setPower(0.1), () -> armSubsystem.setPower(0), armSubsystem));
         new JoystickButton(buttonBoard, 2).whileTrue(Commands.startEnd(() -> armSubsystem.setPower(-0.1), () -> armSubsystem.setPower(0), armSubsystem));

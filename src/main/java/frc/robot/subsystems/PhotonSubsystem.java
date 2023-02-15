@@ -95,7 +95,7 @@ public class PhotonSubsystem extends SubsystemBase {
     }
 
     private void correctConePipeline() {
-        int index = (getActualOrientation() == Orientation.PORTRAIT) ? Vision.conePortraitPipeline : Vision.coneLandscapePipeline;
+        int index = (getActualOrientation() == Orientation.PORTRAIT) ? Vision.conePipeline : Vision.conePipeline;
         setPipeline(index);
     }
 
