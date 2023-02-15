@@ -194,8 +194,8 @@ class Pipeline:
 # Camera
 resolutionWidth: Final[int] = 1280
 resolutionHeight: Final[int] = 720
-verticalFOV: Final[int] = math.radians(35) # rad
-horizontalFOV: Final[int] = math.radians(58) # rad
+verticalFOV: Final[int] = math.radians(35) # rad, Calculated manually
+horizontalFOV: Final[int] = math.radians(58) # rad, Calculated manually
 
 # Processing
 currentPipeline: int = 0
@@ -208,6 +208,10 @@ cubePipeline: Pipeline = Pipeline(120, 150, 30, 255, 120, 255, 1, 3, cubePipelin
 # AprilTags
 detector: Final = AprilTagDetector()
 detector.addFamily("tag16h5")
+# Adaptive Thresholding
+maxValue: Final[int] = 255
+blockSize: Final[int] = 11
+constantC: Final[int] = 2
 
 # NetworkTables
 networkTableName: Final[str] = "Vision"
@@ -313,7 +317,9 @@ def contourPipelines(binary_img):
         return binary_img
 
 def aprilTagPipeline(input_img: Mat):
-    binary_img: Mat = cv2.cvtColor(input_img, cv2.COLOR_BGR2GRAY)
+    # Convert to grayscale, and apply an adaptive threshold
+    binary_img: Mat = cv2.cvtColor(input_img, cv2.COLOR_BGR2GRAY) 
+    binary_img = cv2.adaptiveThreshold(input_img, maxValue, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, blockSize, constantC)
     detections = detector.detect(binary_img)
     result = detections[0]
     # Crosshair, Pitch and Yaw Stuff
@@ -329,6 +335,8 @@ def aprilTagPipeline(input_img: Mat):
     # Draw Stuff
     binary_img = cv2.cvtColor(binary_img, cv2.COLOR_GRAY2BGR)
     binary_img = cv2.circle(binary_img, center = crosshair, radius = 10, color = (0, 255, 0), thickness = -1)
+    binary_img = cv2.rectangle(binary_img, (result.getCorner(0).x, result.getCorner(0).y), (result.getCorner(1).x, result.getCorner(1).y))
+    binary_img = cv2.putText(binary_img, str(result.getId), (centerX, centerY))
     print(result.getId())
     return binary_img
 
