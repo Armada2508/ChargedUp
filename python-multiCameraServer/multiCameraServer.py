@@ -12,7 +12,9 @@ from typing import Final
 import cv2
 import numpy as np
 from cscore import CameraServer, MjpegServer, UsbCamera, VideoSource
+from cv2 import Mat
 from ntcore import EventFlags, NetworkTable, NetworkTableInstance
+from robotpy_apriltag import *
 
 configFile = "/boot/frc.json"
 
@@ -173,11 +175,11 @@ def startSwitchedCamera(config):
 
 
 
-###################################################################################################################
+#!##################################################################################################################
 
 class Pipeline:
     
-    def __init__(self, hueMin: int, hueMax: int, saturationMin: int, saturationMax: int, valueMin: int, valueMax: int, erodeIterations: int, dilateIterations: int, pipelineIndex: int):
+    def __init__(self, hueMin: int, hueMax: int, saturationMin: int, saturationMax: int, valueMin: int, valueMax: int, erodeIterations: int, dilateIterations: int, pipelineIndex: int, minArea: int):
         self.hueMin: Final[int] = hueMin
         self.hueMax: Final[int] = hueMax
         self.saturationMin: Final[int] = saturationMin
@@ -187,20 +189,25 @@ class Pipeline:
         self.erodeIterations: Final[int] = erodeIterations
         self.dilateIterations: Final[int] = dilateIterations
         self.pipelineIndex: Final[int] = pipelineIndex
+        self.minArea: Final[int] = minArea
         
 # Camera
 resolutionWidth: Final[int] = 1280
 resolutionHeight: Final[int] = 720
-verticalFOV: Final[int] = 0.644550094 # rad
-horizontalFOV: Final[int] = 1.07145763 # rad
+verticalFOV: Final[int] = math.radians(35) # rad
+horizontalFOV: Final[int] = math.radians(58) # rad
 
 # Processing
 currentPipeline: int = 0
 conePipelineIndex: Final[int] = 0
 cubePipelineIndex: Final[int] = 1
 aprilTagsPipelineIndex: Final[int] = 2
-conePipeline: Pipeline = Pipeline(8, 40, 120, 255, 160, 255, 1, 1, conePipelineIndex)
-cubePipeline: Pipeline = Pipeline(120, 150, 30, 255, 120, 255, 1, 3, cubePipelineIndex)
+conePipeline: Pipeline = Pipeline(8, 40, 120, 255, 160, 255, 1, 1, conePipelineIndex, 15)
+cubePipeline: Pipeline = Pipeline(120, 150, 30, 255, 120, 255, 1, 3, cubePipelineIndex, 15)
+
+# AprilTags
+detector: Final = AprilTagDetector()
+detector.addFamily("tag16h5")
 
 # NetworkTables
 networkTableName: Final[str] = "Vision"
@@ -214,11 +221,28 @@ valueMaxNT: Final = nt.getIntegerTopic("valueMax").getEntry(0)
 erodeIterationsNT: Final = nt.getIntegerTopic("erodeIterations").getEntry(0)
 dilateIterationsNT: Final = nt.getIntegerTopic("dilateIterations").getEntry(0)
 pipelineNT: Final = nt.getIntegerTopic("Pipeline").getEntry(0)
+minAreaNT: Final = nt.getIntegerTopic("minArea").getEntry(0)
 pitchNT: Final = nt.getFloatTopic("Pitch").getEntry(0)
 yawNT: Final = nt.getFloatTopic("Yaw").getEntry(0)
 haveTargetNT: Final = nt.getBooleanTopic("HaveTarget").getEntry(False)
+pipelineNT.set(conePipelineIndex)
 
-def pointToPitchAndYaw(px: int, py: int): # Converts a point in pixel system to a pitch and a yaw and returns that.
+def setupNetworkTables(pipeline: Pipeline):
+    nt: NetworkTable = NetworkTableInstance.getDefault().getTable(networkTableName)
+    hueMinNT.set(pipeline.hueMin)
+    hueMaxNT.set(pipeline.hueMax)
+    saturationMinNT.set(pipeline.saturationMin)
+    saturationMaxNT.set(pipeline.saturationMax)
+    valueMinNT.set(pipeline.valueMin)
+    valueMaxNT.set(pipeline.valueMax)
+    erodeIterationsNT.set(pipeline.erodeIterations)
+    dilateIterationsNT.set(pipeline.dilateIterations)
+    minAreaNT.set(pipeline.minArea)
+    pitchNT.set(0)
+    yawNT.set(0)
+    haveTargetNT.set(False)
+
+def pointToYawAndPitch(px: int, py: int): # Converts a point in pixel system to a pitch and a yaw and returns that.
     nx: float = (2/resolutionWidth) * (px - ((resolutionWidth/2) - 0.5))
     ny: float = (2/resolutionHeight) * (((resolutionHeight/2) - 0.5) - py)
     vpw: float = 2.0*math.tan(horizontalFOV/2)
@@ -229,10 +253,7 @@ def pointToPitchAndYaw(px: int, py: int): # Converts a point in pixel system to 
     ay: float = math.atan(y/1)
     yaw: float = math.degrees(ax)
     pitch: float = math.degrees(ay) * -1
-    return (pitch, yaw)
-
-def aprilTagPipeline():
-    pass
+    return (yaw, pitch)
 
 def executePipeline(input_img, pipeline: Pipeline):
     global currentPipeline
@@ -259,21 +280,57 @@ def executePipeline(input_img, pipeline: Pipeline):
     binary_img = cv2.dilate(binary_img, kernel, iterations = int(dilateIterationsNT.get(pipeline.dilateIterations)))
     currentPipeline = pipeline.pipelineIndex
     return binary_img
+
+def contourPipelines(binary_img):
+    # Contours
+    contours, hierarchy = cv2.findContours(binary_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    if len(contours) > 0:
+        mainContour = contours[0]
+        for contour in contours:
+            if cv2.contourArea(contour) > cv2.contourArea(mainContour):
+                mainContour = contour
+        if (cv2.contourArea(mainContour) < minAreaNT.get(15)):
+            haveTargetNT.set(False)
+            return
+        haveTargetNT.set(True)
+        # Bounding Rectangle
+        rect = cv2.boundingRect(mainContour)
+        x, y, w, h = rect
+        center = (int(x + 1/2*w), int(y + 1/2*h)) # Center of bounding rectangle
+        crosshair = (int(x + 1/2*w), int(y + h)) # Crosshair on bottom for measurements 
         
-def setupNetworkTables(pipeline: Pipeline):
-    nt: NetworkTable = NetworkTableInstance.getDefault().getTable(networkTableName)
-    hueMinNT.set(pipeline.hueMin)
-    hueMaxNT.set(pipeline.hueMax)
-    saturationMinNT.set(pipeline.saturationMin)
-    saturationMaxNT.set(pipeline.saturationMax)
-    valueMinNT.set(pipeline.valueMin)
-    valueMaxNT.set(pipeline.valueMax)
-    erodeIterationsNT.set(pipeline.erodeIterations)
-    dilateIterationsNT.set(pipeline.dilateIterations)
-    pipelineNT.set(pipeline.pipelineIndex)
-    pitchNT.set(0)
-    yawNT.set(0)
-    haveTargetNT.set(False)
+        yaw, pitch = pointToYawAndPitch(crosshair[0], crosshair[1])
+        pitchNT.set(pitch)
+        yawNT.set(yaw)
+        # Convert to color to draw stuff
+        binary_img = cv2.cvtColor(binary_img, cv2.COLOR_GRAY2BGR)
+        binary_img = cv2.drawContours(binary_img, mainContour, -1, color = (255, 0, 0), thickness = 2)
+        binary_img = cv2.rectangle(binary_img, (x, y), (x + w, y + h), color = (0, 0, 255), thickness = 2)
+        binary_img = cv2.circle(binary_img, center = crosshair, radius = 10, color = (0, 255, 0), thickness = -1)
+        return binary_img
+    else:
+        haveTargetNT.set(False)
+        return binary_img
+
+def aprilTagPipeline(input_img: Mat):
+    binary_img: Mat = cv2.cvtColor(input_img, cv2.COLOR_BGR2GRAY)
+    detections = detector.detect(binary_img)
+    result = detections[0]
+    # Crosshair, Pitch and Yaw Stuff
+    y1: float = abs(result.getCorner(0).y - result.getCorner(1).y)
+    y2: float = abs(result.getCorner(0).y - result.getCorner(2).y)
+    height: float = max(y1, y2); # in pixels
+    centerX = result.getCenter().x
+    centerY = result.getCenter().y
+    crosshair = (int(centerX), int(centerY + (height/2)))
+    yaw, pitch = pointToYawAndPitch(crosshair[0], crosshair[1]) 
+    pitchNT.set(pitch)
+    yawNT.set(yaw)
+    # Draw Stuff
+    binary_img = cv2.cvtColor(binary_img, cv2.COLOR_GRAY2BGR)
+    binary_img = cv2.circle(binary_img, center = crosshair, radius = 10, color = (0, 255, 0), thickness = -1)
+    print(result.getId())
+    return binary_img
 
 def main(): # Image proccessing user code
     CameraServer.enableLogging()
@@ -293,44 +350,19 @@ def main(): # Image proccessing user code
         index = pipelineNT.get(conePipelineIndex)
         if (index == conePipelineIndex):
             binary_img = executePipeline(input_img, conePipeline)
+            binary_img = contourPipelines(binary_img)
         elif (index == cubePipelineIndex):
             binary_img = executePipeline(input_img, cubePipeline)
+            binary_img = contourPipelines(binary_img)
         elif (index == aprilTagsPipelineIndex):
-            binary_img = aprilTagPipeline()
+            binary_img = aprilTagPipeline(input_img)
         else:
             continue
-        # Contours
-        contours, hierarchy = cv2.findContours(binary_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        if len(contours) > 0:
-            mainContour = contours[0]
-            for contour in contours:
-                if cv2.contourArea(contour) > cv2.contourArea(mainContour):
-                    mainContour = contour
-            if (cv2.contourArea(mainContour) < 15):
-                haveTargetNT.set(False)
-                continue
-            haveTargetNT.set(True)
-            # Bounding Rectangle
-            rect = cv2.boundingRect(mainContour)
-            x, y, w, h = rect
-            center = (int(x + 1/2*w), int(y + 1/2*h)) # Center of bounding rectangle
-            crosshair = (int(x + 1/2*w), int(y + h)) # Crosshair on bottom for measurements 
-            
-            pitch, yaw = pointToPitchAndYaw(crosshair[0], crosshair[1])
-            pitchNT.set(pitch)
-            yawNT.set(yaw)
-            # Convert to color to draw stuff
-            binary_img = cv2.cvtColor(binary_img, cv2.COLOR_GRAY2BGR)
-            binary_img = cv2.drawContours(binary_img, mainContour, -1, color = (255, 0, 0), thickness = 2)
-            binary_img = cv2.rectangle(binary_img, (x, y), (x + w, y + h), color = (0, 0, 255), thickness = 2)
-            binary_img = cv2.circle(binary_img, center = crosshair, radius = 10, color = (0, 255, 0), thickness = -1)
-        else:
-            haveTargetNT.set(False)
         outputStream.putFrame(binary_img) # Stream Video
         originalStream.putFrame(input_img) # Stream Video
 
 
-###################################################################################################################
+#!##################################################################################################################
 
 
 

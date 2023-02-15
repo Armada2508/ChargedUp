@@ -1,0 +1,23 @@
+{
+  "Connections": {
+    "open": true
+  },
+  "NetworkTables Settings": {
+    "mode": "Client (NT4)",
+    "serverTeam": "2508"
+  },
+  "Persistent Values": {
+    "open": false
+  },
+  "Retained Values": {
+    "open": false
+  },
+  "properties": true,
+  "serverTimestamp": true,
+  "timestamp": true,
+  "transitory": {
+    "Vision": {
+      "open": true
+    }
+  }
+}
