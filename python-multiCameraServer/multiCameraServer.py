@@ -16,166 +16,12 @@ from cv2 import Mat
 from ntcore import EventFlags, NetworkTable, NetworkTableInstance
 from robotpy_apriltag import *
 
-configFile = "/boot/frc.json"
-
-class CameraConfig: pass
-
-team = None
+#!
+numberOfCameras: Final[int] = 1
+team: Final[int] = 2508
 server = False
-cameraConfigs = []
-switchedCameraConfigs = []
+cameraPath: Final[str] = "/dev/video"
 cameras = []
-
-def parseError(str):
-    """Report parse error."""
-    print("config error in '" + configFile + "': " + str, file=sys.stderr)
-
-def readCameraConfig(config):
-    """Read single camera configuration."""
-    cam = CameraConfig()
-
-    # name
-    try:
-        cam.name = config["name"]
-    except KeyError:
-        parseError("could not read camera name")
-        return False
-
-    # path
-    try:
-        cam.path = config["path"]
-    except KeyError:
-        parseError("camera '{}': could not read path".format(cam.name))
-        return False
-
-    # stream properties
-    cam.streamConfig = config.get("stream")
-
-    cam.config = config
-
-    cameraConfigs.append(cam)
-    return True
-
-def readSwitchedCameraConfig(config):
-    """Read single switched camera configuration."""
-    cam = CameraConfig()
-
-    # name
-    try:
-        cam.name = config["name"]
-    except KeyError:
-        parseError("could not read switched camera name")
-        return False
-
-    # path
-    try:
-        cam.key = config["key"]
-    except KeyError:
-        parseError("switched camera '{}': could not read key".format(cam.name))
-        return False
-
-    switchedCameraConfigs.append(cam)
-    return True
-
-def readConfig():
-    """Read configuration file."""
-    global team
-    global server
-
-    # parse file
-    try:
-        with open(configFile, "rt", encoding="utf-8") as f:
-            j = json.load(f)
-    except OSError as err:
-        print("could not open '{}': {}".format(configFile, err), file=sys.stderr)
-        return False
-
-    # top level must be an object
-    if not isinstance(j, dict):
-        parseError("must be JSON object")
-        return False
-
-    # team number
-    try:
-        team = j["team"]
-    except KeyError:
-        parseError("could not read team number")
-        return False
-
-    # ntmode (optional)
-    if "ntmode" in j:
-        str = j["ntmode"]
-        if str.lower() == "client":
-            server = False
-        elif str.lower() == "server":
-            server = True
-        else:
-            parseError("could not understand ntmode value '{}'".format(str))
-
-    # cameras
-    try:
-        cameras = j["cameras"]
-    except KeyError:
-        parseError("could not read cameras")
-        return False
-    for camera in cameras:
-        if not readCameraConfig(camera):
-            return False
-
-    # switched cameras
-    if "switched cameras" in j:
-        for camera in j["switched cameras"]:
-            if not readSwitchedCameraConfig(camera):
-                return False
-
-    return True
-
-def startCamera(config):
-    """Start running the camera."""
-    print("Starting camera '{}' on {}".format(config.name, config.path))
-    camera = UsbCamera(config.name, config.path)
-    server = CameraServer.startAutomaticCapture(camera=camera)
-
-    camera.setConfigJson(json.dumps(config.config))
-    camera.setConnectionStrategy(VideoSource.ConnectionStrategy.kConnectionKeepOpen)
-
-    if config.streamConfig is not None:
-        server.setConfigJson(json.dumps(config.streamConfig))
-
-    return camera
-
-def startSwitchedCamera(config):
-    """Start running the switched camera."""
-    print("Starting switched camera '{}' on {}".format(config.name, config.key))
-    server = CameraServer.addSwitchedCamera(config.name)
-
-    def listener(event):
-        data = event.data
-        if data is not None:
-            value = data.value.value()
-            if isinstance(value, int):
-                if value >= 0 and value < len(cameras):
-                    server.setSource(cameras[value])
-            elif isinstance(value, float):
-                i = int(value)
-                if i >= 0 and i < len(cameras):
-                    server.setSource(cameras[i])
-            elif isinstance(value, str):
-                for i in range(len(cameraConfigs)):
-                    if value == cameraConfigs[i].name:
-                        server.setSource(cameras[i])
-                        break
-
-    NetworkTableInstance.getDefault().addListener(
-        NetworkTableInstance.getDefault().getEntry(config.key),
-        EventFlags.kImmediate | EventFlags.kValueAll,
-        listener)
-
-    return server
-
-
-
-#!##################################################################################################################
 
 class Pipeline:
     
@@ -190,24 +36,36 @@ class Pipeline:
         self.dilateIterations: Final[int] = dilateIterations
         self.pipelineIndex: Final[int] = pipelineIndex
         self.minArea: Final[int] = minArea
-        
+
+
 # Camera
 resolutionWidth: Final[int] = 1280
 resolutionHeight: Final[int] = 720
-verticalFOV: Final[int] = math.radians(35) # rad, Calculated manually
-horizontalFOV: Final[int] = math.radians(58) # rad, Calculated manually
+fps: Final[int] = 30
+exposure: Final[int] = 40
+verticalFOV: Final[int] = math.radians(36.9187406) # rad, Calculated manually but better cause ben
+horizontalFOV: Final[int] = math.radians(61.3727249) # rad, Calculated manually but better cause ben
+# Load previously saved data
+with np.load('cameraCalib.npz') as file:
+    mtx, dist = [file[i] for i in ('mtx', 'dist')]
 
 # Processing
-currentPipeline: int = 0
 conePipelineIndex: Final[int] = 0
 cubePipelineIndex: Final[int] = 1
 aprilTagsPipelineIndex: Final[int] = 2
 conePipeline: Pipeline = Pipeline(8, 40, 120, 255, 160, 255, 1, 1, conePipelineIndex, 15)
 cubePipeline: Pipeline = Pipeline(120, 150, 30, 255, 120, 255, 1, 3, cubePipelineIndex, 15)
+currentPipeline: int = aprilTagsPipelineIndex
 
 # AprilTags
-detector: Final = AprilTagDetector()
+focalLengthPixels: Final[float] = 1078.466
+decimate: Final[int] = 8
+aprilTagLength: Final[float] = 0.1524 # Meters
+detector: Final[AprilTagDetector] = AprilTagDetector()
 detector.addFamily("tag16h5")
+detector.setConfig(AprilTagDetector.Config(1, decimate, 0, True, .25, False))
+poseEstimator: Final[AprilTagPoseEstimator] = AprilTagPoseEstimator(AprilTagPoseEstimator.Config(aprilTagLength, 1078.466, 1078.466, resolutionWidth/2, resolutionHeight/2))
+tagMinArea: Final[int] = 25 # pixels
 # Adaptive Thresholding
 maxValue: Final[int] = 255
 blockSize: Final[int] = 11
@@ -229,10 +87,24 @@ minAreaNT: Final = nt.getIntegerTopic("minArea").getEntry(0)
 pitchNT: Final = nt.getFloatTopic("Pitch").getEntry(0)
 yawNT: Final = nt.getFloatTopic("Yaw").getEntry(0)
 haveTargetNT: Final = nt.getBooleanTopic("HaveTarget").getEntry(False)
-pipelineNT.set(conePipelineIndex)
+pipelineNT.set(currentPipeline)
+
+def startCamera():
+    camNum: str = str(len(cameras))
+    """Start running the camera."""
+    print("Starting camera '{}' on {}".format("Camera " + camNum, cameraPath + camNum))
+    camera = UsbCamera("Camera " + camNum, cameraPath + camNum)
+    CameraServer.startAutomaticCapture(camera=camera)
+    camera.setResolution(resolutionWidth, resolutionHeight)
+    print("CS: Camera {}: set resolution to {}x{}".format(camNum, resolutionWidth, resolutionHeight))
+    camera.setFPS(fps)
+    print("CS: Camera {}: set FPS to {}".format(camNum, fps))
+    camera.setExposureManual(exposure)
+    print("CS: Camera {}: set exposure to {}".format(camNum, exposure))
+    camera.setConnectionStrategy(VideoSource.ConnectionStrategy.kConnectionKeepOpen)
+    return camera
 
 def setupNetworkTables(pipeline: Pipeline):
-    nt: NetworkTable = NetworkTableInstance.getDefault().getTable(networkTableName)
     hueMinNT.set(pipeline.hueMin)
     hueMaxNT.set(pipeline.hueMax)
     saturationMinNT.set(pipeline.saturationMin)
@@ -316,28 +188,58 @@ def contourPipelines(binary_img):
         haveTargetNT.set(False)
         return binary_img
 
-def aprilTagPipeline(input_img: Mat):
-    # Convert to grayscale, and apply an adaptive threshold
-    binary_img: Mat = cv2.cvtColor(input_img, cv2.COLOR_BGR2GRAY) 
-    binary_img = cv2.adaptiveThreshold(input_img, maxValue, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, blockSize, constantC)
-    detections = detector.detect(binary_img)
-    result = detections[0]
+def getAreaAprilTag(tag: AprilTagDetection):
+    x1: float = abs(tag.getCorner(0).x - tag.getCorner(1).x)
+    x2: float = abs(tag.getCorner(0).x - tag.getCorner(2).x)
+    y1: float = abs(tag.getCorner(0).y - tag.getCorner(1).y)
+    y2: float = abs(tag.getCorner(0).y - tag.getCorner(2).y)
+    width: float = max(x1, x2); 
+    height: float = max(y1, y2); 
+    return width * height
+
+def showDetection(input_img: Mat, result: AprilTagDetection):
     # Crosshair, Pitch and Yaw Stuff
     y1: float = abs(result.getCorner(0).y - result.getCorner(1).y)
     y2: float = abs(result.getCorner(0).y - result.getCorner(2).y)
     height: float = max(y1, y2); # in pixels
-    centerX = result.getCenter().x
-    centerY = result.getCenter().y
+    centerX: int = int(result.getCenter().x)
+    centerY: int = int(result.getCenter().y)
     crosshair = (int(centerX), int(centerY + (height/2)))
     yaw, pitch = pointToYawAndPitch(crosshair[0], crosshair[1]) 
     pitchNT.set(pitch)
     yawNT.set(yaw)
+    estimate = poseEstimator.estimateOrthogonalIteration(result, 100).pose1
+    print("X: " + str(estimate.X() * 39.37) + " Y: " + str(estimate.Y() * 39.37) + " Rotation: " + str(math.degrees(estimate.rotation().Z())) + str(result.getId()))
     # Draw Stuff
-    binary_img = cv2.cvtColor(binary_img, cv2.COLOR_GRAY2BGR)
-    binary_img = cv2.circle(binary_img, center = crosshair, radius = 10, color = (0, 255, 0), thickness = -1)
-    binary_img = cv2.rectangle(binary_img, (result.getCorner(0).x, result.getCorner(0).y), (result.getCorner(1).x, result.getCorner(1).y))
-    binary_img = cv2.putText(binary_img, str(result.getId), (centerX, centerY))
-    print(result.getId())
+    # binary_img = drawAxis(binary_img, result.getCorners((0, 0, 0, 0, 0, 0, 0, 0)))
+    binary_img = cv2.circle(input_img, center = crosshair, radius = 10, color = (0, 255, 0), thickness = -1)
+    binary_img = cv2.rectangle(binary_img, 
+        (int(result.getCorner(0).x), int(result.getCorner(0).y)), 
+        (int(result.getCorner(2).x), int(result.getCorner(2).y)), 
+        color = (0, 0, 255), thickness = 2)
+    binary_img = cv2.putText(binary_img, str(result.getId()), org = (centerX, centerY), fontFace = cv2.FONT_HERSHEY_SIMPLEX, fontScale = 3, color = (255, 0, 0), thickness = 4)
+    return binary_img
+
+def aprilTagPipeline(input_img: Mat):
+    # Convert to grayscale
+    binary_img: Mat = cv2.cvtColor(input_img, cv2.COLOR_BGR2GRAY) 
+    # binary_img = cv2.blur(binary_img, (5, 5))
+    detections = detector.detect(binary_img)
+    if (len(detections) > 0):
+        result = detections[0]
+        for detection in detections:
+            colorImg = showDetection(input_img, detection)
+        #     if getAreaAprilTag(detection) > getAreaAprilTag(result):
+        #         result = detection
+        # if (getAreaAprilTag(result) < tagMinArea):
+        #     haveTargetNT.set(False)
+        #     return
+        # haveTargetNT.set(True)
+        # binary_img = showDetection(result)
+        return colorImg
+    haveTargetNT.set(False)
+    pitchNT.set(0)
+    yawNT.set(0)
     return binary_img
 
 def main(): # Image proccessing user code
@@ -346,7 +248,6 @@ def main(): # Image proccessing user code
     outputStream = CameraServer.putVideo("Proccessed Video", resolutionWidth, resolutionHeight)
     originalStream = CameraServer.putVideo("Original Video", resolutionWidth, resolutionHeight)
     img = np.zeros(shape=(resolutionWidth, resolutionHeight, 3), dtype=np.uint8)
-    nt: NetworkTable = NetworkTableInstance.getDefault().getTable(networkTableName)
     setupNetworkTables(conePipeline)
     # loop forever
     while True:
@@ -355,7 +256,7 @@ def main(): # Image proccessing user code
         if time == 0: # There is an error
             outputStream.notifyError(cvSink.getError())
             continue
-        index = pipelineNT.get(conePipelineIndex)
+        index = pipelineNT.get(aprilTagsPipelineIndex)
         if (index == conePipelineIndex):
             binary_img = executePipeline(input_img, conePipeline)
             binary_img = contourPipelines(binary_img)
@@ -368,20 +269,10 @@ def main(): # Image proccessing user code
             continue
         outputStream.putFrame(binary_img) # Stream Video
         originalStream.putFrame(input_img) # Stream Video
-
-
-#!##################################################################################################################
-
-
+        
+        
 
 if __name__ == "__main__":
-    if len(sys.argv) >= 2:
-        configFile = sys.argv[1]
-
-    # read configuration
-    if not readConfig():
-        sys.exit(1)
-
     # start NetworkTables
     ntinst = NetworkTableInstance.getDefault()
     if server:
@@ -393,9 +284,7 @@ if __name__ == "__main__":
         ntinst.setServerTeam(team)
         ntinst.startDSClient()
     # start cameras
-    for config in cameraConfigs:
-        cameras.append(startCamera(config))
-    # start switched cameras
-    for config in switchedCameraConfigs:
-        startSwitchedCamera(config)
-    main() # start user code
+    for i in range(numberOfCameras):
+        cameras.append(startCamera())
+    # start opencv code
+    main() 
