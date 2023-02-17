@@ -19,15 +19,24 @@ from ntcore import EventFlags, NetworkTable, NetworkTableInstance
 from robotpy_apriltag import (AprilTag, AprilTagDetection, AprilTagDetector,
                               AprilTagPoseEstimate, AprilTagPoseEstimator)
 
-configFile = "/boot/frc.json"
 
 class CameraConfig: pass
 
-team = 2508
+configFile = "/boot/frc.json"
+team: Final[int] = 2508
 server = False
 cameraConfigs = []
 switchedCameraConfigs = []
 cameras = []
+
+# AprilTags
+detector: Final[AprilTagDetector] = AprilTagDetector()
+detector.addFamily("tag16h5")
+aprilTagLength: Final[float] = 0.1524 # Meters
+
+# NetworkTables
+networkTableName: Final[str] = "VisionRPI"
+mainTable: NetworkTable = NetworkTableInstance.getDefault().getTable(networkTableName)
 
 def onRPI() -> bool:
     return platform.uname().system == "Linux"
@@ -85,7 +94,6 @@ def readSwitchedCameraConfig(config):
 
 def readConfig():
     """Read configuration file."""
-    global team
     global server
 
     # parse file
@@ -99,13 +107,6 @@ def readConfig():
     # top level must be an object
     if not isinstance(j, dict):
         parseError("must be JSON object")
-        return False
-
-    # team number
-    try:
-        team = j["team"]
-    except KeyError:
-        parseError("could not read team number")
         return False
 
     # ntmode (optional)
@@ -202,26 +203,36 @@ class Pipeline:
     def __init__(self, index: int, type: Type, subTable: str) -> None:
         self.pipelineIndex: Final[int] = index
         self.type: Final[self.Type] = type
-        self.subTable: Final[str] = subTable
+        self.subTable: Final[NetworkTable] = mainTable.getSubTable(subTable)
+        self.__setupTableEntries()
         
-# AprilTags
-detector: Final[AprilTagDetector] = AprilTagDetector()
-detector.addFamily("tag16h5")
-aprilTagLength: Final[float] = 0.1524 # Meters
-    
+    def __setupTableEntries(self):
+        self.HasTarget = self.subTable.getEntry("HasTarget")
+        self.HasTarget.setBoolean(False)
+        
 class AprilTagPipeline(Pipeline):
     
     def __init__(self, index: int, name: str, numThreads: int, quadDecimate: float, quadSigma: float, refineEdges: bool, decodeSharpening: float, debug: bool) -> None:
         global detector
         super().__init__(index, super().Type.APRILTAG, name)
-        detectorConfig: Final[AprilTagDetector.Config] = AprilTagDetector.Config()
-        detectorConfig.numThreads = numThreads
-        detectorConfig.quadDecimate = quadDecimate
-        detectorConfig.quadSigma = quadSigma
-        detectorConfig.refineEdges = refineEdges
-        detectorConfig.decodeSharpening = decodeSharpening
-        detectorConfig.debug = debug
-        detector.setConfig(detectorConfig)
+        self.detectorConfig: Final[AprilTagDetector.Config] = AprilTagDetector.Config()
+        self.detectorConfig.numThreads = numThreads
+        self.detectorConfig.quadDecimate = quadDecimate
+        self.detectorConfig.quadSigma = quadSigma
+        self.detectorConfig.refineEdges = refineEdges
+        self.detectorConfig.decodeSharpening = decodeSharpening
+        self.detectorConfig.debug = debug
+        self.__setupTableEntries()
+    
+    def __setupTableEntries(self):
+        self.X = self.subTable.getEntry("X") 
+        self.Y = self.subTable.getEntry("Y")
+        self.Z = self.subTable.getEntry("Z")
+        self.Yaw = self.subTable.getEntry("Yaw")
+        self.X.setDouble(0)
+        self.Y.setDouble(0)
+        self.Z.setDouble(0)
+        self.Yaw.setDouble(0)
 
 class ColorPipeline(Pipeline):
     
@@ -251,27 +262,17 @@ with np.load('./cameraCalib.npz') as file:
 
 # Processing
 conePipeline: ColorPipeline = ColorPipeline(0, "Cone", 8, 40, 120, 255, 160, 255, 1, 1, 15)
-cubePipeline: ColorPipeline = ColorPipeline(0, "Cube", 120, 150, 30, 255, 120, 255, 1, 3, 15)
-tagPipeline: AprilTagPipeline = AprilTagPipeline(1, "AprilTag", 1, 2, 0, True, 0.25, False)
+cubePipeline: ColorPipeline = ColorPipeline(1, "Cube", 120, 150, 30, 255, 120, 255, 1, 3, 15)
+tagPipeline: AprilTagPipeline = AprilTagPipeline(2, "AprilTag", 1, 2, 0, True, 0.25, False)
 pipelines: list[Pipeline] = [conePipeline, cubePipeline, tagPipeline] 
-
-
 
 poseEstimator: Final[AprilTagPoseEstimator] = AprilTagPoseEstimator(AprilTagPoseEstimator.Config(aprilTagLength, 1078.466, 1078.466, resolutionWidth/2, resolutionHeight/2))
 tagMinArea: Final[int] = 25 # pixels
+tagMinDecisionMargin: Final[int] = 20
 # Adaptive Thresholding
 maxValue: Final[int] = 255
 blockSize: Final[int] = 11
 constantC: Final[int] = 2
-
-# NetworkTables
-networkTableName: Final[str] = "VisionRPI"
-NetworkTableInstance.getDefault().getTable(networkTableName)
-
-pipelineNT: Final[str] = "Pipeline"
-pitchNT: Final[str] = "Pitch"
-yawNT: Final[str] = "Yaw"
-haveTargetNT: Final[str] = "HaveTarget"
 
 def getAreaAprilTag(tag: AprilTagDetection):
     x1: float = abs(tag.getCorner(0).x - tag.getCorner(1).x)
@@ -282,50 +283,58 @@ def getAreaAprilTag(tag: AprilTagDetection):
     height: float = max(y1, y2); 
     return width * height
 
-def showDetection(input_img: Mat, result: AprilTagDetection):
-    # Crosshair, Pitch and Yaw Stuff
+def getTagData(pipeline: AprilTagPipeline, result: AprilTagDetection):
+    metersToInches: Final[float] = 39.37
+    estimate = poseEstimator.estimateOrthogonalIteration(result, 100).pose1
+    pipeline.X.setDouble(estimate.X() * metersToInches)
+    pipeline.Y.setDouble(estimate.Y() * metersToInches)
+    pipeline.Z.setDouble(estimate.Z() * metersToInches)
+    pipeline.Yaw.setDouble(math.degrees(estimate.rotation().Z()))
+
+def drawDetection(drawnImg: Mat, result: AprilTagDetection):
+    # Crosshair
     y1: float = abs(result.getCorner(0).y - result.getCorner(1).y)
     y2: float = abs(result.getCorner(0).y - result.getCorner(2).y)
     height: float = max(y1, y2); # in pixels
     centerX: int = int(result.getCenter().x)
     centerY: int = int(result.getCenter().y)
-    crosshair = (int(centerX), int(centerY + (height/2)))
-    yaw, pitch = pointToYawAndPitch(crosshair[0], crosshair[1]) 
-    pitchNT.set(pitch)
-    yawNT.set(yaw)
-    estimate = poseEstimator.estimateOrthogonalIteration(result, 100).pose1
-    # print("X: " + str(estimate.X() * 39.37) + " Y: " + str(estimate.Y() * 39.37) + " Rotation: " + str(math.degrees(estimate.rotation().Z())) + str(result.getId()))
+    crosshair = int(centerX), int(centerY + (height/2))
     # Draw Stuff
-    # binary_img = drawAxis(binary_img, result.getCorners((0, 0, 0, 0, 0, 0, 0, 0)))
-    binary_img = cv2.circle(input_img, center = crosshair, radius = 10, color = (0, 255, 0), thickness = -1)
-    binary_img = cv2.rectangle(binary_img, 
+    drawnImg = cv2.circle(drawnImg, center = crosshair, radius = 10, color = (0, 255, 0), thickness = -1)
+    drawnImg = cv2.rectangle(drawnImg, 
         (int(result.getCorner(0).x), int(result.getCorner(0).y)), 
         (int(result.getCorner(2).x), int(result.getCorner(2).y)), 
         color = (0, 0, 255), thickness = 2)
-    binary_img = cv2.putText(binary_img, str(result.getId()), org = (centerX, centerY), fontFace = cv2.FONT_HERSHEY_SIMPLEX, fontScale = 3, color = (255, 0, 0), thickness = 4)
-    return binary_img
+    drawnImg = cv2.putText(drawnImg, str(result.getId()), org = (centerX+11, centerY), fontFace = cv2.FONT_HERSHEY_SIMPLEX, fontScale = 1, color = (255, 0, 0), thickness = 3)
+    return drawnImg
 
-def aprilTagPipeline(input_img: Mat):
+def aprilTagPipeline(input_img: Mat, drawnImg: Mat, pipeline: AprilTagPipeline):
     # Convert to grayscale
     binary_img: Mat = cv2.cvtColor(input_img, cv2.COLOR_BGR2GRAY) 
-    # binary_img = cv2.blur(binary_img, (5, 5))
+    detector.setConfig(pipeline.detectorConfig)
     detections = detector.detect(binary_img)
     if (len(detections) > 0):
         result = detections[0]
         for detection in detections:
-            colorImg = showDetection(input_img, detection)
-        #     if getAreaAprilTag(detection) > getAreaAprilTag(result):
-        #         result = detection
-        # if (getAreaAprilTag(result) < tagMinArea):
-        #     haveTargetNT.set(False)
-        #     return
-        # haveTargetNT.set(True)
-        # binary_img = showDetection(result)
-        return colorImg
-    haveTargetNT.set(False)
-    pitchNT.set(0)
-    yawNT.set(0)
-    return binary_img
+            if (detection.getDecisionMargin() > result.getDecisionMargin() and getAreaAprilTag(detection) > getAreaAprilTag(result)):
+                result = detection
+        if (getAreaAprilTag(result) < tagMinArea or result.getDecisionMargin() < tagMinDecisionMargin):
+            pipeline.HasTarget.setBoolean(False)
+            pipeline.X.setDouble(0)
+            pipeline.Y.setDouble(0)
+            pipeline.Z.setDouble(0)
+            pipeline.Yaw.setDouble(0)
+            return drawnImg
+        drawDetection(drawnImg, result)
+        getTagData(pipeline, result)
+        pipeline.HasTarget.setBoolean(True)
+        return drawnImg
+    pipeline.HasTarget.setBoolean(False)
+    pipeline.X.setDouble(0)
+    pipeline.Y.setDouble(0)
+    pipeline.Z.setDouble(0)
+    pipeline.Yaw.setDouble(0)
+    return drawnImg
 
 def pointToYawAndPitch(px: int, py: int): # Converts a point in pixel system to a pitch and a yaw and returns that.
     nx: float = (2/resolutionWidth) * (px - ((resolutionWidth/2) - 0.5))
@@ -362,7 +371,6 @@ def colorPipeline(img: Mat, drawnImg: Mat, pipeline: ColorPipeline):
     return proccessContours(binaryImg, drawnImg, pipeline)
 
 def proccessContours(binaryImg: Mat, drawnImg: Mat, pipeline: ColorPipeline) -> Mat:
-    table: NetworkTable = NetworkTableInstance.getDefault().getTable(networkTableName).getSubTable(pipeline.subTable)
     # Contours
     contours, hierarchy = cv2.findContours(binaryImg, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     if len(contours) > 0:
@@ -371,56 +379,48 @@ def proccessContours(binaryImg: Mat, drawnImg: Mat, pipeline: ColorPipeline) -> 
             if cv2.contourArea(contour) > cv2.contourArea(mainContour):
                 mainContour = contour
         if (cv2.contourArea(mainContour) < pipeline.minArea):
-            table.getBooleanTopic(haveTargetNT).getEntry(0).set(False)
+            pipeline.HasTarget.setBoolean(False)
             return
-        table.getBooleanTopic(haveTargetNT).getEntry(0).set(True)
+        pipeline.HasTarget.setBoolean(True)
         # Bounding Rectangle
         rect = cv2.boundingRect(mainContour)
         x, y, w, h = rect
         crosshair = (int(x + 1/2*w), int(y + h)) # Crosshair on bottom for measurements 
         
         yaw, pitch = pointToYawAndPitch(crosshair[0], crosshair[1])
-        table.getFloatTopic(pitchNT).getEntry(0).set(pitch)
-        table.getFloatTopic(yawNT).getEntry(0).set(yaw)
+        # table.getEntry(pitchNT).setFloat(pitch)
+        # table.getEntry(yawNT).setFloat(yaw)
         # Draw Stuff
         drawnImg = cv2.drawContours(drawnImg, mainContour, -1, color = (255, 0, 0), thickness = 2)
         drawnImg = cv2.rectangle(drawnImg, (x, y), (x + w, y + h), color = (0, 0, 255), thickness = 2)
         drawnImg = cv2.circle(drawnImg, center = crosshair, radius = 10, color = (0, 255, 0), thickness = -1)
         return drawnImg
     else:
-        table.getBooleanTopic(haveTargetNT).getEntry(0).set(False)
+        pipeline.HasTarget.setBoolean(False)
         return drawnImg
-
-def configureNetworkTables() -> None: # First time setup
-    nt: NetworkTable = NetworkTableInstance.getDefault().getTable(networkTableName)
-    nt.getIntegerTopic("Current Pipeline").getEntry(0).set(0)
-    for pipeline in pipelines:
-        table: NetworkTable = nt.getSubTable(pipeline.subTable)
-        table.getIntegerTopic(pipelineNT).getEntry(0).set(pipeline.pipelineIndex)
-        table.getFloatTopic(pitchNT).getEntry(0).set(0)
-
+        
 def main(): # Image proccessing user code
     CameraServer.enableLogging()
     cvSink = CameraServer.getVideo()
     proccessedStream = CameraServer.putVideo("Proccessed Video", resolutionWidth, resolutionHeight)
     originalStream = CameraServer.putVideo("Original Video", resolutionWidth, resolutionHeight)
     mat = np.zeros(shape=(resolutionWidth, resolutionHeight, 3), dtype=np.uint8)
-    configureNetworkTables()
+    mainTable.getEntry("Current Pipeline").setInteger(tagPipeline.pipelineIndex)
     # loop forever
     while True:
         time, inputImg = cvSink.grabFrame(mat)
-        drawnImg = inputImg.copy()
+        inputImg = cv2.undistort(inputImg, mtx, dist)
         if time == 0: # There is an error
             proccessedStream.notifyError(cvSink.getError())
             continue
-        index = NetworkTableInstance.getDefault().getTable(networkTableName).getIntegerTopic("Current Pipeline").getEntry(0).get()
+        drawnImg = inputImg.copy()
+        index = mainTable.getEntry("Current Pipeline").getInteger(0)
         for pipeline in pipelines:
             if (pipeline.pipelineIndex == index):
                 if (pipeline.type == Pipeline.Type.COLOR):
                     drawnImg = colorPipeline(inputImg.copy(), drawnImg, pipeline)
                 elif (pipeline.type == Pipeline.Type.APRILTAG):
-                    # drawnImg = aprilTagPipeline(filterImg, pipeline)
-                    continue
+                    drawnImg = aprilTagPipeline(inputImg.copy(), drawnImg, pipeline)
         proccessedStream.putFrame(drawnImg) # Stream Video
         originalStream.putFrame(inputImg) # Stream Video
         

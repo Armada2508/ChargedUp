@@ -31,8 +31,8 @@ public class VisionSubsystem extends SubsystemBase {
     
     @Override
     public void periodic() {
-        currentResult = new PipelineResult(hasTarget.get(), pitch.get(), yaw.get(), pipeline.get(), orientation.get());
-        System.out.println("Pitch: " + getTargetPitch() + " Yaw: " + getTargetYaw() + " Distance: " + distanceFromTargetInInches(Target.CONE));
+        // currentResult = new PipelineResult(hasTarget.get(), pitch.get(), yaw.get(), pipeline.get(), orientation.get());
+        // System.out.println("Pitch: " + getTargetPitch() + " Yaw: " + getTargetYaw() + " Distance: " + distanceFromTargetInInches(Target.CONE));
     }
 
     public boolean hasTarget() {
