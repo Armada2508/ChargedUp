@@ -28,7 +28,7 @@ import frc.robot.commands.Auto.AutoPickupCommand;
 import frc.robot.commands.Auto.PieceOnFloorCommand;
 import frc.robot.commands.Driving.AutoDriveCommand;
 import frc.robot.commands.Driving.AutoTurnCommand;
-import frc.robot.commands.Driving.DriveCommand;
+import frc.robot.commands.Driving.ButterySmoothDriveCommand;
 import frc.robot.commands.Driving.SeekCommand;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
@@ -53,7 +53,7 @@ public class RobotContainer {
         FollowTrajectory.config(0, 0, 0, 2.0, 0.7, Drive.trackWidthMeters, new PIDController(Drive.kP, Drive.kI, Drive.kD), 0);
         InverseKinematics.config(Arm.jointLengthInches, Wrist.jointLengthInches);
         this.driveSubsystem = new DriveSubsystem(pigeon);
-        driveSubsystem.setDefaultCommand(new DriveCommand(() -> joystick.getRawAxis(1)*-1 * Drive.speedMultiplier, () -> joystick.getRawAxis(0)*-1 * Drive.speedMultiplier, driveSubsystem)); // default to driving from joystick input
+        driveSubsystem.setDefaultCommand(new ButterySmoothDriveCommand(() -> joystick.getRawAxis(1)*-1 * Drive.speedMultiplier, () -> joystick.getRawAxis(0)*-1,  () -> joystick.getRawAxis(2),driveSubsystem)); // default to driving from joystick input
         if (RobotBase.isReal()) {
             configureCamera();
         }
@@ -77,12 +77,13 @@ public class RobotContainer {
         new JoystickButton(joystick, 8).onTrue(pickup);
         new JoystickButton(joystick, 7).onTrue(Commands.run(() -> driveSubsystem.setPower(.25, .25), driveSubsystem));
         new JoystickButton(joystick, 6).onTrue(new AutoDriveCommand(12, driveSubsystem));
-        // new JoystickButton(joystick, 5).onTrue(new AutoTurnCommand(45, driveSubsystem, pigeon));
-        // new JoystickButton(joystick, 4).onTrue(new AutoDriveCommand(-12, driveSubsystem));
+        new JoystickButton(joystick, 5).onTrue(new AutoTurnCommand(45, driveSubsystem, pigeon));
+        new JoystickButton(joystick, 4).onTrue(new AutoDriveCommand(-12, driveSubsystem));
         // new JoystickButton(joystick, 3).onTrue(new AutoTurnCommand(-45, driveSubsystem, pigeon));
-        new JoystickButton(joystick, 5).onTrue(runOnce(() -> new AutoTurnCommand(visionSubsystem::getTargetYaw, driveSubsystem, pigeon)));
-        new JoystickButton(joystick, 4).onTrue(runOnce(() -> visionSubsystem.setPipeline(0)));
-        new JoystickButton(joystick, 3).onTrue(runOnce(() -> visionSubsystem.setPipeline(1)));
+        new JoystickButton(joystick, 3).onTrue(Commands.startEnd(() -> driveSubsystem.setPower(0.15, 0.15), () -> driveSubsystem.setPower(0, 0), driveSubsystem));
+        // new JoystickButton(joystick, 5).onTrue(runOnce(() -> new AutoTurnCommand(visionSubsystem::getTargetYaw, driveSubsystem, pigeon)));
+        // new JoystickButton(joystick, 4).onTrue(runOnce(() -> visionSubsystem.setPipeline(0)));
+        // new JoystickButton(joystick, 3).onTrue(runOnce(() -> visionSubsystem.setPipeline(1)));
         // Buttonboard 
         new JoystickButton(buttonBoard, 1).whileTrue(Commands.startEnd(() -> armSubsystem.setPower(0.1), () -> armSubsystem.setPower(0), armSubsystem));
         new JoystickButton(buttonBoard, 2).whileTrue(Commands.startEnd(() -> armSubsystem.setPower(-0.1), () -> armSubsystem.setPower(0), armSubsystem));

@@ -50,7 +50,7 @@ public class AutoTurnCommand extends CommandBase {
         absoluteTarget = pigeon.getYaw() + relativeDegrees.getAsDouble();
         pid.reset();
         pid.setSetpoint(absoluteTarget);
-        pid.setTolerance(0.1);
+        pid.setTolerance(0.5);
     }
 
     @Override

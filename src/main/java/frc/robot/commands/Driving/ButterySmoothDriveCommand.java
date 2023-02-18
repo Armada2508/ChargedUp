@@ -1,0 +1,57 @@
+package frc.robot.commands.Driving;
+
+import java.util.function.DoubleSupplier;
+
+import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.Constants.Drive;
+import frc.robot.subsystems.DriveSubsystem;
+
+public class ButterySmoothDriveCommand extends CommandBase {
+
+    private DoubleSupplier joystickSpeed;
+    private DoubleSupplier joystickTurn;
+    private DoubleSupplier joystickTrim;
+    private DriveSubsystem driveSubsystem;
+    private SlewRateLimiter limiterNormal = new SlewRateLimiter(0.95);
+
+    public ButterySmoothDriveCommand(DoubleSupplier joystickSpeed, DoubleSupplier joystickTurn, DoubleSupplier joystickTrim,  DriveSubsystem driveSubsystem) {
+        this.joystickSpeed = joystickSpeed;
+        this.joystickTurn = joystickTurn;
+        this.joystickTrim = joystickTrim;
+        this.driveSubsystem = driveSubsystem;
+        addRequirements(driveSubsystem);
+    }
+
+    @Override
+    public void execute() {
+        double speed = joystickSpeed.getAsDouble();
+        double turn = joystickTurn.getAsDouble()/Drive.turnAdjustment;
+        double trim = joystickTrim.getAsDouble()/Drive.turnAdjustment;
+        // Deadband
+        if (Math.abs(speed) < Drive.joystickDeadband) speed = 0;
+        if (Math.abs(turn) < Drive.joystickDeadband) turn = 0; 
+
+        speed = limiterNormal.calculate(speed);
+        turn = turn * Math.abs(speed);
+        double powerFactor = findSpeed((speed - turn), (speed + turn));
+
+        double leftSpeed = (speed - turn) * powerFactor;
+        double rightSpeed = (speed + turn) * powerFactor;
+
+        driveSubsystem.setPower(leftSpeed, rightSpeed);
+    }
+
+    private double findSpeed(double left, double right){
+        double p = 1;
+
+        if(left > 1){
+            p = 1/left;
+        } 
+        else if(right > 1){
+            p = 1/right;
+        }
+        return p;
+    }
+
+}

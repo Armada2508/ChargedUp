@@ -13,17 +13,19 @@ public class Constants {
         public static final int LFID = 3;
         public static final int turnAdjustment = 3;
         public static final double speedMultiplier = 1; // For Fredy
+        public static final double joystickDeadband = 0.05;
 
         // Driving PID
-        public static final double kP = 0.1; 
+        public static final double kP = 0.05; 
         public static final double kI = 0;
         public static final double kD = 0;
+        public static final double maxDriveSpeed = 0.25;
 
         // Turning PID
         public static final double turnkP = 0.01;
         public static final double turnkI = 0;
-        public static final double turnkD = 0.005;
-        public static final double maxTurnSpeed = 0.5;
+        public static final double turnkD = 0;
+        public static final double maxTurnSpeed = 0.25;
         
         public static final double diameterInches = 6;
         public static final int encoderUnits = 2048;
@@ -86,7 +88,9 @@ public class Constants {
         public static final int motorID = 6;
         public static final int limitSwitchID = 1;
         public static final int encoderUnitsPerRev = 2048;
-        public static final int gearboxRatio = 100;
+        public static final int driverPully = 20;
+        public static final int drivenPulley = 20;
+        public static final int pulleyRatio = drivenPulley/driverPully;
         // PID
         public static final double kP = 0.1;
         public static final double kI = 0;
