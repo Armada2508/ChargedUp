@@ -157,6 +157,8 @@ def executePipeline(input_img, pipeline: Pipeline):
     currentPipeline = pipeline.pipelineIndex
     return binary_img
 
+def getOrientation(w, h, pipeline: ColorPipeline)
+
 def contourPipelines(binary_img):
     # Contours
     contours, hierarchy = cv2.findContours(binary_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
