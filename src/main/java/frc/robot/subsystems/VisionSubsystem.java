@@ -4,8 +4,6 @@ package frc.robot.subsystems;
 import org.photonvision.PhotonUtils;
 
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.networktables.BooleanEntry;
-import edu.wpi.first.networktables.FloatEntry;
 import edu.wpi.first.networktables.IntegerEntry;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -19,10 +17,10 @@ public class VisionSubsystem extends SubsystemBase {
 
     private final NetworkTable table = NetworkTableInstance.getDefault().getTable("Vision");
     private final IntegerEntry pipeline = table.getIntegerTopic("Pipeline").getEntry(0);
-    private final IntegerEntry orientation = table.getIntegerTopic("Orientation").getEntry(0);
-    private final BooleanEntry hasTarget = table.getBooleanTopic("HaveTarget").getEntry(false);
-    private final FloatEntry pitch = table.getFloatTopic("Pitch").getEntry(0); // Left is negative, right is positive, in degrees
-    private final FloatEntry yaw = table.getFloatTopic("Yaw").getEntry(0); // In degrees
+    // private final IntegerEntry orientation = table.getIntegerTopic("Orientation").getEntry(0);
+    // private final BooleanEntry hasTarget = table.getBooleanTopic("HaveTarget").getEntry(false);
+    // private final FloatEntry pitch = table.getFloatTopic("Pitch").getEntry(0); // Left is negative, right is positive, in degrees
+    // private final FloatEntry yaw = table.getFloatTopic("Yaw").getEntry(0); // In degrees
     private PipelineResult currentResult = new PipelineResult(false, 0, 0, 0, 0);
 
     public VisionSubsystem() {
@@ -31,8 +29,8 @@ public class VisionSubsystem extends SubsystemBase {
     
     @Override
     public void periodic() {
-        currentResult = new PipelineResult(hasTarget.get(), pitch.get(), yaw.get(), pipeline.get(), orientation.get());
-        System.out.println("Pitch: " + getTargetPitch() + " Yaw: " + getTargetYaw() + " Distance: " + distanceFromTargetInInches(Target.CONE));
+        // currentResult = new PipelineResult(hasTarget.get(), pitch.get(), yaw.get(), pipeline.get(), orientation.get());
+        // System.out.println("Pitch: " + getTargetPitch() + " Yaw: " + getTargetYaw() + " Distance: " + distanceFromTargetInInches(Target.CONE));
     }
 
     public boolean hasTarget() {

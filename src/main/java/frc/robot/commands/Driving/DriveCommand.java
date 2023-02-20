@@ -35,6 +35,8 @@ public class DriveCommand extends CommandBase{
     public void execute() {
         speed = joystickSpeed.getAsDouble();
         turn = joystickTurn.getAsDouble()/Drive.turnAdjustment;
+        if (Math.abs(speed) < Drive.joystickDeadband) speed = 0;
+        if (Math.abs(turn) < Drive.joystickDeadband) turn = 0;
         powerFactor = findSpeed((speed - turn), (speed + turn));
 
         subsystem.setPower(((speed - turn)*powerFactor), ((speed + turn)*powerFactor));

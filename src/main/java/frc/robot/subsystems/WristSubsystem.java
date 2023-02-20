@@ -47,11 +47,11 @@ public class WristSubsystem extends SubsystemBase {
     }
 
     public double toAngle(double sensorUnits) {
-        return Encoder.toRotationalAngle(sensorUnits, Wrist.encoderUnitsPerRev, Wrist.gearboxRatio);
+        return Encoder.toRotationalAngle(sensorUnits, Wrist.encoderUnitsPerRev, Wrist.pulleyRatio);
     }
 
     public double fromAngle(double theta) {
-        return Encoder.fromRotationalAngle(theta, Wrist.encoderUnitsPerRev, Wrist.gearboxRatio);
+        return Encoder.fromRotationalAngle(theta, Wrist.encoderUnitsPerRev, Wrist.pulleyRatio);
     }
     
     private double getFeedForward() {
