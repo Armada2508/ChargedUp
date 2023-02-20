@@ -14,6 +14,7 @@ public class ButterySmoothDriveCommand extends CommandBase {
     private DoubleSupplier joystickTrim;
     private DriveSubsystem driveSubsystem;
     private SlewRateLimiter limiterNormal = new SlewRateLimiter(0.95);
+    private final double maxEncoderVelocity = 21000;
 
     public ButterySmoothDriveCommand(DoubleSupplier joystickSpeed, DoubleSupplier joystickTurn, DoubleSupplier joystickTrim,  DriveSubsystem driveSubsystem) {
         this.joystickSpeed = joystickSpeed;
@@ -33,13 +34,13 @@ public class ButterySmoothDriveCommand extends CommandBase {
         if (Math.abs(turn) < Drive.joystickDeadband) turn = 0; 
 
         speed = limiterNormal.calculate(speed);
-        turn = turn * Math.abs(speed);
+        turn = turn * Math.abs(speed) + trim;
         double powerFactor = findSpeed((speed - turn), (speed + turn));
 
         double leftSpeed = (speed - turn) * powerFactor;
         double rightSpeed = (speed + turn) * powerFactor;
-
-        driveSubsystem.setPower(leftSpeed, rightSpeed);
+        System.out.println(leftSpeed);
+        driveSubsystem.setVelocity(powerToVelocity(leftSpeed), powerToVelocity(rightSpeed));
     }
 
     private double findSpeed(double left, double right){
@@ -52,6 +53,10 @@ public class ButterySmoothDriveCommand extends CommandBase {
             p = 1/right;
         }
         return p;
+    }
+
+    private double powerToVelocity(double power) {
+        return power * maxEncoderVelocity;
     }
 
 }

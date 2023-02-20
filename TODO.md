@@ -49,5 +49,6 @@
 
 ## poo poo
 
-constant curvature
+~~slew rate limiter~~
+~~constant curvature~~ ?
 closed loop driving
