@@ -51,4 +51,6 @@
 
 ~~slew rate limiter~~
 ~~constant curvature~~ ?
-closed loop driving
+velocity closed loop driving
+
+don't do position closed loop do motion magic closed loop ! ! ! ! ! ! ! ! ! !!  ! ! !!!!!!!!!!

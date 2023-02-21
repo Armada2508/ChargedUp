@@ -1,6 +1,9 @@
 package frc.robot.subsystems;
 
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.photonvision.PhotonUtils;
 
 import edu.wpi.first.math.util.Units;
@@ -15,36 +18,43 @@ import frc.robot.Constants.Vision;
  */
 public class VisionSubsystem extends SubsystemBase {
 
-    private final NetworkTable table = NetworkTableInstance.getDefault().getTable("Vision");
-    private final IntegerEntry pipeline = table.getIntegerTopic("Pipeline").getEntry(0);
-    // private final IntegerEntry orientation = table.getIntegerTopic("Orientation").getEntry(0);
-    // private final BooleanEntry hasTarget = table.getBooleanTopic("HaveTarget").getEntry(false);
-    // private final FloatEntry pitch = table.getFloatTopic("Pitch").getEntry(0); // Left is negative, right is positive, in degrees
-    // private final FloatEntry yaw = table.getFloatTopic("Yaw").getEntry(0); // In degrees
-    private PipelineResult currentResult = new PipelineResult(false, 0, 0, 0, 0);
+    private final NetworkTable mainTable = NetworkTableInstance.getDefault().getTable("VisionRPI");
+    private final IntegerEntry pipeline = mainTable.getIntegerTopic("Current Pipeline").getEntry(0);
+    private final NetworkTable coneTable = mainTable.getSubTable("Cone");
+    private final NetworkTable cubeTable = mainTable.getSubTable("Cube");
+    private final NetworkTable tagTable = mainTable.getSubTable("AprilTag");
+    private final List<NetworkTable> subtables = new ArrayList<>();
+    private List<PipelineResult> currentResults = new ArrayList<>();
 
     public VisionSubsystem() {
         super();
+        subtables.add(coneTable);
+        subtables.add(cubeTable);
+        subtables.add(tagTable);
     }
     
     @Override
     public void periodic() {
         // currentResult = new PipelineResult(hasTarget.get(), pitch.get(), yaw.get(), pipeline.get(), orientation.get());
         // System.out.println("Pitch: " + getTargetPitch() + " Yaw: " + getTargetYaw() + " Distance: " + distanceFromTargetInInches(Target.CONE));
+        System.out.println(pipeline.get());
     }
 
     public boolean hasTarget() {
-        return currentResult.haveTarget();
+        return false;
+        // return currentResult.haveTarget();
     }
 
     public double getTargetPitch() {
-        if (!hasTarget()) return Double.NaN;
-        return currentResult.pitch();
+        return 0;
+        // if (!hasTarget()) return Double.NaN;
+        // return currentResult.pitch();
     }
 
     public double getTargetYaw() {
-        if (!hasTarget()) return Double.NaN;
-        return currentResult.yaw();
+        return 0;
+        // if (!hasTarget()) return Double.NaN;
+        // return currentResult.yaw();
     }
 
     /**
@@ -71,7 +81,8 @@ public class VisionSubsystem extends SubsystemBase {
     }
 
     public int getPipeline() {
-        return (int) currentResult.pipeline();
+        // return (int) currentResult.pipeline();
+        return 0;
     }
 
     public void setPipeline(int index) {
@@ -79,11 +90,12 @@ public class VisionSubsystem extends SubsystemBase {
     }
 
     public Orientation getConeOrientation() {
-        return switch( (int) currentResult.orientation()) {
-            case 0 -> Orientation.LANDSCAPE;
-            case 1 -> Orientation.PORTRAIT;
-            default -> throw new IllegalArgumentException("Invalid number for orientation. - VisionSubsystem");
-        };
+        return Orientation.LANDSCAPE;
+        // return switch( (int) currentResult.orientation()) {
+        //     case 0 -> Orientation.LANDSCAPE;
+        //     case 1 -> Orientation.PORTRAIT;
+        //     default -> throw new IllegalArgumentException("Invalid number for orientation. - VisionSubsystem");
+        // };
     }
 
     public enum Orientation {

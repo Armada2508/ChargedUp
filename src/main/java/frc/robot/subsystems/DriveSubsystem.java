@@ -3,7 +3,8 @@ package frc.robot.subsystems;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
-import com.ctre.phoenix.motorcontrol.can.BaseTalon;
+import com.ctre.phoenix.motorcontrol.TalonFXFeedbackDevice;
+import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.ctre.phoenix.sensors.PigeonIMU;
 
@@ -12,7 +13,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
-import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.Drive;
 import frc.robot.Lib.Encoder;
@@ -21,12 +21,10 @@ import frc.robot.Lib.util.Util;
 
 public class DriveSubsystem extends SubsystemBase {
 
-    private WPI_TalonFX TalonFXL = new WPI_TalonFX(Drive.LID); 
-    private WPI_TalonFX TalonFXLfollow = new WPI_TalonFX(Drive.LFID);  
-    private WPI_TalonFX TalonFXR = new WPI_TalonFX(Drive.RID); 
-    private WPI_TalonFX TalonFXRfollow = new WPI_TalonFX(Drive.RFID);
-    private MotorControllerGroup left;
-    private MotorControllerGroup right;
+    private final WPI_TalonFX TalonFXL = new WPI_TalonFX(Drive.LID); 
+    private final WPI_TalonFX TalonFXLfollow = new WPI_TalonFX(Drive.LFID);  
+    private final WPI_TalonFX TalonFXR = new WPI_TalonFX(Drive.RID); 
+    private final WPI_TalonFX TalonFXRfollow = new WPI_TalonFX(Drive.RFID);
     private final DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(Drive.trackWidthMeters); 
     private final DifferentialDriveOdometry odometry;
     private final PigeonIMU pigeon;
@@ -41,10 +39,20 @@ public class DriveSubsystem extends SubsystemBase {
         TalonFXRfollow.setInverted(true);
         TalonFXLfollow.follow(TalonFXL);
         TalonFXRfollow.follow(TalonFXR);
-        left =  new MotorControllerGroup(TalonFXL, TalonFXLfollow);
-        right = new MotorControllerGroup(TalonFXR, TalonFXRfollow);
-        callibrate();
+        calibrate();
         odometry = new DifferentialDriveOdometry(new Rotation2d(getHeading()), 0, 0);
+    }
+
+    private void configureMotor(TalonFX talon) {
+        talon.configFactoryDefault();
+        talon.selectProfileSlot(0, 0);
+        talon.configSelectedFeedbackSensor(TalonFXFeedbackDevice.IntegratedSensor, 0, Drive.timeoutMs);
+        talon.config_kP(0, Drive.kP);
+        talon.config_kI(0, Drive.kI);
+        talon.config_kD(0, Drive.kD);
+        talon.config_kF(0, Drive.kF);
+        talon.configNeutralDeadband(0.001);
+        talon.configClosedLoopPeakOutput(0, Drive.maxDriveSpeed);
     }
 
     @Override
@@ -52,8 +60,8 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     public void setPower(double leftPower, double rightPower){
-        left.set(leftPower);
-        right.set(rightPower);
+        TalonFXL.set(TalonFXControlMode.PercentOutput, leftPower);
+        TalonFXR.set(TalonFXControlMode.PercentOutput, rightPower);
     }
 
     public void driveDistance(double distanceInches) {
@@ -75,15 +83,7 @@ public class DriveSubsystem extends SubsystemBase {
         return Encoder.toDistance(TalonFXL.getSelectedSensorPosition(), Drive.encoderUnits, Drive.gearboxRatio, Drive.diameterInches); 
     }
 
-    private void configureMotor(BaseTalon motor) {
-        motor.config_kP(0, Drive.kP);
-        motor.config_kI(0, Drive.kI);
-        motor.config_kD(0, Drive.kD);
-        motor.configNeutralDeadband(0.04);
-        motor.configClosedLoopPeakOutput(0, Drive.maxDriveSpeed);
-    }
-    
-    public void callibrate() {
+    public void calibrate() {
         TalonFXL.setSelectedSensorPosition(0);
         TalonFXLfollow.setSelectedSensorPosition(0);
         TalonFXR.setSelectedSensorPosition(0);
@@ -112,8 +112,18 @@ public class DriveSubsystem extends SubsystemBase {
      * @param velocityR The velocity of the right motors in inches/second
      */
     public void setVelocity(double velocityL, double velocityR) {
-        TalonFXR.set(ControlMode.Velocity, fromVelocity(velocityL));
-        TalonFXL.set(ControlMode.Velocity, fromVelocity(velocityR));
+        TalonFXL.set(ControlMode.Velocity, fromVelocity(velocityL));
+        TalonFXR.set(ControlMode.Velocity, fromVelocity(velocityR));
+    }
+
+    /**
+     * Sets the velocity of the motor in encoder units velocity
+     * @param leftVelocity Velocity of the left motor in encoder units per 100 ms
+     * @param rightVelocity Velocity of the right motor in encoder units per 100 ms
+     */
+    public void setEncoderVelocity(double leftVelocity, double rightVelocity) {
+        TalonFXL.set(TalonFXControlMode.Velocity, leftVelocity);
+        TalonFXR.set(TalonFXControlMode.Velocity, rightVelocity);
     }
 
     public void setVelocity(DifferentialDriveWheelSpeeds speeds, double deadband) {

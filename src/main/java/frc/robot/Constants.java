@@ -15,18 +15,20 @@ public class Constants {
         public static final double speedMultiplier = 1; // For Fredy
         public static final double joystickDeadband = 0.05;
 
-        // Driving PID
-        public static final double kP = 0.05; 
+        // Closed Loop Driving
+        public static final double kP = 0; 
         public static final double kI = 0;
         public static final double kD = 0;
-        public static final double maxDriveSpeed = 0.25;
+        public static final double kF = 0.0475;
+        public static final int timeoutMs = 30;
+        public static final double maxDriveSpeed = 1;
 
-        // Turning PID
+        // Closed Loop Turning
         public static final double turnkP = 0.01;
         public static final double turnkI = 0;
         public static final double turnkD = 0;
         public static final double maxTurnSpeed = 0.25;
-        
+        // DriveBase
         public static final double diameterInches = 6;
         public static final int encoderUnits = 2048;
         public static final double gearboxRatio = 10.7;
@@ -44,7 +46,7 @@ public class Constants {
         // Speeds
         public static final double maxSpeed = 0.15;
         public static final double pitchSpeed = 0.12;
-
+        // Pitch angle to start driving at
         public static final double balanceAngle = 10;
     }
 
@@ -72,15 +74,17 @@ public class Constants {
         public static final int limitSwitchID = 0;
         public static final int encoderUnitsPerRev = 2048;
         public static final int gearboxRatio = 100;
-        // PID
+        // Closed Loop
         public static final double kP = 0.1;
         public static final double kI = 0;
         public static final double kD = 0;
+        public static final double kF = 0;
         public static final double gravityFeedForward = 0.07;
+        public static final double maxSpeed = 0.25;
 
         public static final int minDegrees = -108;
         public static final int maxDegrees = 45;
-        
+        // IK
         public static final double jointLengthInches = 35.75;
     }
 
@@ -91,15 +95,16 @@ public class Constants {
         public static final int driverPully = 20;
         public static final int drivenPulley = 20;
         public static final int pulleyRatio = drivenPulley/driverPully;
-        // PID
+        // Closed Loop
         public static final double kP = 0.1;
         public static final double kI = 0;
         public static final double kD = 0;
         public static final double gravityFeedForward = 0.07;
+        public static final double maxSpeed = 0.25;
 
         public static final int minDegrees = -30;
         public static final int maxDegrees = 30;
-
+        // IK
         public static final double jointLengthInches = 13;
     }
 
@@ -108,10 +113,12 @@ public class Constants {
         public static final int limitSwitchID = 2;
         public static final int encoderUnitsPerRev = 2048;
         public static final int gearboxRatio = 100;
-        // PID
+        // Closed Loop
         public static final double kP = 0.1;
         public static final double kI = 0;
         public static final double kD = 0;
+        public static final double kF = 0;
+        public static final double maxSpeed = 0.25;
     }
 
     // ========================================

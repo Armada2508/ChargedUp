@@ -2,10 +2,13 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.DemandType;
 import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
+import com.ctre.phoenix.motorcontrol.TalonFXFeedbackDevice;
+import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.Drive;
 import frc.robot.Constants.Wrist;
 import frc.robot.Lib.Encoder;
 
@@ -15,9 +18,18 @@ public class WristSubsystem extends SubsystemBase {
     private DigitalInput limitSwitch = new DigitalInput(Wrist.limitSwitchID);
 
     public WristSubsystem() {
-        talonFX.config_kP(0, Wrist.kP);
-        talonFX.config_kI(0, Wrist.kI);
-        talonFX.config_kD(0, Wrist.kD);
+       configureMotor(talonFX);
+    }
+
+    private void configureMotor(TalonFX talon) {
+        talon.configFactoryDefault();
+        talon.selectProfileSlot(0, 0);
+        talon.configSelectedFeedbackSensor(TalonFXFeedbackDevice.IntegratedSensor, 0, Drive.timeoutMs);
+        talon.config_kP(0, Wrist.kP);
+        talon.config_kI(0, Wrist.kI);
+        talon.config_kD(0, Wrist.kD);
+        talon.configNeutralDeadband(0.001);
+        talon.configClosedLoopPeakOutput(0, Wrist.maxSpeed);
     }
 
     /**
@@ -61,7 +73,7 @@ public class WristSubsystem extends SubsystemBase {
     }
 
     public void calibrate() {
-        talonFX.setSelectedSensorPosition(0);
+        talonFX.setSelectedSensorPosition(Wrist.minDegrees);
     }
 
     public boolean pollLimitSwitch() {
