@@ -250,9 +250,11 @@ class ColorPipeline(Pipeline):
         self.minArea = self.subTable.getEntry("Min Area")
         self.pitch = self.subTable.getEntry("Pitch") 
         self.yaw = self.subTable.getEntry("Yaw")
+        self.orientation = self.subTable.getEntry("Orientation")
         self.minArea.setDouble(minArea)
         self.pitch.setDouble(0)
         self.yaw.setDouble(0)
+        self.orientation.setInteger(0)
 
 # Camera
 resolutionWidth: Final[int] = 1280
@@ -346,7 +348,7 @@ def aprilTagPipeline(input_img: Mat, drawnImg: Mat, pipeline: AprilTagPipeline):
         drawDetection(drawnImg, result)
         getTagData(pipeline, result)
         pipeline.hasTarget.setBoolean(True)
-        print("Done")
+        # print("Done")
         return drawnImg
     pipeline.hasTarget.setBoolean(False)
     pipeline.X.setDouble(0)
@@ -389,6 +391,13 @@ def colorPipeline(img: Mat, drawnImg: Mat, pipeline: ColorPipeline):
     binaryImg = cv2.dilate(binaryImg, kernel, iterations = int(pipeline.dilateIterations))
     return proccessContours(binaryImg, drawnImg, pipeline)
 
+def getOrientation(width, height, pipeline: ColorPipeline):
+    if (width > height) or (width == height):
+        # return pipeline.Orientation.landscape
+        pipeline.orientation.setInteger(0) #0 means landscape
+    else:
+        pipeline.orientation.setInteger(1) #1 means portrait
+
 def proccessContours(binaryImg: Mat, drawnImg: Mat, pipeline: ColorPipeline) -> Mat:
     # Contours
     contours, hierarchy = cv2.findContours(binaryImg, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -404,6 +413,7 @@ def proccessContours(binaryImg: Mat, drawnImg: Mat, pipeline: ColorPipeline) -> 
         # Bounding Rectangle
         rect = cv2.boundingRect(mainContour)
         x, y, w, h = rect
+        getOrientation(w, h, pipeline)
         crosshair = (int(x + 1/2*w), int(y + h)) # Crosshair on bottom for measurements 
         
         yaw, pitch = pointToYawAndPitch(crosshair[0], crosshair[1])
