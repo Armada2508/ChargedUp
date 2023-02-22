@@ -23,22 +23,13 @@ public class AutoPickupCommand extends SequentialCommandGroup {
 
     private final double distanceFromTargetInches = 12;
     private Pipeline lastTarget = Pipeline.CONE;
-    private double cubeDistance = 0.0;
-    private double coneDistance = 0.0;
 
-    // TODO check wait times
     public AutoPickupCommand(VisionSubsystem visionSubsystem, DriveSubsystem driveSubsystem, PigeonIMU pigeon, ArmSubsystem ArmSubsystem, WristSubsystem WristSubsystem, GripperSubsystem GripperSubsystem) {
         addCommands(
             new GripperCommand(0, GripperSubsystem),
             new ArmCommand(Arm.minDegrees, ArmSubsystem),
-            new SequentialCommandGroup(
-                new InstantCommand(() ->visionSubsystem.setPipeline(Pipeline.CUBE),visionSubsystem),
-                new WaitCommand(0.1),
-                new InstantCommand(() -> cubeDistance = visionSubsystem.distanceFromTargetInInches(Pipeline.CUBE)),
-                new InstantCommand(() ->visionSubsystem.setPipeline(Pipeline.CONE),visionSubsystem),
-                new WaitCommand(0.1),
-                new InstantCommand(() -> coneDistance = visionSubsystem.distanceFromTargetInInches(Pipeline.CONE))
-            ),
+            new InstantCommand(() -> visionSubsystem.setPipeline(Pipeline.CONE),visionSubsystem),
+            new WaitCommand(0.05),
             new ConditionalCommand(
                 new SequentialCommandGroup(
                     new SeekCommand(driveSubsystem, visionSubsystem, pigeon, this::getPreviousTarget, distanceFromTargetInches),
@@ -61,6 +52,8 @@ public class AutoPickupCommand extends SequentialCommandGroup {
 
     private Pipeline getTarget(VisionSubsystem visionSubsystem) {
         Pipeline target = Pipeline.CONE;
+        double coneDistance = visionSubsystem.distanceFromTargetInInches(Pipeline.CONE); 
+        double cubeDistance = visionSubsystem.distanceFromTargetInInches(Pipeline.CUBE);
         if ((cubeDistance == Double.NaN) && (coneDistance != Double.NaN)) {
             target = Pipeline.CONE;
         }

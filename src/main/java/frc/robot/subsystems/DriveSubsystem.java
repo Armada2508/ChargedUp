@@ -64,19 +64,35 @@ public class DriveSubsystem extends SubsystemBase {
         TalonFXR.set(TalonFXControlMode.PercentOutput, rightPower);
     }
 
+    /**
+     * Drives to a set position using Motion Magic. Should configure motion magic params before calling.
+     * @param distanceInches
+     */
     public void driveDistance(double distanceInches) {
         double sensorUnits = Encoder.fromDistance(distanceInches, Drive.encoderUnits, Drive.gearboxRatio, Drive.diameterInches);
-        TalonFXL.set(TalonFXControlMode.Position, TalonFXL.getSelectedSensorPosition()+sensorUnits);
-        TalonFXR.set(TalonFXControlMode.Position, TalonFXR.getSelectedSensorPosition()+sensorUnits);
+        TalonFXL.set(TalonFXControlMode.MotionMagic, TalonFXL.getSelectedSensorPosition()+sensorUnits);
+        TalonFXR.set(TalonFXControlMode.MotionMagic, TalonFXR.getSelectedSensorPosition()+sensorUnits);
     }
 
-    public ControlMode getMode() {
-        return TalonFXR.getControlMode();
+    public void clearIntegralAccumulator() {
+        TalonFXL.setIntegralAccumulator(0);
+        TalonFXR.setIntegralAccumulator(0);
     }
-    
+
+    /**
+     * 
+     * @param velocity in inches/second
+     * @param acceleration in inches/second/second
+     */
+    public void configMotionMagic(double velocity, double acceleration) {
+        TalonFXL.configMotionCruiseVelocity(fromVelocity(velocity));
+        TalonFXR.configMotionCruiseVelocity(fromVelocity(velocity));
+        TalonFXL.configMotionAcceleration(fromVelocity(acceleration));
+        TalonFXR.configMotionAcceleration(fromVelocity(acceleration));
+    }
+
     public double getRightPostition() {
         return Encoder.toDistance(TalonFXR.getSelectedSensorPosition(), Drive.encoderUnits, Drive.gearboxRatio, Drive.diameterInches); 
-        
     }
     
     public double getleftPostition() {
@@ -144,7 +160,7 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     public double fromVelocity(double velocity) {
-        return Encoder.fromVelocity(velocity, Drive.encoderUnits, Drive.gearboxRatio, Drive.diameterInches);
+        return Encoder.fromVelocity(velocity, Drive.encoderUnits, Drive.gearboxRatio, Drive.diameterInches, 0.1);
     }
 
     public double getVelocityRight() {
