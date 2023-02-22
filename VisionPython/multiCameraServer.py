@@ -8,6 +8,7 @@ import json
 import math
 import platform
 import sys
+import time
 from enum import Enum
 from typing import Final
 
@@ -36,6 +37,29 @@ detector.addFamily("tag16h5")
 # NetworkTables
 networkTableName: Final[str] = "VisionRPI"
 mainTable: NetworkTable = NetworkTableInstance.getDefault().getTable(networkTableName)
+
+# Camera
+resolutionWidth: int = 1280
+resolutionHeight: int = 720
+fps: Final[int] = 30
+exposure: Final[int] = 40
+verticalFOV: Final[int] = math.radians(36.9187406) # rad, Calculated manually 
+horizontalFOV: Final[int] = math.radians(61.3727249) # rad, Calculated manually
+focalLengthPixels: Final[float] = 1078.466
+
+mtx = np.array([ # from calibrating on calibdb
+    [1105.680719099305, 0, 649.8955569954927], 
+    [0, 1112.900092858322, 368.57822369954914], 
+    [0, 0, 1]
+])
+
+dist = np.array([ # from calibrating on calibdb
+    0.14143969201502096,
+    -1.0324230999881798,
+    0.0018082578061445586,
+    -0.002008660193895589,
+    1.849583138331747
+])
 
 def onRPI() -> bool:
     return platform.uname().system == "Linux"
@@ -137,13 +161,16 @@ def readConfig():
     return True
 
 def startCamera(config):
+    global resolutionWidth, resolutionHeight
     """Start running the camera."""
     print("Starting camera '{}' on {}".format(config.name, config.path))
     camera = UsbCamera(config.name, config.path)
     server = CameraServer.startAutomaticCapture(camera=camera)
-
     camera.setConfigJson(json.dumps(config.config))
     camera.setConnectionStrategy(VideoSource.ConnectionStrategy.kConnectionKeepOpen)
+    
+    resolutionWidth = config.config["width"]
+    resolutionHeight = config.config["height"]
 
     if config.streamConfig is not None:
         server.setConfigJson(json.dumps(config.streamConfig))
@@ -236,57 +263,44 @@ class ColorPipeline(Pipeline):
     
     def __init__(self, index: int, name: str, hueMin: int, hueMax: int, saturationMin: int, saturationMax: int, valueMin: int, valueMax: int, erodeIterations: int, dilateIterations: int, minArea: int) -> None:
         super().__init__(index, super().Type.COLOR, name)
-        self.hueMin: Final[int] = hueMin
-        self.hueMax: Final[int] = hueMax
-        self.saturationMin: Final[int] = saturationMin
-        self.saturationMax: Final[int] = saturationMax
-        self.valueMin: Final[int] = valueMin
-        self.valueMax: Final[int] = valueMax
-        self.erodeIterations: Final[int] = erodeIterations
-        self.dilateIterations: Final[int] = dilateIterations
-        self.__setupTableEntries(minArea)
+        self.__setupTableEntries(minArea, hueMin, hueMax, saturationMin, saturationMax, valueMin, valueMax, erodeIterations, dilateIterations)
         
-    def __setupTableEntries(self, minArea):
+    def __setupTableEntries(self, minArea, hueMin, hueMax, saturationMin, saturationMax, valueMin, valueMax, erodeIterations, dilateIterations):
+        self.hueMin = self.subTable.getEntry("DEBUG: Hue Min")
+        self.hueMax = self.subTable.getEntry("DEBUG: Hue Max")
+        self.saturationMin = self.subTable.getEntry("DEBUG: Saturation Min")
+        self.saturationMax = self.subTable.getEntry("DEBUG: Saturation Max")
+        self.valueMin = self.subTable.getEntry("DEBUG: Value Min")
+        self.valueMax = self.subTable.getEntry("DEBUG: Value Max")
+        self.erodeIterations = self.subTable.getEntry("DEBUG: Erode Iterations")
+        self.dilateIterations = self.subTable.getEntry("DEBUG: Dilate Iterations")
         self.minArea = self.subTable.getEntry("Min Area")
         self.pitch = self.subTable.getEntry("Pitch") 
         self.yaw = self.subTable.getEntry("Yaw")
         self.orientation = self.subTable.getEntry("Orientation")
+        self.hueMin.setInteger(hueMin)
+        self.hueMax.setInteger(hueMax)
+        self.saturationMin.setInteger(saturationMin)
+        self.saturationMax.setInteger(saturationMax)
+        self.valueMin.setInteger(valueMin)
+        self.valueMax.setInteger(valueMax)
+        self.erodeIterations.setInteger(erodeIterations)
+        self.dilateIterations.setInteger(dilateIterations)
         self.minArea.setDouble(minArea)
         self.pitch.setDouble(0)
         self.yaw.setDouble(0)
         self.orientation.setInteger(0)
 
-# Camera
-resolutionWidth: Final[int] = 1280
-resolutionHeight: Final[int] = 720
-fps: Final[int] = 30
-exposure: Final[int] = 40
-verticalFOV: Final[int] = math.radians(36.9187406) # rad, Calculated manually 
-horizontalFOV: Final[int] = math.radians(61.3727249) # rad, Calculated manually
-focalLengthPixels: Final[float] = 1078.466
-
-mtx = np.array([ # from calibrating on calibdb
-    [1105.680719099305, 0, 649.8955569954927], 
-    [0, 1112.900092858322, 368.57822369954914], 
-    [0, 0, 1]
-])
-
-dist = np.array([ # from calibrating on calibdb
-    0.14143969201502096,
-    -1.0324230999881798,
-    0.0018082578061445586,
-    -0.002008660193895589,
-    1.849583138331747
-])
 
 # Processing
-conePipeline: ColorPipeline = ColorPipeline(0, "Cone", 8, 40, 120, 255, 160, 255, 1, 1, 15)
-cubePipeline: ColorPipeline = ColorPipeline(1, "Cube", 120, 150, 30, 255, 120, 255, 1, 3, 15)
+conePipeline: ColorPipeline = ColorPipeline(0, "Cone", 20, 40, 120, 255, 160, 255, 1, 1, 15)
+cubePipeline: ColorPipeline = ColorPipeline(1, "Cube", 120, 150, 30, 255, 80, 255, 1, 4, 15)
 config = AprilTagDetector.Config()
-config.quadDecimate = 8
+# config.quadDecimate = 8
 quadThreshold = AprilTagDetector.QuadThresholdParameters()
 tagPipeline: AprilTagPipeline = AprilTagPipeline(2, "AprilTag", config, quadThreshold, 25, 20)
 pipelines: list[Pipeline] = [conePipeline, cubePipeline, tagPipeline] 
+# pipelines: list[Pipeline] = [cubePipeline] 
 
 aprilTagLength: Final[float] = 0.1524 # Meters
 poseEstimator: Final[AprilTagPoseEstimator] = AprilTagPoseEstimator(AprilTagPoseEstimator.Config(aprilTagLength, focalLengthPixels, focalLengthPixels, resolutionWidth/2, resolutionHeight/2))
@@ -367,7 +381,8 @@ def pointToYawAndPitch(px: int, py: int): # Converts a point in pixel system to 
     ax: float = math.atan(x/1)
     ay: float = math.atan(y/1)
     yaw: float = math.degrees(ax)
-    pitch: float = math.degrees(ay) * -1
+    pitch: float = math.degrees(ay)
+    print("Resolution: " + str(resolutionWidth) + " " + str(resolutionHeight) + " Coords: " + str(px) + " " + str(py) + " Pitch: " + str(pitch))
     return (yaw, pitch)
 
 def colorPipeline(img: Mat, drawnImg: Mat, pipeline: ColorPipeline):
@@ -375,20 +390,20 @@ def colorPipeline(img: Mat, drawnImg: Mat, pipeline: ColorPipeline):
     hsvImg = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     # Color Thresholding
     binaryImg = cv2.inRange(hsvImg, (
-        pipeline.hueMin,
-        pipeline.saturationMin, 
-        pipeline.valueMin
+        pipeline.hueMin.getInteger(0),
+        pipeline.saturationMin.getInteger(0), 
+        pipeline.valueMin.getInteger(0)
     ), (
-        pipeline.hueMax, 
-        pipeline.saturationMax, 
-        pipeline.valueMax
+        pipeline.hueMax.getInteger(0), 
+        pipeline.saturationMax.getInteger(0), 
+        pipeline.valueMax.getInteger(0)
     ))
     # Eroding
     kernel = np.ones((3, 3), np.uint8)
-    binaryImg = cv2.erode(binaryImg, kernel, iterations = int(pipeline.erodeIterations))
+    binaryImg = cv2.erode(binaryImg, kernel, iterations = int(pipeline.erodeIterations.getInteger(0)))
     # Dilating
     kernel = np.ones((3, 3), np.uint8)
-    binaryImg = cv2.dilate(binaryImg, kernel, iterations = int(pipeline.dilateIterations))
+    binaryImg = cv2.dilate(binaryImg, kernel, iterations = int(pipeline.dilateIterations.getInteger(0)))
     return proccessContours(binaryImg, drawnImg, pipeline)
 
 def getOrientation(width, height, pipeline: ColorPipeline):
@@ -431,16 +446,17 @@ def proccessContours(binaryImg: Mat, drawnImg: Mat, pipeline: ColorPipeline) -> 
 def main(): # Image proccessing user code
     CameraServer.enableLogging()
     cvSink = CameraServer.getVideo()
-    proccessedStream = CameraServer.putVideo("Proccessed Video", 427, 240)
-    originalStream = CameraServer.putVideo("Original Video", 427, 240)
+    proccessedStream = CameraServer.putVideo("Proccessed Video", resolutionWidth, resolutionHeight)
+    originalStream = CameraServer.putVideo("Original Video", resolutionWidth, resolutionHeight)
     mat = np.zeros(shape=(resolutionWidth, resolutionHeight, 3), dtype=np.uint8)
-    mainTable.getEntry("Current Pipeline").setInteger(tagPipeline.pipelineIndex.getInteger(0))
+    mainTable.getEntry("Current Pipeline").setInteger(cubePipeline.pipelineIndex.getInteger(0))
     # loop forever
     while True:
-        time, inputImg = cvSink.grabFrame(mat)
+        ts = time.time()
+        error, inputImg = cvSink.grabFrame(mat)
         inputImg = cv2.undistort(inputImg, mtx, dist)
-        if time == 0: # There is an error
-            proccessedStream.notifyError(cvSink.getError())
+        if error == 0: # There is an error
+            print(cvSink.getError())
             continue
         drawnImg = inputImg.copy()
         index = mainTable.getEntry("Current Pipeline").getInteger(0)
@@ -450,9 +466,12 @@ def main(): # Image proccessing user code
                     drawnImg = colorPipeline(inputImg.copy(), drawnImg, pipeline)
                 elif (pipeline.type == Pipeline.Type.APRILTAG):
                     drawnImg = aprilTagPipeline(inputImg.copy(), drawnImg, pipeline)
-        # drawnImg = cv2.resize(drawnImg, (427, 240), drawnImg)
+            else:
+                pipeline.hasTarget.setBoolean(False)
+        drawnImg = cv2.circle(drawnImg, (int(resolutionWidth/2), int(resolutionHeight/2)), 10, (255, 255, 255), -1)
         proccessedStream.putFrame(drawnImg) # Stream Video
         originalStream.putFrame(inputImg) # Stream Video
+        # print(time.time() - ts)
         
         
 

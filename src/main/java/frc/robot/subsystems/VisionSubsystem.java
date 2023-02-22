@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.photonvision.PhotonUtils;
@@ -19,12 +20,12 @@ import frc.robot.Constants.Vision;
 public class VisionSubsystem extends SubsystemBase {
 
     private final NetworkTable mainTable = NetworkTableInstance.getDefault().getTable("VisionRPI");
-    private final IntegerEntry pipeline = mainTable.getIntegerTopic("Current Pipeline").getEntry(0);
+    private final IntegerEntry currentPipeline = mainTable.getIntegerTopic("Current Pipeline").getEntry(0);
     private final NetworkTable coneTable = mainTable.getSubTable("Cone");
     private final NetworkTable cubeTable = mainTable.getSubTable("Cube");
     private final NetworkTable tagTable = mainTable.getSubTable("AprilTag");
     private final List<NetworkTable> subtables = new ArrayList<>();
-    private List<PipelineResult> currentResults = new ArrayList<>();
+    private HashMap<NetworkTable, PipelineResult> currentResults = new HashMap<>();
 
     public VisionSubsystem() {
         super();
@@ -35,67 +36,80 @@ public class VisionSubsystem extends SubsystemBase {
     
     @Override
     public void periodic() {
-        // currentResult = new PipelineResult(hasTarget.get(), pitch.get(), yaw.get(), pipeline.get(), orientation.get());
-        // System.out.println("Pitch: " + getTargetPitch() + " Yaw: " + getTargetYaw() + " Distance: " + distanceFromTargetInInches(Target.CONE));
-        System.out.println(pipeline.get());
+        currentResults.clear();
+        for (NetworkTable table : subtables) {
+            currentResults.put(table, new PipelineResult(
+                table.getPath(), 
+                table.getEntry("Has Target").getBoolean(false), 
+                table.getEntry("Pitch").getDouble(0), 
+                table.getEntry("Yaw").getDouble(0),
+                (int) table.getEntry("Pipeline").getInteger(0), 
+                (int) table.getEntry("Orientation").getInteger(0)
+            ));
+        }
+        // System.out.println("Pitch: " + getTargetPitch(Pipeline.CUBE) + " Yaw: " + getTargetYaw(Pipeline.CUBE) + " Distance: " + distanceFromTargetInInches(Pipeline.CUBE));
     }
 
-    public boolean hasTarget() {
-        return false;
-        // return currentResult.haveTarget();
+    private PipelineResult getResult(Pipeline pipeline) {
+        return switch(pipeline) {
+            case NONE -> throw new IllegalArgumentException("Can't use NONE.");
+            case CONE -> currentResults.get(coneTable);
+            case CUBE -> currentResults.get(cubeTable);
+            case APRILTAG -> currentResults.get(tagTable);
+        };
     }
 
-    public double getTargetPitch() {
-        return 0;
-        // if (!hasTarget()) return Double.NaN;
-        // return currentResult.pitch();
+    public boolean hasTarget(Pipeline pipeline) {
+        return getResult(pipeline).haveTarget();
     }
 
-    public double getTargetYaw() {
-        return 0;
-        // if (!hasTarget()) return Double.NaN;
-        // return currentResult.yaw();
+    public double getTargetPitch(Pipeline pipeline) {
+        if (!hasTarget(pipeline)) return Double.NaN;
+        return getResult(pipeline).pitch();
+    }
+
+    public double getTargetYaw(Pipeline pipeline) {
+        if (!hasTarget(pipeline)) return Double.NaN;
+        return getResult(pipeline).yaw();
     }
 
     /**
-     * Calculates distance from the limelight to the selected Target in inches and with the angle given.
+     * Calculates distance from the front of the robot to the current target in inches and with the angle given.
      * distance = (h2-h1) / tan(a1+a2)
      * h2 = height of target inches, h1 = height of camera inches, a1 = camera angle degrees, a2 = target angle degrees
      * @return distance in inches
      */
-    public double distanceFromTargetInInches(Target target) {;
-        if (!hasTarget()) return Double.NaN;
-        double targetHeight = switch(target) {
+    public double distanceFromTargetInInches(Pipeline pipeline) {
+        if (!hasTarget(pipeline)) return Double.NaN;
+        double targetHeight = switch(pipeline) {
             case NONE -> 0;
-            case CUBE -> Vision.cubeHeightInches;
             case CONE -> Vision.coneHeightInches;
+            case CUBE -> Vision.cubeHeightInches;
             case APRILTAG -> Vision.aprilTagHeightInches; 
         };
         double distanceMeters = PhotonUtils.calculateDistanceToTargetMeters(
             Units.inchesToMeters(Vision.cameraHeightInches), 
             Units.inchesToMeters(targetHeight), 
             Units.degreesToRadians(Vision.cameraAngleMountedDegrees), 
-            Units.degreesToRadians(getTargetPitch())
+            Units.degreesToRadians(getTargetPitch(pipeline))
         );
         return Units.metersToInches(distanceMeters) - Vision.distanceToBumperInches;
     }
 
-    public int getPipeline() {
-        // return (int) currentResult.pipeline();
-        return 0;
+    public int getCurrentPipeline() {
+        return (int) currentPipeline.get();
     }
 
-    public void setPipeline(int index) {
-        pipeline.set(index);
+    public void setPipeline(Pipeline pipeline) {
+        currentPipeline.set(getResult(pipeline).pipeline);
     }
 
-    public Orientation getConeOrientation() {
-        return Orientation.LANDSCAPE;
-        // return switch( (int) currentResult.orientation()) {
-        //     case 0 -> Orientation.LANDSCAPE;
-        //     case 1 -> Orientation.PORTRAIT;
-        //     default -> throw new IllegalArgumentException("Invalid number for orientation. - VisionSubsystem");
-        // };
+    public Orientation getTargetOrientation(Pipeline pipeline) {
+        return switch(getResult(pipeline).orientation()) {
+            case 0 -> Orientation.LANDSCAPE;
+            case 1 -> Orientation.PORTRAIT;
+            default -> throw new IllegalArgumentException("Invalid number for orientation. - VisionSubsystem");
+        };
     }
 
     public enum Orientation {
@@ -103,19 +117,20 @@ public class VisionSubsystem extends SubsystemBase {
         PORTRAIT
     }
 
-    public enum Target {
+    public enum Pipeline {
         NONE,
-        CUBE,
         CONE,
+        CUBE,
         APRILTAG
     }
 
     private record PipelineResult(
+        String name,
         boolean haveTarget,
         double pitch,
         double yaw,
-        long pipeline,
-        long orientation
+        int pipeline,
+        int orientation
     ) {}
 
 }

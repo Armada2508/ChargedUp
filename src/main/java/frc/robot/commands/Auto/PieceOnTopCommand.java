@@ -7,17 +7,17 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.GripperSubsystem;
-import frc.robot.subsystems.VisionSubsystem.Target;
+import frc.robot.subsystems.VisionSubsystem.Pipeline;
 import frc.robot.subsystems.WristSubsystem;
 
 public class PieceOnTopCommand extends SequentialCommandGroup {
 
-    public PieceOnTopCommand(Supplier<Target> target, Height height, DriveSubsystem driveSubsystem, ArmSubsystem armSubsystem, WristSubsystem wristSubsystem, GripperSubsystem gripperSubsystem) {
+    public PieceOnTopCommand(Supplier<Pipeline> target, Height height, DriveSubsystem driveSubsystem, ArmSubsystem armSubsystem, WristSubsystem wristSubsystem, GripperSubsystem gripperSubsystem) {
         addCommands(
             new ConditionalCommand(
                 new ConeOnPoleCommand(height, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem),
                 new CubeOnStationCommand(height, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem),
-                () -> target.get() == Target.CONE
+                () -> target.get() == Pipeline.CONE
             )
         );
     }

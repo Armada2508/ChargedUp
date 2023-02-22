@@ -8,17 +8,17 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
-import frc.robot.subsystems.VisionSubsystem.Target;
+import frc.robot.subsystems.VisionSubsystem.Pipeline;
 
 public class SeekCommand extends SequentialCommandGroup {
 
-    public SeekCommand(DriveSubsystem driveSubsystem, VisionSubsystem visionSubsystem, PigeonIMU pigeon, Target target, double distanceFromTargetInches) {
+    public SeekCommand(DriveSubsystem driveSubsystem, VisionSubsystem visionSubsystem, PigeonIMU pigeon, Pipeline target, double distanceFromTargetInches) {
         this(driveSubsystem, visionSubsystem, pigeon, () -> target, distanceFromTargetInches);
     }
 
-    public SeekCommand(DriveSubsystem driveSubsystem, VisionSubsystem visionSubsystem, PigeonIMU pigeon, Supplier<Target> target, double distanceFromTargetInches) {
+    public SeekCommand(DriveSubsystem driveSubsystem, VisionSubsystem visionSubsystem, PigeonIMU pigeon, Supplier<Pipeline> target, double distanceFromTargetInches) {
         addCommands(
-            new AutoTurnCommand(visionSubsystem::getTargetYaw, driveSubsystem, pigeon),
+            new AutoTurnCommand(() -> visionSubsystem.getTargetYaw(target.get()), driveSubsystem, pigeon),
             new DriveUntilCommand(driveSubsystem, visionSubsystem, target.get()),
             new AutoDriveCommand(() -> visionSubsystem.distanceFromTargetInInches(target.get()) - distanceFromTargetInches, driveSubsystem)
         );
@@ -28,9 +28,9 @@ public class SeekCommand extends SequentialCommandGroup {
 
         private DriveSubsystem driveSubsystem;
         private VisionSubsystem visionSubsystem;
-        private Target target;
+        private Pipeline target;
 
-        DriveUntilCommand(DriveSubsystem driveSubsystem, VisionSubsystem visionSubsystem, Target target) {
+        DriveUntilCommand(DriveSubsystem driveSubsystem, VisionSubsystem visionSubsystem, Pipeline target) {
             this.driveSubsystem = driveSubsystem;
             this.visionSubsystem = visionSubsystem;
             this.target = target;
