@@ -12,7 +12,7 @@
 - ~~AutoArm (Position arm to certain degrees) (0 : 90) (Absolute)~~ !
 - ~~AutoWrist (Position wrist to certain degrees) (-30 : 30) (Absolute)~~ !
 - ~~AutoGrip (Claw percent close) (-1 is open, 1 is closed) (Absolute)~~ !
-- ~~ArmCalibrate~~ !
+- ~~Calibrate Commands~~ !
 ### Complicated Auto:
 - ~~Balancing Command~~
 - ~~Put a cone on pole command~~ !

@@ -246,8 +246,8 @@ class AprilTagPipeline(Pipeline):
         self.__setupTableEntries(minArea, minDecisionMargin)
     
     def __setupTableEntries(self, minArea, minDecisionMargin):
-        self.minArea = self.subTable.getEntry("Min Area")
-        self.minDecisionMargin = self.subTable.getEntry("Min Decision Margin")
+        self.minArea = self.subTable.getEntry("DEBUG: Min Area")
+        self.minDecisionMargin = self.subTable.getEntry("DEBUG: Min Decision Margin")
         self.X = self.subTable.getEntry("X") 
         self.Y = self.subTable.getEntry("Y")
         self.Z = self.subTable.getEntry("Z")

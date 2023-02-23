@@ -142,7 +142,7 @@ public class Encoder {
     }
 
     /**
-     * Converts sensor units to a rotational angle in degrees 
+     * Converts a rotational angle in degrees to sensor units
      * @param sensorPosition The current value read from the sensor
      * @param encoderUnitsPerRev The number of encoder units sensed per revolution of the output shaft of the gearbox
      * @param gearRatio The ratio of gearing from the output shaft of the gearbox to the wheel

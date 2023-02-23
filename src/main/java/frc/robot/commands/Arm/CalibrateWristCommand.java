@@ -1,6 +1,7 @@
 package frc.robot.commands.Arm;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.Constants.Wrist;
 import frc.robot.subsystems.WristSubsystem;
 
 public class CalibrateWristCommand extends CommandBase {
@@ -24,7 +25,7 @@ public class CalibrateWristCommand extends CommandBase {
     @Override
     public void end(boolean interrupted) {
         wristSubsystem.setPower(0);
-        wristSubsystem.calibrate();
+        wristSubsystem.calibrate(Wrist.minDegrees);
     }
 
     @Override

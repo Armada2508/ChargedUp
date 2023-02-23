@@ -5,7 +5,6 @@ import com.ctre.phoenix.motorcontrol.TalonFXFeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
-import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.Drive;
 import frc.robot.Constants.Gripper;
@@ -14,7 +13,6 @@ public class GripperSubsystem extends SubsystemBase {
     
     private final double positionScalar = 4;
     private WPI_TalonFX talonFX = new WPI_TalonFX(Gripper.motorID);
-    private DigitalInput limitSwitch = new DigitalInput(Gripper.limitSwitchID);
 
     public GripperSubsystem() {
         configureMotor(talonFX);
@@ -37,7 +35,6 @@ public class GripperSubsystem extends SubsystemBase {
     }
 
     /**
-     * 
      * @return Grippers percent being closed, 1 is fully closed, 0 is fully open
      */
     public double getPercentClosed() { 
@@ -53,13 +50,13 @@ public class GripperSubsystem extends SubsystemBase {
         double targetPosition = percent * positionScalar * Gripper.encoderUnitsPerRev;
         talonFX.set(TalonFXControlMode.Position, targetPosition);
     }
-
-    public void calibrate() {
-        talonFX.setSelectedSensorPosition(0);
+    
+    public boolean pollLimitSwitch() {
+        return talonFX.isFwdLimitSwitchClosed() == 1;
     }
 
-    public boolean pollLimitSwitch() {
-        return !limitSwitch.get(); // Switches are held high
+    public void calibrate(double pos) {
+        talonFX.setSelectedSensorPosition(pos);
     }
 
 }

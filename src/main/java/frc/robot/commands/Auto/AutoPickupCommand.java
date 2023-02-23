@@ -16,19 +16,19 @@ import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.GripperSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.VisionSubsystem.Orientation;
-import frc.robot.subsystems.VisionSubsystem.Pipeline;
+import frc.robot.subsystems.VisionSubsystem.Target;
 import frc.robot.subsystems.WristSubsystem;
 
 public class AutoPickupCommand extends SequentialCommandGroup {
 
     private final double distanceFromTargetInches = 12;
-    private Pipeline lastTarget = Pipeline.CONE;
+    private Target lastTarget = Target.CONE;
 
     public AutoPickupCommand(VisionSubsystem visionSubsystem, DriveSubsystem driveSubsystem, PigeonIMU pigeon, ArmSubsystem ArmSubsystem, WristSubsystem WristSubsystem, GripperSubsystem GripperSubsystem) {
         addCommands(
             new GripperCommand(0, GripperSubsystem),
             new ArmCommand(Arm.minDegrees, ArmSubsystem),
-            new InstantCommand(() -> visionSubsystem.setPipeline(Pipeline.CONE),visionSubsystem),
+            new InstantCommand(() -> visionSubsystem.setPipeline(Target.CONE),visionSubsystem),
             new WaitCommand(0.05),
             new ConditionalCommand(
                 new SequentialCommandGroup(
@@ -37,43 +37,43 @@ public class AutoPickupCommand extends SequentialCommandGroup {
                         new ConditionalCommand(
                             InverseKinematics.getIKPositionCommand(12.0, 0.0, ArmSubsystem, WristSubsystem), /*On True  | Landscape Orientation*/
                             InverseKinematics.getIKPositionCommand(12.0, 0.0, ArmSubsystem, WristSubsystem), /*On False | Portrait Orientation*/
-                            () -> visionSubsystem.getTargetOrientation(Pipeline.CONE) == Orientation.LANDSCAPE  /*Boolean Supplier*/
+                            () -> visionSubsystem.getTargetOrientation(Target.CONE) == Orientation.LANDSCAPE  /*Boolean Supplier*/
                             ), /*On True  | Target.Cone*/
                         InverseKinematics.getIKPositionCommand(12.0, 0.0, ArmSubsystem, WristSubsystem), /*On False | Target.Cube*/
-                        () -> getPreviousTarget() == Pipeline.CONE  /*Boolean Supplier*/
+                        () -> getPreviousTarget() == Target.CONE  /*Boolean Supplier*/
                     ),
                     new ArmCommand(Arm.minDegrees, ArmSubsystem) /* On True for Conditional, Starts at InstantCommand*/
                 ),
                 new InstantCommand(), /* On False for Conditional */ 
-                () -> getTarget(visionSubsystem) != Pipeline.NONE /* Boolean Supplier for Conditional */
+                () -> getTarget(visionSubsystem) != Target.NONE /* Boolean Supplier for Conditional */
             )
         );
     }
 
-    private Pipeline getTarget(VisionSubsystem visionSubsystem) {
-        Pipeline target = Pipeline.CONE;
-        double coneDistance = visionSubsystem.distanceFromTargetInInches(Pipeline.CONE); 
-        double cubeDistance = visionSubsystem.distanceFromTargetInInches(Pipeline.CUBE);
+    private Target getTarget(VisionSubsystem visionSubsystem) {
+        Target target = Target.CONE;
+        double coneDistance = visionSubsystem.distanceFromTargetInInches(Target.CONE); 
+        double cubeDistance = visionSubsystem.distanceFromTargetInInches(Target.CUBE);
         if ((cubeDistance == Double.NaN) && (coneDistance != Double.NaN)) {
-            target = Pipeline.CONE;
+            target = Target.CONE;
         }
         else if ((cubeDistance != Double.NaN) && (coneDistance == Double.NaN)) {
-            target = Pipeline.CUBE;
+            target = Target.CUBE;
         }
         else if ((cubeDistance != Double.NaN) && (coneDistance != Double.NaN)) {
             if (cubeDistance > coneDistance) {
-                target = Pipeline.CUBE;
+                target = Target.CUBE;
             }
-            target = Pipeline.CONE;
+            target = Target.CONE;
         }
         else { 
-            target = Pipeline.NONE;
+            target = Target.NONE;
         }
         lastTarget = target;
         return target;
     }
 
-    public Pipeline getPreviousTarget() {
+    public Target getPreviousTarget() {
         return lastTarget;
     }
 

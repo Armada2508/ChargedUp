@@ -8,15 +8,15 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
-import frc.robot.subsystems.VisionSubsystem.Pipeline;
+import frc.robot.subsystems.VisionSubsystem.Target;
 
 public class SeekCommand extends SequentialCommandGroup {
 
-    public SeekCommand(DriveSubsystem driveSubsystem, VisionSubsystem visionSubsystem, PigeonIMU pigeon, Pipeline target, double distanceFromTargetInches) {
+    public SeekCommand(DriveSubsystem driveSubsystem, VisionSubsystem visionSubsystem, PigeonIMU pigeon, Target target, double distanceFromTargetInches) {
         this(driveSubsystem, visionSubsystem, pigeon, () -> target, distanceFromTargetInches);
     }
 
-    public SeekCommand(DriveSubsystem driveSubsystem, VisionSubsystem visionSubsystem, PigeonIMU pigeon, Supplier<Pipeline> target, double distanceFromTargetInches) {
+    public SeekCommand(DriveSubsystem driveSubsystem, VisionSubsystem visionSubsystem, PigeonIMU pigeon, Supplier<Target> target, double distanceFromTargetInches) {
         addCommands(
             new AutoTurnCommand(() -> visionSubsystem.getTargetYaw(target.get()), driveSubsystem, pigeon),
             new DriveUntilCommand(driveSubsystem, visionSubsystem, target.get()),
@@ -28,9 +28,9 @@ public class SeekCommand extends SequentialCommandGroup {
 
         private DriveSubsystem driveSubsystem;
         private VisionSubsystem visionSubsystem;
-        private Pipeline target;
+        private Target target;
 
-        DriveUntilCommand(DriveSubsystem driveSubsystem, VisionSubsystem visionSubsystem, Pipeline target) {
+        DriveUntilCommand(DriveSubsystem driveSubsystem, VisionSubsystem visionSubsystem, Target target) {
             this.driveSubsystem = driveSubsystem;
             this.visionSubsystem = visionSubsystem;
             this.target = target;

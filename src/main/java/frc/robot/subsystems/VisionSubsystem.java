@@ -7,6 +7,8 @@ import java.util.List;
 
 import org.photonvision.PhotonUtils;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.IntegerEntry;
 import edu.wpi.first.networktables.NetworkTable;
@@ -43,6 +45,9 @@ public class VisionSubsystem extends SubsystemBase {
                 table.getEntry("Has Target").getBoolean(false), 
                 table.getEntry("Pitch").getDouble(0), 
                 table.getEntry("Yaw").getDouble(0),
+                table.getEntry("X").getDouble(0),
+                table.getEntry("Y").getDouble(0),
+                table.getEntry("Z").getDouble(0),
                 (int) table.getEntry("Pipeline").getInteger(0), 
                 (int) table.getEntry("Orientation").getInteger(0)
             ));
@@ -50,27 +55,35 @@ public class VisionSubsystem extends SubsystemBase {
         // System.out.println("Pitch: " + getTargetPitch(Pipeline.CUBE) + " Yaw: " + getTargetYaw(Pipeline.CUBE) + " Distance: " + distanceFromTargetInInches(Pipeline.CUBE));
     }
 
-    private PipelineResult getResult(Pipeline pipeline) {
+    private PipelineResult getResult(Target pipeline) {
         return switch(pipeline) {
-            case NONE -> throw new IllegalArgumentException("Can't use NONE.");
+            case NONE -> throw new IllegalArgumentException("Can't use NONE. - VisionSubsystem");
             case CONE -> currentResults.get(coneTable);
             case CUBE -> currentResults.get(cubeTable);
             case APRILTAG -> currentResults.get(tagTable);
         };
     }
 
-    public boolean hasTarget(Pipeline pipeline) {
+    public boolean hasTarget(Target pipeline) {
         return getResult(pipeline).haveTarget();
     }
 
-    public double getTargetPitch(Pipeline pipeline) {
+    public double getTargetPitch(Target pipeline) {
         if (!hasTarget(pipeline)) return Double.NaN;
         return getResult(pipeline).pitch();
     }
 
-    public double getTargetYaw(Pipeline pipeline) {
+    public double getTargetYaw(Target pipeline) {
         if (!hasTarget(pipeline)) return Double.NaN;
         return getResult(pipeline).yaw();
+    }
+
+    public Pose2d getPoseToTarget(Target pipeline) {
+        if (!hasTarget(pipeline)) return new Pose2d();
+        double x = getResult(pipeline).x();
+        double z = getResult(pipeline).z();
+        double yaw = getResult(pipeline).yaw();
+        return new Pose2d(x, z, new Rotation2d(Math.toRadians(yaw)));
     }
 
     /**
@@ -79,7 +92,7 @@ public class VisionSubsystem extends SubsystemBase {
      * h2 = height of target inches, h1 = height of camera inches, a1 = camera angle degrees, a2 = target angle degrees
      * @return distance in inches
      */
-    public double distanceFromTargetInInches(Pipeline pipeline) {
+    public double distanceFromTargetInInches(Target pipeline) {
         if (!hasTarget(pipeline)) return Double.NaN;
         double targetHeight = switch(pipeline) {
             case NONE -> 0;
@@ -90,7 +103,7 @@ public class VisionSubsystem extends SubsystemBase {
         double distanceMeters = PhotonUtils.calculateDistanceToTargetMeters(
             Units.inchesToMeters(Vision.cameraHeightInches), 
             Units.inchesToMeters(targetHeight), 
-            Units.degreesToRadians(Vision.cameraAngleMountedDegrees), 
+            Units.degreesToRadians(Vision.mountedCameraAngleDeg), 
             Units.degreesToRadians(getTargetPitch(pipeline))
         );
         return Units.metersToInches(distanceMeters) - Vision.distanceToBumperInches;
@@ -100,11 +113,11 @@ public class VisionSubsystem extends SubsystemBase {
         return (int) currentPipeline.get();
     }
 
-    public void setPipeline(Pipeline pipeline) {
+    public void setPipeline(Target pipeline) {
         currentPipeline.set(getResult(pipeline).pipeline);
     }
 
-    public Orientation getTargetOrientation(Pipeline pipeline) {
+    public Orientation getTargetOrientation(Target pipeline) {
         return switch(getResult(pipeline).orientation()) {
             case 0 -> Orientation.LANDSCAPE;
             case 1 -> Orientation.PORTRAIT;
@@ -117,7 +130,7 @@ public class VisionSubsystem extends SubsystemBase {
         PORTRAIT
     }
 
-    public enum Pipeline {
+    public enum Target {
         NONE,
         CONE,
         CUBE,
@@ -129,6 +142,9 @@ public class VisionSubsystem extends SubsystemBase {
         boolean haveTarget,
         double pitch,
         double yaw,
+        double x,
+        double y,
+        double z,
         int pipeline,
         int orientation
     ) {}

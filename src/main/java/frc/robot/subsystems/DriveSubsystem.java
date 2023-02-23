@@ -39,7 +39,7 @@ public class DriveSubsystem extends SubsystemBase {
         TalonFXRfollow.setInverted(true);
         TalonFXLfollow.follow(TalonFXL);
         TalonFXRfollow.follow(TalonFXR);
-        calibrate();
+        calibrate(0);
         odometry = new DifferentialDriveOdometry(new Rotation2d(getHeading()), 0, 0);
     }
 
@@ -69,7 +69,7 @@ public class DriveSubsystem extends SubsystemBase {
      * @param distanceInches
      */
     public void driveDistance(double distanceInches) {
-        double sensorUnits = Encoder.fromDistance(distanceInches, Drive.encoderUnits, Drive.gearboxRatio, Drive.diameterInches);
+        double sensorUnits = Encoder.fromDistance(distanceInches, Drive.encoderUnitsPerRev, Drive.gearboxRatio, Drive.diameterInches);
         TalonFXL.set(TalonFXControlMode.MotionMagic, TalonFXL.getSelectedSensorPosition()+sensorUnits);
         TalonFXR.set(TalonFXControlMode.MotionMagic, TalonFXR.getSelectedSensorPosition()+sensorUnits);
     }
@@ -80,7 +80,9 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     /**
-     * 
+     * Configures motion magic values for next run. If your acceleration is the same value as your velocity
+     * then it will take 1 second to reach your velocity. Higher values of acceleration will make it get there faster, 
+     * lower values will make it get there slower.
      * @param velocity in inches/second
      * @param acceleration in inches/second/second
      */
@@ -92,18 +94,16 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     public double getRightPostition() {
-        return Encoder.toDistance(TalonFXR.getSelectedSensorPosition(), Drive.encoderUnits, Drive.gearboxRatio, Drive.diameterInches); 
+        return Encoder.toDistance(TalonFXR.getSelectedSensorPosition(), Drive.encoderUnitsPerRev, Drive.gearboxRatio, Drive.diameterInches); 
     }
     
     public double getleftPostition() {
-        return Encoder.toDistance(TalonFXL.getSelectedSensorPosition(), Drive.encoderUnits, Drive.gearboxRatio, Drive.diameterInches); 
+        return Encoder.toDistance(TalonFXL.getSelectedSensorPosition(), Drive.encoderUnitsPerRev, Drive.gearboxRatio, Drive.diameterInches); 
     }
 
-    public void calibrate() {
-        TalonFXL.setSelectedSensorPosition(0);
-        TalonFXLfollow.setSelectedSensorPosition(0);
-        TalonFXR.setSelectedSensorPosition(0);
-        TalonFXRfollow.setSelectedSensorPosition(0);
+    public void calibrate(double pos) {
+        TalonFXL.setSelectedSensorPosition(pos);
+        TalonFXR.setSelectedSensorPosition(pos);
     }
 
     public void brake() {
@@ -155,12 +155,12 @@ public class DriveSubsystem extends SubsystemBase {
         }
     }
     
-    public double toVelocity(double velocity) {
-        return Encoder.toVelocity(velocity, Drive.encoderUnits, Drive.gearboxRatio, Drive.diameterInches);
+    private double toVelocity(double velocity) {
+        return Encoder.toVelocity(velocity, Drive.encoderUnitsPerRev, Drive.gearboxRatio, Drive.diameterInches);
     }
 
-    public double fromVelocity(double velocity) {
-        return Encoder.fromVelocity(velocity, Drive.encoderUnits, Drive.gearboxRatio, Drive.diameterInches, 0.1);
+    private double fromVelocity(double velocity) {
+        return Encoder.fromVelocity(velocity, Drive.encoderUnitsPerRev, Drive.gearboxRatio, Drive.diameterInches, 0.1);
     }
 
     public double getVelocityRight() {

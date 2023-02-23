@@ -6,7 +6,6 @@ import com.ctre.phoenix.motorcontrol.TalonFXFeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
-import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.Drive;
 import frc.robot.Constants.Wrist;
@@ -15,7 +14,6 @@ import frc.robot.Lib.Encoder;
 public class WristSubsystem extends SubsystemBase {
 
     private WPI_TalonFX talonFX = new WPI_TalonFX(Wrist.motorID);
-    private DigitalInput limitSwitch = new DigitalInput(Wrist.limitSwitchID);
 
     public WristSubsystem() {
        configureMotor(talonFX);
@@ -28,12 +26,12 @@ public class WristSubsystem extends SubsystemBase {
         talon.config_kP(0, Wrist.kP);
         talon.config_kI(0, Wrist.kI);
         talon.config_kD(0, Wrist.kD);
+        talon.config_kF(0, Wrist.kF);
         talon.configNeutralDeadband(0.001);
         talon.configClosedLoopPeakOutput(0, Wrist.maxSpeed);
     }
 
     /**
-     * 
      * @param power to set the motor between -1.0 and 1.0
      */
     public void setPower(double power) {
@@ -47,23 +45,39 @@ public class WristSubsystem extends SubsystemBase {
     public void setPosition(double theta) {
         if (theta > Wrist.maxDegrees || theta < Wrist.minDegrees) return;
         double targetPosition = fromAngle(theta);
-        talonFX.set(TalonFXControlMode.Position, targetPosition, DemandType.ArbitraryFeedForward, getFeedForward());
+        talonFX.set(TalonFXControlMode.MotionMagic, targetPosition, DemandType.ArbitraryFeedForward, getFeedForward());
     }
 
     /**
-     * 
      * @return Wrist's current position in degrees
      */
     public double getPosition() {
         return toAngle(talonFX.getSelectedSensorPosition());
     }
+    
+    /**
+     * Configures motion magic values for next run. If your acceleration is the same value as your velocity
+     * then it will take 1 second to reach your velocity. Higher values of acceleration will make it get there faster, 
+     * lower values will make it get there slower.
+     * @param velocity in degrees/second
+     * @param acceleration in degrees/second/second
+     */
+    public void configMotionMagic(double velocity, double acceleration) {
+        talonFX.setIntegralAccumulator(0);
+        talonFX.configMotionCruiseVelocity(fromVelocity(velocity));
+        talonFX.configMotionAcceleration(fromVelocity(acceleration));
+    }
 
-    public double toAngle(double sensorUnits) {
+    private double toAngle(double sensorUnits) {
         return Encoder.toRotationalAngle(sensorUnits, Wrist.encoderUnitsPerRev, Wrist.pulleyRatio);
     }
 
-    public double fromAngle(double theta) {
+    private double fromAngle(double theta) {
         return Encoder.fromRotationalAngle(theta, Wrist.encoderUnitsPerRev, Wrist.pulleyRatio);
+    }
+
+    private double fromVelocity(double velocity) {
+        return fromAngle(velocity) * 0.1;
     }
     
     private double getFeedForward() {
@@ -72,12 +86,12 @@ public class WristSubsystem extends SubsystemBase {
         return Wrist.gravityFeedForward * scalar;
     }
 
-    public void calibrate() {
-        talonFX.setSelectedSensorPosition(Wrist.minDegrees);
+    public boolean pollLimitSwitch() {
+        return talonFX.isFwdLimitSwitchClosed() == 1;
     }
 
-    public boolean pollLimitSwitch() {
-        return !limitSwitch.get(); // Switches are held high
+    public void calibrate(double pos) {
+        talonFX.setSelectedSensorPosition(pos);
     }
 
 }
