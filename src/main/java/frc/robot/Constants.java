@@ -1,5 +1,6 @@
 package frc.robot;
 
+import edu.wpi.first.math.util.Units;
 import frc.robot.Lib.util.Util;
 
 public class Constants {
@@ -30,7 +31,7 @@ public class Constants {
         public static final double maxTurnSpeed = 0.25;
 
         // DriveBase
-        public static final double diameterInches = 6;
+        public static final double wheelDiameterMeters = Units.inchesToMeters(6);
         public static final int encoderUnitsPerRev = 2048;
         public static final double gearboxRatio = 10.7;
         public static final double trackWidthMeters = Util.inchesToMeters(23);
@@ -53,13 +54,13 @@ public class Constants {
 
     public static final class Vision {
         // Distances
-        public static final double distanceToBumperInches = 12.5;
+        public static final double distanceToBumperMeters = Units.inchesToMeters(12.5);
         // Target Heights
-        public static final double coneHeightInches = 0;
-        public static final double cubeHeightInches = 42.5;
-        public static final double aprilTagHeightInches = 0;
+        public static final double coneHeightMeters = 0;
+        public static final double cubeHeightMeters = 0;
+        public static final double aprilTagHeightMeters = 0;
         // Camera
-        public static final double cameraHeightInches = 50;
+        public static final double cameraHeightMeters = Units.inchesToMeters(50);
         public static final double mountedCameraAngleDeg = 0.7; 
     }
 

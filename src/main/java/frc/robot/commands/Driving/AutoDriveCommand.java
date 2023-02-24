@@ -12,12 +12,12 @@ public class AutoDriveCommand extends CommandBase {
     private double absoluteTarget;
     private DriveSubsystem driveSubsystem;
 
-    public AutoDriveCommand(double distanceInches, DriveSubsystem driveSubsystem) {
-        this(() -> distanceInches, driveSubsystem);
+    public AutoDriveCommand(double distanceMeters, DriveSubsystem driveSubsystem) {
+        this(() -> distanceMeters, driveSubsystem);
     }
-
-    public AutoDriveCommand(DoubleSupplier distanceInches, DriveSubsystem driveSubsystem) {
-        targetDistance = distanceInches;
+    
+    public AutoDriveCommand(DoubleSupplier distanceMeters, DriveSubsystem driveSubsystem) {
+        targetDistance = distanceMeters;
         this.driveSubsystem = driveSubsystem;
         addRequirements(driveSubsystem);
     }

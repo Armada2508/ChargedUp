@@ -27,7 +27,7 @@ public class VisionSubsystem extends SubsystemBase {
     private final NetworkTable cubeTable = mainTable.getSubTable("Cube");
     private final NetworkTable tagTable = mainTable.getSubTable("AprilTag");
     private final List<NetworkTable> subtables = new ArrayList<>();
-    private HashMap<NetworkTable, PipelineResult> currentResults = new HashMap<>();
+    private final HashMap<NetworkTable, PipelineResult> currentResults = new HashMap<>();
 
     public VisionSubsystem() {
         super();
@@ -78,35 +78,39 @@ public class VisionSubsystem extends SubsystemBase {
         return getResult(pipeline).yaw();
     }
 
+    /**
+     * @param pipeline to use for getting target pose
+     * @return A Pose2d in meters representing the robot's position in 2d space relative to the target at (0, 0)
+     */
     public Pose2d getPoseToTarget(Target pipeline) {
         if (!hasTarget(pipeline)) return new Pose2d();
         double x = getResult(pipeline).x();
         double z = getResult(pipeline).z();
         double yaw = getResult(pipeline).yaw();
-        return new Pose2d(x, z, new Rotation2d(Math.toRadians(yaw)));
+        return new Pose2d(x, z, Rotation2d.fromDegrees(yaw));
     }
 
     /**
-     * Calculates distance from the front of the robot to the current target in inches and with the angle given.
+     * Calculates distance from the front of the robot to the current target in meters and with the angle given.
      * distance = (h2-h1) / tan(a1+a2)
-     * h2 = height of target inches, h1 = height of camera inches, a1 = camera angle degrees, a2 = target angle degrees
-     * @return distance in inches
+     * h2 = height of target meters, h1 = height of camera meters, a1 = camera angle degrees, a2 = target angle degrees
+     * @return distance in meters
      */
-    public double distanceFromTargetInInches(Target pipeline) {
+    public double distanceFromTargetMeters(Target pipeline) {
         if (!hasTarget(pipeline)) return Double.NaN;
         double targetHeight = switch(pipeline) {
             case NONE -> 0;
-            case CONE -> Vision.coneHeightInches;
-            case CUBE -> Vision.cubeHeightInches;
-            case APRILTAG -> Vision.aprilTagHeightInches; 
+            case CONE -> Vision.coneHeightMeters;
+            case CUBE -> Vision.cubeHeightMeters;
+            case APRILTAG -> Vision.aprilTagHeightMeters; 
         };
         double distanceMeters = PhotonUtils.calculateDistanceToTargetMeters(
-            Units.inchesToMeters(Vision.cameraHeightInches), 
-            Units.inchesToMeters(targetHeight), 
+            Vision.cameraHeightMeters, 
+            targetHeight, 
             Units.degreesToRadians(Vision.mountedCameraAngleDeg), 
             Units.degreesToRadians(getTargetPitch(pipeline))
         );
-        return Units.metersToInches(distanceMeters) - Vision.distanceToBumperInches;
+        return Units.metersToInches(distanceMeters) - Vision.distanceToBumperMeters;
     }
 
     public int getCurrentPipeline() {

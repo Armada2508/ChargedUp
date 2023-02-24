@@ -12,7 +12,7 @@ import frc.robot.Constants.Gripper;
 public class GripperSubsystem extends SubsystemBase {
     
     private final double positionScalar = 4;
-    private WPI_TalonFX talonFX = new WPI_TalonFX(Gripper.motorID);
+    private final WPI_TalonFX talonFX = new WPI_TalonFX(Gripper.motorID);
 
     public GripperSubsystem() {
         configureMotor(talonFX);

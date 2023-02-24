@@ -13,7 +13,7 @@ import frc.robot.Lib.Encoder;
 
 public class WristSubsystem extends SubsystemBase {
 
-    private WPI_TalonFX talonFX = new WPI_TalonFX(Wrist.motorID);
+    private final WPI_TalonFX talonFX = new WPI_TalonFX(Wrist.motorID);
 
     public WristSubsystem() {
        configureMotor(talonFX);

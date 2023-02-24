@@ -2,6 +2,7 @@ package frc.robot;
 
 import static edu.wpi.first.wpilibj2.command.Commands.runOnce;
 
+import java.util.ArrayList;
 import java.util.Map;
 
 import com.ctre.phoenix.sensors.PigeonIMU;
@@ -9,6 +10,12 @@ import com.ctre.phoenix.sensors.PigeonIMU;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
@@ -64,6 +71,13 @@ public class RobotContainer {
         // new CalibrateGripperCommand(gripperSubsystem).schedule();
     }
 
+    private Command testTrajectory() {
+        TrajectoryConfig config = new TrajectoryConfig(Units.inchesToMeters(6), Units.inchesToMeters(3));
+        Pose2d targetPose = new Pose2d(0, Units.inchesToMeters(12), new Rotation2d()); // 1 foot forward
+        Trajectory trajectory = TrajectoryGenerator.generateTrajectory(new Pose2d(), new ArrayList<>(), targetPose, config);
+        return FollowTrajectory.getCommand(driveSubsystem, trajectory, driveSubsystem.getPose());
+    }
+
     @SuppressWarnings("resource")
     private void configureButtons() {
         // Joystick
@@ -75,10 +89,11 @@ public class RobotContainer {
         new JoystickButton(buttonBoard, 10).onTrue(new PieceOnFloorCommand(driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem));
         new JoystickButton(joystick, 9).onTrue(new SeekCommand(driveSubsystem, visionSubsystem, pigeon, Target.CONE, 12));
         new JoystickButton(joystick, 8).onTrue(pickup);
-        new JoystickButton(joystick, 7).onTrue(Commands.run(() -> driveSubsystem.setPower(.25, .25), driveSubsystem));
-        new JoystickButton(joystick, 6).onTrue(new AutoDriveCommand(12, driveSubsystem));
+        // new JoystickButton(joystick, 7).onTrue(Commands.run(() -> driveSubsystem.setPower(.25, .25), driveSubsystem));
+        new JoystickButton(joystick, 7).onTrue(testTrajectory());
+        new JoystickButton(joystick, 6).onTrue(new AutoDriveCommand(Units.inchesToMeters(12), driveSubsystem));
         new JoystickButton(joystick, 5).onTrue(new AutoTurnCommand(45, driveSubsystem, pigeon));
-        new JoystickButton(joystick, 4).onTrue(new AutoDriveCommand(-12, driveSubsystem));
+        new JoystickButton(joystick, 4).onTrue(new AutoDriveCommand(Units.inchesToMeters(-12), driveSubsystem));
         // new JoystickButton(joystick, 3).onTrue(new AutoTurnCommand(-45, driveSubsystem, pigeon));
         new JoystickButton(joystick, 3).onTrue(Commands.startEnd(() -> driveSubsystem.setPower(0.15, 0.15), () -> driveSubsystem.setPower(0, 0), driveSubsystem));
         // new JoystickButton(joystick, 5).onTrue(runOnce(() -> new AutoTurnCommand(visionSubsystem::getTargetYaw, driveSubsystem, pigeon)));

@@ -43,8 +43,8 @@ resolutionWidth: int = 1280
 resolutionHeight: int = 720
 fps: Final[int] = 30
 exposure: Final[int] = 40
-verticalFOV: Final[int] = math.radians(36.9187406) # rad, Calculated manually 
-horizontalFOV: Final[int] = math.radians(61.3727249) # rad, Calculated manually
+verticalFOVRad: Final[int] = math.radians(36.9187406) # Calculated manually 
+horizontalFOVRad: Final[int] = math.radians(61.3727249) # Calculated manually
 focalLengthPixels: Final[float] = 1078.466
 
 mtx = np.array([ # from calibrating on calibdb
@@ -302,8 +302,8 @@ tagPipeline: AprilTagPipeline = AprilTagPipeline(2, "AprilTag", config, quadThre
 pipelines: list[Pipeline] = [conePipeline, cubePipeline, tagPipeline] 
 # pipelines: list[Pipeline] = [cubePipeline] 
 
-aprilTagLength: Final[float] = 0.1524 # Meters
-poseEstimator: Final[AprilTagPoseEstimator] = AprilTagPoseEstimator(AprilTagPoseEstimator.Config(aprilTagLength, focalLengthPixels, focalLengthPixels, resolutionWidth/2, resolutionHeight/2))
+aprilTagLengthMeters: Final[float] = 0.1524
+poseEstimator: Final[AprilTagPoseEstimator] = AprilTagPoseEstimator(AprilTagPoseEstimator.Config(aprilTagLengthMeters, focalLengthPixels, focalLengthPixels, resolutionWidth/2, resolutionHeight/2))
 poseIterations: Final[int] = 100
 
 def getAreaAprilTag(tag: AprilTagDetection):
@@ -374,8 +374,8 @@ def aprilTagPipeline(input_img: Mat, drawnImg: Mat, pipeline: AprilTagPipeline):
 def pointToYawAndPitch(px: int, py: int): # Converts a point in pixel system to a pitch and a yaw and returns that.
     nx: float = (2/resolutionWidth) * (px - ((resolutionWidth/2) - 0.5))
     ny: float = (2/resolutionHeight) * (((resolutionHeight/2) - 0.5) - py)
-    vpw: float = 2.0*math.tan(horizontalFOV/2)
-    vph: float = 2.0*math.tan(verticalFOV/2)
+    vpw: float = 2.0*math.tan(horizontalFOVRad/2)
+    vph: float = 2.0*math.tan(verticalFOVRad/2)
     x: float = vpw/2 * nx
     y: float = vph/2 * ny
     ax: float = math.atan(x/1)

@@ -36,7 +36,7 @@ public class ButterySmoothDriveCommand extends CommandBase {
 
         speed = limiterNormal.calculate(speed);
         // System.out.println(speed + " " + turn + " " + trim);
-        turn = turn * Math.abs(speed) + trim;
+        turn = turn * Math.abs(speed) + trim; // Constant Curvature
         double powerFactor = findSpeed((speed - turn), (speed + turn));
 
         double leftSpeed = (speed - turn) * powerFactor;

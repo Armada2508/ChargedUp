@@ -10,7 +10,6 @@ import com.ctre.phoenix.sensors.PigeonIMU;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -21,26 +20,25 @@ import frc.robot.Lib.util.Util;
 
 public class DriveSubsystem extends SubsystemBase {
 
-    private final WPI_TalonFX TalonFXL = new WPI_TalonFX(Drive.LID); 
-    private final WPI_TalonFX TalonFXLfollow = new WPI_TalonFX(Drive.LFID);  
-    private final WPI_TalonFX TalonFXR = new WPI_TalonFX(Drive.RID); 
-    private final WPI_TalonFX TalonFXRfollow = new WPI_TalonFX(Drive.RFID);
-    private final DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(Drive.trackWidthMeters); 
+    private final WPI_TalonFX talonFXL = new WPI_TalonFX(Drive.LID); 
+    private final WPI_TalonFX talonFXLfollow = new WPI_TalonFX(Drive.LFID);  
+    private final WPI_TalonFX talonFXR = new WPI_TalonFX(Drive.RID); 
+    private final WPI_TalonFX talonFXRfollow = new WPI_TalonFX(Drive.RFID);
     private final DifferentialDriveOdometry odometry;
     private final PigeonIMU pigeon;
 
     public DriveSubsystem(PigeonIMU pigeon) {
         this.pigeon = pigeon;
-        configureMotor(TalonFXL);
-        configureMotor(TalonFXR);
-        configureMotor(TalonFXLfollow);
-        configureMotor(TalonFXRfollow);
-        TalonFXR.setInverted(true);
-        TalonFXRfollow.setInverted(true);
-        TalonFXLfollow.follow(TalonFXL);
-        TalonFXRfollow.follow(TalonFXR);
+        configureMotor(talonFXL);
+        configureMotor(talonFXR);
+        configureMotor(talonFXLfollow);
+        configureMotor(talonFXRfollow);
+        talonFXR.setInverted(true);
+        talonFXRfollow.setInverted(true);
+        talonFXLfollow.follow(talonFXL);
+        talonFXRfollow.follow(talonFXR);
         calibrate(0);
-        odometry = new DifferentialDriveOdometry(new Rotation2d(getHeading()), 0, 0);
+        odometry = new DifferentialDriveOdometry(Rotation2d.fromDegrees(getHeading()), getleftPostition(), getRightPostition());
     }
 
     private void configureMotor(TalonFX talon) {
@@ -57,128 +55,134 @@ public class DriveSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
+        odometry.update(Rotation2d.fromDegrees(getHeading()), getleftPostition(), getRightPostition());
     }
 
-    public void setPower(double leftPower, double rightPower){
-        TalonFXL.set(TalonFXControlMode.PercentOutput, leftPower);
-        TalonFXR.set(TalonFXControlMode.PercentOutput, rightPower);
+    public void setPower(double leftPower, double rightPower) {
+        talonFXL.set(TalonFXControlMode.PercentOutput, leftPower);
+        talonFXR.set(TalonFXControlMode.PercentOutput, rightPower);
     }
 
     /**
      * Drives to a set position using Motion Magic. Should configure motion magic params before calling.
-     * @param distanceInches
+     * @param distanceMeters distance to travel in meters
      */
-    public void driveDistance(double distanceInches) {
-        double sensorUnits = Encoder.fromDistance(distanceInches, Drive.encoderUnitsPerRev, Drive.gearboxRatio, Drive.diameterInches);
-        TalonFXL.set(TalonFXControlMode.MotionMagic, TalonFXL.getSelectedSensorPosition()+sensorUnits);
-        TalonFXR.set(TalonFXControlMode.MotionMagic, TalonFXR.getSelectedSensorPosition()+sensorUnits);
-    }
-
-    public void clearIntegralAccumulator() {
-        TalonFXL.setIntegralAccumulator(0);
-        TalonFXR.setIntegralAccumulator(0);
+    public void driveDistance(double distanceMeters) {
+        double sensorUnits = Encoder.fromDistance(distanceMeters, Drive.encoderUnitsPerRev, Drive.gearboxRatio, Drive.wheelDiameterMeters);
+        talonFXL.set(TalonFXControlMode.MotionMagic, talonFXL.getSelectedSensorPosition()+sensorUnits);
+        talonFXR.set(TalonFXControlMode.MotionMagic, talonFXR.getSelectedSensorPosition()+sensorUnits);
     }
 
     /**
      * Configures motion magic values for next run. If your acceleration is the same value as your velocity
      * then it will take 1 second to reach your velocity. Higher values of acceleration will make it get there faster, 
      * lower values will make it get there slower.
-     * @param velocity in inches/second
-     * @param acceleration in inches/second/second
+     * @param velocity in meters/second
+     * @param acceleration in meters/second^2
      */
     public void configMotionMagic(double velocity, double acceleration) {
-        TalonFXL.configMotionCruiseVelocity(fromVelocity(velocity));
-        TalonFXR.configMotionCruiseVelocity(fromVelocity(velocity));
-        TalonFXL.configMotionAcceleration(fromVelocity(acceleration));
-        TalonFXR.configMotionAcceleration(fromVelocity(acceleration));
-    }
-
-    public double getRightPostition() {
-        return Encoder.toDistance(TalonFXR.getSelectedSensorPosition(), Drive.encoderUnitsPerRev, Drive.gearboxRatio, Drive.diameterInches); 
-    }
-    
-    public double getleftPostition() {
-        return Encoder.toDistance(TalonFXL.getSelectedSensorPosition(), Drive.encoderUnitsPerRev, Drive.gearboxRatio, Drive.diameterInches); 
+        talonFXL.setIntegralAccumulator(0);
+        talonFXR.setIntegralAccumulator(0);
+        talonFXL.configMotionCruiseVelocity(fromVelocity(velocity));
+        talonFXR.configMotionCruiseVelocity(fromVelocity(velocity));
+        talonFXL.configMotionAcceleration(fromVelocity(acceleration));
+        talonFXR.configMotionAcceleration(fromVelocity(acceleration));
     }
 
     public void calibrate(double pos) {
-        TalonFXL.setSelectedSensorPosition(pos);
-        TalonFXR.setSelectedSensorPosition(pos);
+        talonFXL.setSelectedSensorPosition(pos);
+        talonFXR.setSelectedSensorPosition(pos);
     }
 
-    public void brake() {
-        TalonFXL.setNeutralMode(NeutralMode.Brake);
-        TalonFXLfollow.setNeutralMode(NeutralMode.Brake);
-        TalonFXR.setNeutralMode(NeutralMode.Brake);
-        TalonFXRfollow.setNeutralMode(NeutralMode.Brake);
+    /**
+     * @return Distance of left motor in meters
+     */
+    public double getleftPostition() {
+        return Encoder.toDistance(talonFXL.getSelectedSensorPosition(), Drive.encoderUnitsPerRev, Drive.gearboxRatio, Drive.wheelDiameterMeters); 
     }
 
-    public void setVoltage(double voltsL, double voltsR) {
-        TalonFXL.setVoltage(voltsL);
-        TalonFXR.setVoltage(voltsR);
-    }
-
-    public DifferentialDriveWheelSpeeds getWheelSpeeds() {
-        return new DifferentialDriveWheelSpeeds(getVelocityLeft(), getVelocityRight());
+    /**
+     * @return Distance of right motor in meters
+     */
+    public double getRightPostition() {
+        return Encoder.toDistance(talonFXR.getSelectedSensorPosition(), Drive.encoderUnitsPerRev, Drive.gearboxRatio, Drive.wheelDiameterMeters); 
     }
     
     /**
-     * Sets the velocity of the motors.
-     * @param velocityL The velocity of the left motors in inches/second
-     * @param velocityR The velocity of the right motors in inches/second
+     * Put motors in brake mode
      */
-    public void setVelocity(double velocityL, double velocityR) {
-        TalonFXL.set(ControlMode.Velocity, fromVelocity(velocityL));
-        TalonFXR.set(ControlMode.Velocity, fromVelocity(velocityR));
+    public void brake() {
+        talonFXL.setNeutralMode(NeutralMode.Brake);
+        talonFXLfollow.setNeutralMode(NeutralMode.Brake);
+        talonFXR.setNeutralMode(NeutralMode.Brake);
+        talonFXRfollow.setNeutralMode(NeutralMode.Brake);
+    }
+
+    public void setVoltage(double leftVolts, double rightVolts) {
+        talonFXL.setVoltage(leftVolts);
+        talonFXR.setVoltage(rightVolts);
     }
 
     /**
-     * Sets the velocity of the motor in encoder units velocity
+     * @return wheel speeds in meters/second
+     */
+    public DifferentialDriveWheelSpeeds getWheelSpeeds() {
+        return new DifferentialDriveWheelSpeeds(toVelocity(talonFXL.getSelectedSensorVelocity()), toVelocity(talonFXR.getSelectedSensorVelocity()));
+    }
+    
+    /**
+     * Sets the velocity of the motors
+     * @param leftVelocity The velocity of the left motors in meters/second
+     * @param rightVelocity The velocity of the right motors in meters/second
+     */
+    public void setVelocity(double leftVelocity, double rightVelocity) {
+        talonFXL.set(ControlMode.Velocity, fromVelocity(leftVelocity));
+        talonFXR.set(ControlMode.Velocity, fromVelocity(rightVelocity));
+    }
+
+    /**
+     * Sets the velocity of the motor in encoder units
      * @param leftVelocity Velocity of the left motor in encoder units per 100 ms
      * @param rightVelocity Velocity of the right motor in encoder units per 100 ms
      */
     public void setEncoderVelocity(double leftVelocity, double rightVelocity) {
-        TalonFXL.set(TalonFXControlMode.Velocity, leftVelocity);
-        TalonFXR.set(TalonFXControlMode.Velocity, rightVelocity);
+        talonFXL.set(TalonFXControlMode.Velocity, leftVelocity);
+        talonFXR.set(TalonFXControlMode.Velocity, rightVelocity);
     }
 
-    public void setVelocity(DifferentialDriveWheelSpeeds speeds, double deadband) {
-        if(Util.inRange(speeds.rightMetersPerSecond, deadband)) {
-            TalonFXR.set(ControlMode.PercentOutput, 0);
-        } else {
-            TalonFXR.set(ControlMode.Velocity, fromVelocity(speeds.rightMetersPerSecond));
-        }
-        if(Util.inRange(speeds.leftMetersPerSecond, deadband)) {
-            TalonFXL.set(ControlMode.PercentOutput, 0);
-        } else {
-            TalonFXL.set(ControlMode.Velocity, fromVelocity(speeds.rightMetersPerSecond));
-        }
-    }
-    
+    /**
+     * @param velocity in encoder units/100 ms
+     * @return velocity in meters/sec
+     */
     private double toVelocity(double velocity) {
-        return Encoder.toVelocity(velocity, Drive.encoderUnitsPerRev, Drive.gearboxRatio, Drive.diameterInches);
+        return Encoder.toVelocity(velocity, Drive.encoderUnitsPerRev, Drive.gearboxRatio, Drive.wheelDiameterMeters);
     }
 
+    /**
+     * @param velocity in meters/sec
+     * @return velocity in encoder units/100 ms
+     */
     private double fromVelocity(double velocity) {
-        return Encoder.fromVelocity(velocity, Drive.encoderUnitsPerRev, Drive.gearboxRatio, Drive.diameterInches, 0.1);
+        return Encoder.fromVelocity(velocity, Drive.encoderUnitsPerRev, Drive.gearboxRatio, Drive.wheelDiameterMeters);
     }
 
-    public double getVelocityRight() {
-        return toVelocity(TalonFXR.getSelectedSensorVelocity());
-    }
-
-    public double getVelocityLeft() {
-        return toVelocity(TalonFXL.getSelectedSensorVelocity());
-    }
-
-    public double getVelocity() {
-        return kinematics.toChassisSpeeds(getWheelSpeeds()).vxMetersPerSecond;
-    }
-
+    /**
+     * @return odometry's current pose in meters
+     */
     public Pose2d getPose() {
         return odometry.getPoseMeters();
     }
 
+    /**
+     * Set the odometry's position 
+     */
+    public void resetOdometry(Pose2d pose) {
+        odometry.resetPosition(Rotation2d.fromDegrees(getHeading()), getleftPostition(), getRightPostition(), pose);
+    }
+
+    /**
+     * @return pigeon's heading in degrees
+     */
     public double getHeading() {
         return Util.boundedAngleDegrees(pigeon.getFusedHeading());
     }

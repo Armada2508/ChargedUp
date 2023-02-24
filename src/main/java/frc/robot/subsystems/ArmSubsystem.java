@@ -13,8 +13,8 @@ import frc.robot.Lib.Encoder;
 
 public class ArmSubsystem extends SubsystemBase {
     
-    private WPI_TalonFX talonFX = new WPI_TalonFX(Arm.motorID);
-    private WPI_TalonFX talonFXFollow = new WPI_TalonFX(Arm.motorIDFollow);
+    private final WPI_TalonFX talonFX = new WPI_TalonFX(Arm.motorID);
+    private final WPI_TalonFX talonFXFollow = new WPI_TalonFX(Arm.motorIDFollow);
 
     public ArmSubsystem() {
         configureMotor(talonFX);
