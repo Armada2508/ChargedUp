@@ -39,26 +39,40 @@ networkTableName: Final[str] = "VisionRPI"
 mainTable: NetworkTable = NetworkTableInstance.getDefault().getTable(networkTableName)
 
 # Camera
-resolutionWidth: int = 1280
-resolutionHeight: int = 720
+resolutionWidth: int = 1920
+resolutionHeight: int = 1080
 fps: Final[int] = 30
 exposure: Final[int] = 40
 verticalFOVRad: Final[int] = math.radians(36.9187406) # Calculated manually 
 horizontalFOVRad: Final[int] = math.radians(61.3727249) # Calculated manually
-focalLengthPixels: Final[float] = 1078.466
+focalLengthPixels: Final[float] = (resolutionWidth/2) / math.tan(horizontalFOVRad)
 
-mtx = np.array([ # from calibrating on calibdb
-    [1105.680719099305, 0, 649.8955569954927], 
-    [0, 1112.900092858322, 368.57822369954914], 
+# mtx = np.array([ # from calibrating on calibdb at 1280x720
+#     [1105.680719099305, 0, 649.8955569954927], 
+#     [0, 1112.900092858322, 368.57822369954914], 
+#     [0, 0, 1]
+# ])
+
+mtx = np.array([ # from calibrating on calibdb at 1920x1080
+    [1378.7537012386945, 0, 986.8907369291361], 
+    [0, 1375.0934365805474, 513.9387512470897], 
     [0, 0, 1]
 ])
 
-dist = np.array([ # from calibrating on calibdb
-    0.14143969201502096,
-    -1.0324230999881798,
-    0.0018082578061445586,
-    -0.002008660193895589,
-    1.849583138331747
+# dist = np.array([ # from calibrating on calibdb at 1280x720
+#     0.14143969201502096,
+#     -1.0324230999881798,
+#     0.0018082578061445586,
+#     -0.002008660193895589,
+#     1.849583138331747
+# ])
+
+dist = np.array([ # from calibrating on calibdb at 1920x1080
+    0.018146669363971513,
+    -0.09196321148476025,
+    -0.004476722886212248,
+    0.0047711062648038175,
+    -0.045514759364078325
 ])
 
 def onRPI() -> bool:
@@ -210,7 +224,7 @@ def startCameraDesktop():
     camNum: str = str(len(cameras))
     """Start running the camera."""
     print("Starting camera '{}' on {}".format("Camera " + camNum, camNum))
-    camera = CameraServer.startAutomaticCapture()
+    camera = CameraServer.startAutomaticCapture(1)
     camera.setResolution(resolutionWidth, resolutionHeight)
     print("CS: Camera {}: set resolution to {}x{}".format(camNum, resolutionWidth, resolutionHeight))
     camera.setFPS(fps)
@@ -296,11 +310,14 @@ class ColorPipeline(Pipeline):
 conePipeline: ColorPipeline = ColorPipeline(0, "Cone", 20, 40, 120, 255, 160, 255, 1, 1, 15)
 cubePipeline: ColorPipeline = ColorPipeline(1, "Cube", 120, 150, 30, 255, 80, 255, 1, 4, 15)
 config = AprilTagDetector.Config()
-# config.quadDecimate = 8
+config.quadDecimate = 0
+config.decodeSharpening = 0.25
+config.quadSigma = 0
+config.refineEdges = True
 quadThreshold = AprilTagDetector.QuadThresholdParameters()
 tagPipeline: AprilTagPipeline = AprilTagPipeline(2, "AprilTag", config, quadThreshold, 25, 20)
-pipelines: list[Pipeline] = [conePipeline, cubePipeline, tagPipeline] 
-# pipelines: list[Pipeline] = [cubePipeline] 
+pipelines: tuple[Pipeline] = (conePipeline, cubePipeline, tagPipeline)
+# pipelines: tuple[Pipeline] = (cubePipeline)
 
 aprilTagLengthMeters: Final[float] = 0.1524
 poseEstimator: Final[AprilTagPoseEstimator] = AprilTagPoseEstimator(AprilTagPoseEstimator.Config(aprilTagLengthMeters, focalLengthPixels, focalLengthPixels, resolutionWidth/2, resolutionHeight/2))
@@ -316,9 +333,9 @@ def getAreaAprilTag(tag: AprilTagDetection):
     return width * height
 
 def getTagData(pipeline: AprilTagPipeline, result: AprilTagDetection):
-    # estimate = poseEstimator.estimateHomography(result)
+    estimate = poseEstimator.estimateHomography(result)
     # estimate = poseEstimator.estimateOrthogonalIteration(result, poseIterations).pose1
-    estimate = poseEstimator.estimate(result)
+    # estimate = poseEstimator.estimate(result)
     pipeline.X.setDouble(estimate.X())
     pipeline.Y.setDouble(estimate.Y())
     pipeline.Z.setDouble(estimate.Z())
@@ -382,7 +399,7 @@ def pointToYawAndPitch(px: int, py: int): # Converts a point in pixel system to 
     ay: float = math.atan(y/1)
     yaw: float = math.degrees(ax)
     pitch: float = math.degrees(ay)
-    print("Resolution: " + str(resolutionWidth) + " " + str(resolutionHeight) + " Coords: " + str(px) + " " + str(py) + " Pitch: " + str(pitch))
+    # print("Resolution: " + str(resolutionWidth) + " " + str(resolutionHeight) + " Coords: " + str(px) + " " + str(py) + " Pitch: " + str(pitch))
     return (yaw, pitch)
 
 def colorPipeline(img: Mat, drawnImg: Mat, pipeline: ColorPipeline):
@@ -449,7 +466,7 @@ def main(): # Image proccessing user code
     proccessedStream = CameraServer.putVideo("Proccessed Video", resolutionWidth, resolutionHeight)
     originalStream = CameraServer.putVideo("Original Video", resolutionWidth, resolutionHeight)
     mat = np.zeros(shape=(resolutionWidth, resolutionHeight, 3), dtype=np.uint8)
-    mainTable.getEntry("Current Pipeline").setInteger(cubePipeline.pipelineIndex.getInteger(0))
+    mainTable.getEntry("Current Pipeline").setInteger(tagPipeline.pipelineIndex.getInteger(0))
     # loop forever
     while True:
         ts = time.time()
