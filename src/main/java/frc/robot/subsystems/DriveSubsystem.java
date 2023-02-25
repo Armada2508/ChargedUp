@@ -1,9 +1,5 @@
 package frc.robot.subsystems;
 
-import java.util.List;
-
-import com.ctre.phoenix.motion.BufferedTrajectoryPointStream;
-import com.ctre.phoenix.motion.TrajectoryPoint;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
@@ -16,8 +12,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
-import edu.wpi.first.math.trajectory.Trajectory;
-import edu.wpi.first.math.trajectory.Trajectory.State;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.Drive;
 import frc.robot.Lib.Encoder;
@@ -81,27 +75,27 @@ public class DriveSubsystem extends SubsystemBase {
         talonFXR.set(TalonFXControlMode.MotionMagic, talonFXR.getSelectedSensorPosition()+sensorUnits);
     }
 
-    public void doMotionProfile(List<Trajectory.State> samples) {
-        BufferedTrajectoryPointStream traj = new BufferedTrajectoryPointStream();
-        TrajectoryPoint[] points = new TrajectoryPoint[samples.size()];
-        for (int i = 0; i < samples.size(); i++) {
-            TrajectoryPoint point = new TrajectoryPoint();
-            State sample = samples.get(i);
-            // point.position = sample.poseMeters;
-            point.position = 2048 * 2;
-            point.velocity = sample.velocityMetersPerSecond;
-            point.zeroPos = (i == 0);
-            if (i >= samples.size() - 1) {
-                point.isLastPoint = true;
-                point.velocity = 0;
-            }
-            points[i] = point;
-        }
-        traj.Write(points);
+    // public void doMotionProfile(List<Trajectory.State> samples) {
+    //     BufferedTrajectoryPointStream traj = new BufferedTrajectoryPointStream();
+    //     TrajectoryPoint[] points = new TrajectoryPoint[samples.size()];
+    //     for (int i = 0; i < samples.size(); i++) {
+    //         TrajectoryPoint point = new TrajectoryPoint();
+    //         State sample = samples.get(i);
+    //         // point.position = sample.poseMeters;
+    //         point.position = 2048 * 2;
+    //         point.velocity = sample.velocityMetersPerSecond;
+    //         point.zeroPos = (i == 0);
+    //         if (i >= samples.size() - 1) {
+    //             point.isLastPoint = true;
+    //             point.velocity = 0;
+    //         }
+    //         points[i] = point;
+    //     }
+    //     traj.Write(points);
         
-        talonFXL.startMotionProfile(traj, 5, ControlMode.MotionProfile);
-        talonFXR.startMotionProfile(traj, 5, ControlMode.MotionProfile);
-    }
+    //     talonFXL.startMotionProfile(traj, 5, ControlMode.MotionProfile);
+    //     talonFXR.startMotionProfile(traj, 5, ControlMode.MotionProfile);
+    // }
 
     /**
      * Configures motion magic values for next run. If your acceleration is the same value as your velocity

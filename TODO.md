@@ -56,3 +56,4 @@ velocity closed loop driving - ima put this on back burner for a while
 
 motion magic instead of position done for all except gripper cuz idk for that one. Tested motion magic with drive subsystem.
 Now create and test trajectories and continue troubleshooting vision so that we can get an accurate pose from april tags and actually use that for cool trajectories.
+made a move to relative command for simple- trajectories
