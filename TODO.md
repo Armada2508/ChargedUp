@@ -50,6 +50,8 @@
 
 ## poo poo
 
+**distanceToTargetMeters isn't taking distnace to bumper into account for testing rn**
+
 ~~slew rate limiter~~
 ~~constant curvature~~ ?
 velocity closed loop driving - ima put this on back burner for a while

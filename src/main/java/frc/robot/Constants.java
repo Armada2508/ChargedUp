@@ -55,14 +55,14 @@ public class Constants {
 
     public static final class Vision {
         // Distances
-        public static final double distanceToBumperMeters = Units.inchesToMeters(12.5);
+        public static final double distanceToBumperMeters = Units.inchesToMeters(11.5);
         // Target Heights
         public static final double coneHeightMeters = 0;
-        public static final double cubeHeightMeters = 0;
+        public static final double cubeHeightMeters = Units.inchesToMeters(58);
         public static final double aprilTagHeightMeters = 0;
         // Camera
         public static final double cameraHeightMeters = Units.inchesToMeters(50);
-        public static final double mountedCameraAngleDeg = 0.7; 
+        public static final double cameraPitchRadians = Units.degreesToRadians(0.1); 
     }
 
     public static final class Arm {
