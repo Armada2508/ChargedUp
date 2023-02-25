@@ -15,7 +15,6 @@ import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.trajectory.constraint.CentripetalAccelerationConstraint;
 import edu.wpi.first.math.trajectory.constraint.DifferentialDriveKinematicsConstraint;
 import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -147,7 +146,7 @@ public class FollowTrajectory {
                 kController,
                 kKinematics,
                 (velocityL, velocityR) -> {
-                    driveSubsystem.setVelocity(Units.metersToInches(velocityL), Units.metersToInches(velocityR));
+                    driveSubsystem.setVelocity(velocityL, velocityR);
 
                     kLeftReference.setNumber(velocityL);
                     kRightReference.setNumber(velocityR);

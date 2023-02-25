@@ -2,29 +2,31 @@ package frc.robot.commands.Driving;
 
 import java.util.function.DoubleSupplier;
 
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.DriveSubsystem;
 
 public class AutoDriveCommand extends CommandBase {
 
-    private final double distanceDeadband = 1;
+    private final double distanceDeadbandMeters = Units.inchesToMeters(1.1);
     private final DoubleSupplier targetDistance;
     private double absoluteTarget;
     private DriveSubsystem driveSubsystem;
 
-    public AutoDriveCommand(double distanceInches, DriveSubsystem driveSubsystem) {
-        this(() -> distanceInches, driveSubsystem);
+    public AutoDriveCommand(double distanceMeters, DriveSubsystem driveSubsystem) {
+        this(() -> distanceMeters, driveSubsystem);
     }
-
-    public AutoDriveCommand(DoubleSupplier distanceInches, DriveSubsystem driveSubsystem) {
-        targetDistance = distanceInches;
+    
+    public AutoDriveCommand(DoubleSupplier distanceMeters, DriveSubsystem driveSubsystem) {
+        targetDistance = distanceMeters;
         this.driveSubsystem = driveSubsystem;
         addRequirements(driveSubsystem);
     }
 
     @Override
     public void initialize() {
-        absoluteTarget = driveSubsystem.getRightPostition() + targetDistance.getAsDouble();
+        absoluteTarget = driveSubsystem.getleftPostition() + targetDistance.getAsDouble();
+        driveSubsystem.configMotionMagic(3, 1);
         driveSubsystem.driveDistance(targetDistance.getAsDouble());
     }
 
@@ -39,9 +41,8 @@ public class AutoDriveCommand extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        double currentPos = driveSubsystem.getRightPostition();
-        return (currentPos < absoluteTarget+distanceDeadband && currentPos > absoluteTarget-distanceDeadband);
+        double currentPos = driveSubsystem.getMotionMagicPosition();
+        return (currentPos < absoluteTarget+distanceDeadbandMeters && currentPos > absoluteTarget-distanceDeadbandMeters);
     }
-
 
 }

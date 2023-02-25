@@ -13,8 +13,8 @@ public class ButterySmoothDriveCommand extends CommandBase {
     private DoubleSupplier joystickTurn;
     private DoubleSupplier joystickTrim;
     private DriveSubsystem driveSubsystem;
-    private SlewRateLimiter limiterNormal = new SlewRateLimiter(0.95);
-    private final double maxEncoderVelocity = 21000;
+    private SlewRateLimiter limiterNormal = new SlewRateLimiter(Drive.slewRate);
+    private final double maxEncoderVelocity = 14000;
 
     public ButterySmoothDriveCommand(DoubleSupplier joystickSpeed, DoubleSupplier joystickTurn, DoubleSupplier joystickTrim,  DriveSubsystem driveSubsystem) {
         this.joystickSpeed = joystickSpeed;
@@ -32,15 +32,18 @@ public class ButterySmoothDriveCommand extends CommandBase {
         // Deadband
         if (Math.abs(speed) < Drive.joystickDeadband) speed = 0;
         if (Math.abs(turn) < Drive.joystickDeadband) turn = 0; 
+        if (Math.abs(trim) < Drive.joystickDeadband) trim = 0; 
 
         speed = limiterNormal.calculate(speed);
-        turn = turn * Math.abs(speed) + trim;
+        // System.out.println(speed + " " + turn + " " + trim);
+        turn = turn * Math.abs(speed) + trim; // Constant Curvature
         double powerFactor = findSpeed((speed - turn), (speed + turn));
 
         double leftSpeed = (speed - turn) * powerFactor;
         double rightSpeed = (speed + turn) * powerFactor;
-        System.out.println(leftSpeed);
-        driveSubsystem.setVelocity(powerToVelocity(leftSpeed), powerToVelocity(rightSpeed));
+        driveSubsystem.setPower(leftSpeed, rightSpeed);
+        // System.out.println(leftSpeed + " " + powerToVelocity(leftSpeed));
+        // driveSubsystem.setEncoderVelocity(powerToVelocity(leftSpeed), powerToVelocity(rightSpeed));
     }
 
     private double findSpeed(double left, double right){
@@ -57,6 +60,11 @@ public class ButterySmoothDriveCommand extends CommandBase {
 
     private double powerToVelocity(double power) {
         return power * maxEncoderVelocity;
+    }
+
+    @Override
+    public void end(boolean interrupted) {
+        driveSubsystem.setPower(0, 0);
     }
 
 }

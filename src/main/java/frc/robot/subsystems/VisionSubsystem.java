@@ -1,8 +1,14 @@
 package frc.robot.subsystems;
 
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
 import org.photonvision.PhotonUtils;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.IntegerEntry;
 import edu.wpi.first.networktables.NetworkTable;
@@ -15,71 +21,112 @@ import frc.robot.Constants.Vision;
  */
 public class VisionSubsystem extends SubsystemBase {
 
-    private final NetworkTable table = NetworkTableInstance.getDefault().getTable("Vision");
-    private final IntegerEntry pipeline = table.getIntegerTopic("Pipeline").getEntry(0);
-    // private final IntegerEntry orientation = table.getIntegerTopic("Orientation").getEntry(0);
-    // private final BooleanEntry hasTarget = table.getBooleanTopic("HaveTarget").getEntry(false);
-    // private final FloatEntry pitch = table.getFloatTopic("Pitch").getEntry(0); // Left is negative, right is positive, in degrees
-    // private final FloatEntry yaw = table.getFloatTopic("Yaw").getEntry(0); // In degrees
-    private PipelineResult currentResult = new PipelineResult(false, 0, 0, 0, 0);
+    private final NetworkTable mainTable = NetworkTableInstance.getDefault().getTable("VisionRPI");
+    private final IntegerEntry currentPipeline = mainTable.getIntegerTopic("Current Pipeline").getEntry(0);
+    private final NetworkTable coneTable = mainTable.getSubTable("Cone");
+    private final NetworkTable cubeTable = mainTable.getSubTable("Cube");
+    private final NetworkTable tagTable = mainTable.getSubTable("AprilTag");
+    private final List<NetworkTable> subtables = new ArrayList<>();
+    private final HashMap<NetworkTable, PipelineResult> currentResults = new HashMap<>();
 
     public VisionSubsystem() {
         super();
+        subtables.add(coneTable);
+        subtables.add(cubeTable);
+        subtables.add(tagTable);
     }
     
     @Override
     public void periodic() {
-        // currentResult = new PipelineResult(hasTarget.get(), pitch.get(), yaw.get(), pipeline.get(), orientation.get());
-        // System.out.println("Pitch: " + getTargetPitch() + " Yaw: " + getTargetYaw() + " Distance: " + distanceFromTargetInInches(Target.CONE));
+        currentResults.clear();
+        for (NetworkTable table : subtables) {
+            currentResults.put(table, new PipelineResult(
+                table.getPath(), 
+                table.getEntry("Has Target").getBoolean(false), 
+                table.getEntry("Pitch").getDouble(0), 
+                table.getEntry("Yaw").getDouble(0),
+                table.getEntry("X").getDouble(0),
+                table.getEntry("Y").getDouble(0),
+                table.getEntry("Z").getDouble(0),
+                (int) table.getEntry("Pipeline").getInteger(0), 
+                (int) table.getEntry("Orientation").getInteger(0)
+            ));
+        }
+        // System.out.println((getPoseToTarget(Target.APRILTAG)));
+        // distanceFromTargetMeters(Target.CUBE);
+        // System.out.println("Pitch: " + getTargetPitch(Target.CUBE) + " Yaw: " + getTargetYaw(Target.CUBE) + " Distance: " + distanceFromTargetMeters(Target.CUBE));
     }
 
-    public boolean hasTarget() {
-        return currentResult.haveTarget();
+    private PipelineResult getResult(Target pipeline) {
+        return switch(pipeline) {
+            case NONE -> throw new IllegalArgumentException("Can't use NONE. - VisionSubsystem");
+            case CONE -> currentResults.get(coneTable);
+            case CUBE -> currentResults.get(cubeTable);
+            case APRILTAG -> currentResults.get(tagTable);
+        };
     }
 
-    public double getTargetPitch() {
-        if (!hasTarget()) return Double.NaN;
-        return currentResult.pitch();
+    public boolean hasTarget(Target pipeline) {
+        return getResult(pipeline).haveTarget();
     }
 
-    public double getTargetYaw() {
-        if (!hasTarget()) return Double.NaN;
-        return currentResult.yaw();
+    public double getTargetPitch(Target pipeline) {
+        if (!hasTarget(pipeline)) return Double.NaN;
+        return getResult(pipeline).pitch();
+    }
+
+    public double getTargetYaw(Target pipeline) {
+        if (!hasTarget(pipeline)) return Double.NaN;
+        return getResult(pipeline).yaw();
     }
 
     /**
-     * Calculates distance from the limelight to the selected Target in inches and with the angle given.
-     * distance = (h2-h1) / tan(a1+a2)
-     * h2 = height of target inches, h1 = height of camera inches, a1 = camera angle degrees, a2 = target angle degrees
-     * @return distance in inches
+     * @param pipeline to use for getting target pose
+     * @return A Pose2d in meters representing the robot's position in 2d space relative to the target at (0, 0)
      */
-    public double distanceFromTargetInInches(Target target) {;
-        if (!hasTarget()) return Double.NaN;
-        double targetHeight = switch(target) {
+    public Pose2d getPoseToTarget(Target pipeline) {
+        if (!hasTarget(pipeline)) return new Pose2d();
+        double x = getResult(pipeline).x();
+        double z = getResult(pipeline).z();
+        double yaw = getResult(pipeline).yaw();
+        return new Pose2d(x, z, Rotation2d.fromDegrees(yaw));
+    }
+
+    /**
+     * Calculates distance from the front of the robot to the current target in meters
+     * distance = (h2-h1) / tan(a1+a2)
+     * h2 = height of target meters, h1 = height of camera meters, a1 = camera angle degrees, a2 = target angle degrees
+     * @return distance in meters
+     */
+    public double distanceFromTargetMeters(Target pipeline) {
+        if (!hasTarget(pipeline)) return Double.NaN;
+        double targetHeightMeters = switch(pipeline) {
             case NONE -> 0;
-            case CUBE -> Vision.cubeHeightInches;
-            case CONE -> Vision.coneHeightInches;
-            case APRILTAG -> Vision.aprilTagHeightInches; 
+            case CONE -> Vision.coneHeightMeters;
+            case CUBE -> Vision.cubeHeightMeters;
+            case APRILTAG -> Vision.aprilTagHeightMeters; 
         };
+        // System.out.println(Vision.cameraHeightMeters + " " + targetHeightMeters + " " + Vision.mountedCameraAngleRad);
         double distanceMeters = PhotonUtils.calculateDistanceToTargetMeters(
-            Units.inchesToMeters(Vision.cameraHeightInches), 
-            Units.inchesToMeters(targetHeight), 
-            Units.degreesToRadians(Vision.cameraAngleMountedDegrees), 
-            Units.degreesToRadians(getTargetPitch())
+            Vision.cameraHeightMeters, 
+            targetHeightMeters, 
+            Vision.cameraPitchRadians, 
+            Units.degreesToRadians(getTargetPitch(pipeline))
         );
-        return Units.metersToInches(distanceMeters) - Vision.distanceToBumperInches;
+        return distanceMeters;
+        // return distanceMeters - Vision.distanceToBumperMeters;
     }
 
-    public int getPipeline() {
-        return (int) currentResult.pipeline();
+    public int getCurrentPipeline() {
+        return (int) currentPipeline.get();
     }
 
-    public void setPipeline(int index) {
-        pipeline.set(index);
+    public void setPipeline(Target pipeline) {
+        currentPipeline.set(getResult(pipeline).pipeline);
     }
 
-    public Orientation getConeOrientation() {
-        return switch( (int) currentResult.orientation()) {
+    public Orientation getTargetOrientation(Target pipeline) {
+        return switch(getResult(pipeline).orientation()) {
             case 0 -> Orientation.LANDSCAPE;
             case 1 -> Orientation.PORTRAIT;
             default -> throw new IllegalArgumentException("Invalid number for orientation. - VisionSubsystem");
@@ -93,17 +140,21 @@ public class VisionSubsystem extends SubsystemBase {
 
     public enum Target {
         NONE,
-        CUBE,
         CONE,
+        CUBE,
         APRILTAG
     }
 
     private record PipelineResult(
+        String name,
         boolean haveTarget,
         double pitch,
         double yaw,
-        long pipeline,
-        long orientation
+        double x,
+        double y,
+        double z,
+        int pipeline,
+        int orientation
     ) {}
 
 }

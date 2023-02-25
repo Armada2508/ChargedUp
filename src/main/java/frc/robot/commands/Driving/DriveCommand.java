@@ -10,39 +10,30 @@ public class DriveCommand extends CommandBase{
 
     private DoubleSupplier joystickSpeed;
     private DoubleSupplier joystickTurn;
-    private DriveSubsystem subsystem;
-    private double speed;
-    private double turn;
-    private double powerFactor;
+    private DriveSubsystem driveSubsystem;
 
-    /**
-     * @param joystickSpeed
-     * @param joystickTurn
-     * @param driveSubsystem
-     */
-    public DriveCommand(DoubleSupplier joystickSpeed, DoubleSupplier joystickTurn, DriveSubsystem driveSubsystem){
+    public DriveCommand(DoubleSupplier joystickSpeed, DoubleSupplier joystickTurn, DoubleSupplier joystickTrim, DriveSubsystem driveSubsystem){
         this.joystickSpeed = joystickSpeed;
         this.joystickTurn = joystickTurn;
-        subsystem = driveSubsystem;
-        addRequirements(subsystem);
+        this.driveSubsystem = driveSubsystem;
+        addRequirements(driveSubsystem);
     }
 
-    @Override
-    public void initialize() {}
-  
-    // Called every time the scheduler runs while the command is scheduled.
     @Override
     public void execute() {
-        speed = joystickSpeed.getAsDouble();
-        turn = joystickTurn.getAsDouble()/Drive.turnAdjustment;
+        double speed = joystickSpeed.getAsDouble();
+        double turn = joystickTurn.getAsDouble()/Drive.turnAdjustment;
+
+        // Deadband
         if (Math.abs(speed) < Drive.joystickDeadband) speed = 0;
         if (Math.abs(turn) < Drive.joystickDeadband) turn = 0;
-        powerFactor = findSpeed((speed - turn), (speed + turn));
 
-        subsystem.setPower(((speed - turn)*powerFactor), ((speed + turn)*powerFactor));
+        double powerFactor = findSpeed((speed - turn), (speed + turn));
+
+        driveSubsystem.setPower(((speed - turn)*powerFactor), ((speed + turn)*powerFactor));
     }
 
-    public double findSpeed(double left, double right){
+    private double findSpeed(double left, double right){
         double p = 1;
 
         if(left > 1){
@@ -54,14 +45,9 @@ public class DriveCommand extends CommandBase{
         return p;
     }
 
-    // Called once the command ends or is interrupted.
     @Override
-    public void end(boolean interrupted) {}
-  
-    // Returns true when the command should end.
-    @Override
-    public boolean isFinished() {
-      return false; 
+    public void end(boolean interrupted) {
+        driveSubsystem.setPower(0, 0);
     }
 
 }

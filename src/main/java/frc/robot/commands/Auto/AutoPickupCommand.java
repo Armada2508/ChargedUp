@@ -7,8 +7,8 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants.Arm;
-import frc.robot.Constants.Vision;
 import frc.robot.InverseKinematics;
+import frc.robot.Lib.util.BetterPair;
 import frc.robot.commands.Arm.ArmCommand;
 import frc.robot.commands.Arm.GripperCommand;
 import frc.robot.commands.Driving.SeekCommand;
@@ -22,34 +22,28 @@ import frc.robot.subsystems.WristSubsystem;
 
 public class AutoPickupCommand extends SequentialCommandGroup {
 
-    private final double distanceFromTargetInches = 12;
+    private final double distanceFromTargetMeters = 12;
+    private final BetterPair<Double, Double> coneUp = new BetterPair<>(12.0, 0.0);
+    private final BetterPair<Double, Double> coneDown = new BetterPair<>(12.0, 0.0);
+    private final BetterPair<Double, Double> cube = new BetterPair<>(12.0, 0.0);
     private Target lastTarget = Target.CONE;
-    private double cubeDistance = 0.0;
-    private double coneDistance = 0.0;
 
-    // TODO check wait times
     public AutoPickupCommand(VisionSubsystem visionSubsystem, DriveSubsystem driveSubsystem, PigeonIMU pigeon, ArmSubsystem ArmSubsystem, WristSubsystem WristSubsystem, GripperSubsystem GripperSubsystem) {
         addCommands(
             new GripperCommand(0, GripperSubsystem),
             new ArmCommand(Arm.minDegrees, ArmSubsystem),
-            new SequentialCommandGroup(
-                new InstantCommand(() ->visionSubsystem.setPipeline(Vision.cubePipeline),visionSubsystem),
-                new WaitCommand(0.1),
-                new InstantCommand(() -> cubeDistance = visionSubsystem.distanceFromTargetInInches(Target.CUBE)),
-                new InstantCommand(() ->visionSubsystem.setPipeline(Vision.conePipeline),visionSubsystem),
-                new WaitCommand(0.1),
-                new InstantCommand(() -> coneDistance = visionSubsystem.distanceFromTargetInInches(Target.CONE))
-            ),
+            new InstantCommand(() -> visionSubsystem.setPipeline(Target.CONE),visionSubsystem),
+            new WaitCommand(0.05),
             new ConditionalCommand(
                 new SequentialCommandGroup(
-                    new SeekCommand(driveSubsystem, visionSubsystem, pigeon, this::getPreviousTarget, distanceFromTargetInches),
+                    new SeekCommand(driveSubsystem, visionSubsystem, pigeon, this::getPreviousTarget, distanceFromTargetMeters),
                     new ConditionalCommand(
                         new ConditionalCommand(
-                            InverseKinematics.getIKPositionCommand(12.0, 0.0, ArmSubsystem, WristSubsystem), /*On True  | Landscape Orientation*/
-                            InverseKinematics.getIKPositionCommand(12.0, 0.0, ArmSubsystem, WristSubsystem), /*On False | Portrait Orientation*/
-                            () -> visionSubsystem.getConeOrientation() == Orientation.LANDSCAPE  /*Boolean Supplier*/
+                            InverseKinematics.getIKPositionCommand(coneDown.getFirst(), coneDown.getSecond(), ArmSubsystem, WristSubsystem), /*On True  | Landscape Orientation*/
+                            InverseKinematics.getIKPositionCommand(coneUp.getFirst(), coneUp.getSecond(), ArmSubsystem, WristSubsystem), /*On False | Portrait Orientation*/
+                            () -> visionSubsystem.getTargetOrientation(Target.CONE) == Orientation.LANDSCAPE  /*Boolean Supplier*/
                             ), /*On True  | Target.Cone*/
-                        InverseKinematics.getIKPositionCommand(12.0, 0.0, ArmSubsystem, WristSubsystem), /*On False | Target.Cube*/
+                        InverseKinematics.getIKPositionCommand(cube.getFirst(), cube.getSecond(), ArmSubsystem, WristSubsystem), /*On False | Target.Cube*/
                         () -> getPreviousTarget() == Target.CONE  /*Boolean Supplier*/
                     ),
                     new ArmCommand(Arm.minDegrees, ArmSubsystem) /* On True for Conditional, Starts at InstantCommand*/
@@ -62,6 +56,8 @@ public class AutoPickupCommand extends SequentialCommandGroup {
 
     private Target getTarget(VisionSubsystem visionSubsystem) {
         Target target = Target.CONE;
+        double coneDistance = visionSubsystem.distanceFromTargetMeters(Target.CONE); 
+        double cubeDistance = visionSubsystem.distanceFromTargetMeters(Target.CUBE);
         if ((cubeDistance == Double.NaN) && (coneDistance != Double.NaN)) {
             target = Target.CONE;
         }

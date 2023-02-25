@@ -1,12 +1,47 @@
 package frc.robot.commands;
-//! Put this command on hold until futher notice
 
-public class AprilTagCommand {
-     
+import com.ctre.phoenix.sensors.PigeonIMU;
+
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import frc.robot.commands.Driving.MoveRelativeCommand;
+import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.VisionSubsystem;
+import frc.robot.subsystems.VisionSubsystem.Target;
+
+public class AprilTagCommand extends InstantCommand {
+    
+    private Pose2d offset = new Pose2d();
+    private final DriveSubsystem driveSubsystem;
+    private final VisionSubsystem visionSubsystem;
+    private final PigeonIMU pigeon;
+
+    public AprilTagCommand(Pose2d offset, DriveSubsystem driveSubsystem, VisionSubsystem visionSubsystem, PigeonIMU pigeon) {
+        this.offset = offset;
+        this.driveSubsystem = driveSubsystem;
+        this.visionSubsystem = visionSubsystem;
+        this.pigeon = pigeon;
+        addRequirements(driveSubsystem);
+    }
+
+    @Override
+    public void initialize() {
+        Pose2d targetPose = visionSubsystem.getPoseToTarget(Target.APRILTAG);
+        // Pose2d targetPose = new Pose2d(5, 5, Rotation2d.fromDegrees(0));
+        targetPose = targetPose.plus(new Transform2d(new Pose2d(), offset));
+        Command command = new MoveRelativeCommand(targetPose.getX(), targetPose.getY(), targetPose.getRotation().getDegrees(), driveSubsystem, pigeon);
+        command.schedule();
+    }
+
+    // private List<Trajectory.State> getSamples(Trajectory trajectory) {
+    //     double time = trajectory.getTotalTimeSeconds() / samples;
+    //     List<Trajectory.State> states = new ArrayList<>();
+    //     for (int i = 0; i < samples; i++) {
+    //         states.add(trajectory.sample(time * i));
+    //     }
+    //     return states;
+    // }
+
 }
-
-
-/*  grab data from photon vision on where we are relative to april tag - methods are maybe already in the subsystem might have to make them
-    using trajectories go to somewhere in front of the april tag use methods from FollowTrajectory.java to follow it
-    can research trajectories and poses from wpilib docs, can research april tag stuff on photonvision docs
-*/

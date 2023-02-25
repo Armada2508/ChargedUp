@@ -1,6 +1,7 @@
 package frc.robot.commands.Arm;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.Constants.Arm;
 import frc.robot.subsystems.ArmSubsystem;
 
 public class CalibrateArmCommand extends CommandBase {
@@ -24,7 +25,7 @@ public class CalibrateArmCommand extends CommandBase {
     @Override
     public void end(boolean interrupted) {
         armSubsystem.setPower(0);
-        armSubsystem.calibrate();
+        armSubsystem.calibrate(Arm.minDegrees);
     }
 
     @Override

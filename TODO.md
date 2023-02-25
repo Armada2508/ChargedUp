@@ -12,14 +12,15 @@
 - ~~AutoArm (Position arm to certain degrees) (0 : 90) (Absolute)~~ !
 - ~~AutoWrist (Position wrist to certain degrees) (-30 : 30) (Absolute)~~ !
 - ~~AutoGrip (Claw percent close) (-1 is open, 1 is closed) (Absolute)~~ !
-- ~~ArmCalibrate~~ !
+- ~~Calibrate Commands~~ !
 ### Complicated Auto:
 - ~~Balancing Command~~
 - ~~Put a cone on pole command~~ !
 - ~~Put a cube on a station command~~ !
 - ~~Put a game piece on the floor~~ !
-- ~~AutoPickupCommand~~ Add Inverse Kinematics
-- ~~GamePieceOnTopCommand~~
+- ~~AutoPickupCommand~~  !
+- ~~GamePieceOnTopCommand~~ !
+- ~~Inverse Kinematics~~ !
 	
 # Subsystems:
 
@@ -27,7 +28,7 @@
 - ArmSubsystem
 - WristSubsystem
 - GripperSubsystem
-- VisionSubsystem (Limelight/PhotonVision)
+- VisionSubsystem (Limelight/PhotonVision/GRIP/OpenCV) haha ha... woo
 
 ## Vision:
 
@@ -49,6 +50,12 @@
 
 ## poo poo
 
+**distanceToTargetMeters isn't taking distnace to bumper into account for testing rn**
+
 ~~slew rate limiter~~
 ~~constant curvature~~ ?
-closed loop driving
+velocity closed loop driving - ima put this on back burner for a while
+
+motion magic instead of position done for all except gripper cuz idk for that one. Tested motion magic with drive subsystem.
+Now create and test trajectories and continue troubleshooting vision so that we can get an accurate pose from april tags and actually use that for cool trajectories.
+made a move to relative command for simple- trajectories
