@@ -390,14 +390,14 @@ def colorPipeline(img: Mat, drawnImg: Mat, pipeline: ColorPipeline):
     kernel = np.ones((3, 3), np.uint8)
     binaryImg = cv2.dilate(binaryImg, kernel, iterations = int(pipeline.dilateIterations))
     return proccessContours(binaryImg, drawnImg, pipeline)
-
+#################################
 def getOrientation(width, height, pipeline: ColorPipeline):
+    print(str(width) + " " + str(height))
     if (width > height) or (width == height):
-        # return pipeline.Orientation.landscape
         pipeline.orientation.setInteger(0) #0 means landscape
     else:
         pipeline.orientation.setInteger(1) #1 means portrait
-
+#################################
 def proccessContours(binaryImg: Mat, drawnImg: Mat, pipeline: ColorPipeline) -> Mat:
     # Contours
     contours, hierarchy = cv2.findContours(binaryImg, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
