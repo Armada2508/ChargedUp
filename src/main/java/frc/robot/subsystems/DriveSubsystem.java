@@ -1,5 +1,9 @@
 package frc.robot.subsystems;
 
+import java.util.List;
+
+import com.ctre.phoenix.motion.BufferedTrajectoryPointStream;
+import com.ctre.phoenix.motion.TrajectoryPoint;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
@@ -12,6 +16,8 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
+import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.Trajectory.State;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.Drive;
 import frc.robot.Lib.Encoder;
@@ -68,9 +74,31 @@ public class DriveSubsystem extends SubsystemBase {
      * @param distanceMeters distance to travel in meters
      */
     public void driveDistance(double distanceMeters) {
+        talonFXL.setIntegralAccumulator(0);
+        talonFXR.setIntegralAccumulator(0);
         double sensorUnits = Encoder.fromDistance(distanceMeters, Drive.encoderUnitsPerRev, Drive.gearboxRatio, Drive.wheelDiameterMeters);
         talonFXL.set(TalonFXControlMode.MotionMagic, talonFXL.getSelectedSensorPosition()+sensorUnits);
         talonFXR.set(TalonFXControlMode.MotionMagic, talonFXR.getSelectedSensorPosition()+sensorUnits);
+    }
+
+    public void doMotionProfile(List<Trajectory.State> samples) {
+        BufferedTrajectoryPointStream traj = new BufferedTrajectoryPointStream();
+        TrajectoryPoint[] points = new TrajectoryPoint[samples.size()];
+        for (int i = 0; i < samples.size(); i++) {
+            TrajectoryPoint point = new TrajectoryPoint();
+            State sample = samples.get(i);
+            // point.position = sample.poseMeters;
+            point.velocity = sample.velocityMetersPerSecond;
+            point.zeroPos = (i == 0);
+            if (i >= samples.size() - 1) {
+                point.isLastPoint = true;
+                point.velocity = 0;
+            }
+            points[i] = point;
+        }
+        traj.Write(points);
+        talonFXL.startMotionProfile(traj, 5, ControlMode.MotionProfile);
+        talonFXR.startMotionProfile(traj, 5, ControlMode.MotionProfile);
     }
 
     /**
@@ -81,8 +109,6 @@ public class DriveSubsystem extends SubsystemBase {
      * @param acceleration in meters/second^2
      */
     public void configMotionMagic(double velocity, double acceleration) {
-        talonFXL.setIntegralAccumulator(0);
-        talonFXR.setIntegralAccumulator(0);
         talonFXL.configMotionCruiseVelocity(fromVelocity(velocity));
         talonFXR.configMotionCruiseVelocity(fromVelocity(velocity));
         talonFXL.configMotionAcceleration(fromVelocity(acceleration));
@@ -106,6 +132,10 @@ public class DriveSubsystem extends SubsystemBase {
      */
     public double getRightPostition() {
         return Encoder.toDistance(talonFXR.getSelectedSensorPosition(), Drive.encoderUnitsPerRev, Drive.gearboxRatio, Drive.wheelDiameterMeters); 
+    }
+
+    public double getMotionMagicPosition() {
+        return Encoder.toDistance(talonFXL.getActiveTrajectoryPosition(), Drive.encoderUnitsPerRev, Drive.gearboxRatio, Drive.wheelDiameterMeters);
     }
     
     /**

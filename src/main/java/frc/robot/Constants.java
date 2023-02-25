@@ -15,16 +15,17 @@ public class Constants {
         public static final int turnAdjustment = 3;
         public static final double speedMultiplier = 1; // For Fredy
         public static final double joystickDeadband = 0.05;
+        public static final double slewRate = 1; // This is what helps you not stop abruptly, higher value = stop faster
 
         // Closed Loop Driving
-        public static final double kP = 0; 
+        public static final double kP = 0.1; 
         public static final double kI = 0;
         public static final double kD = 0;
-        public static final double kF = 0.0475;
-        public static final int timeoutMs = 30;
+        public static final double kF = 0; // Probably keep this at 0
         public static final double maxDriveSpeed = 1;
+        public static final int timeoutMs = 30;
 
-        // Closed Loop Turning
+        // Closed Loop Turning (WPILib not on Falcons)
         public static final double turnkP = 0.01;
         public static final double turnkI = 0;
         public static final double turnkD = 0;
@@ -34,7 +35,7 @@ public class Constants {
         public static final double wheelDiameterMeters = Units.inchesToMeters(6);
         public static final int encoderUnitsPerRev = 2048;
         public static final double gearboxRatio = 10.7;
-        public static final double trackWidthMeters = Util.inchesToMeters(23);
+        public static final double trackWidthMeters = Util.inchesToMeters(24.5);
     }
 
     public static final class Balance {

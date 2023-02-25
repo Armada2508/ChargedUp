@@ -12,9 +12,9 @@ public class DriveCommand extends CommandBase{
     private DoubleSupplier joystickSpeed;
     private DoubleSupplier joystickTurn;
     private DriveSubsystem driveSubsystem;
-    private SlewRateLimiter limiter = new SlewRateLimiter(0.95);
+    private SlewRateLimiter limiter = new SlewRateLimiter(Drive.slewRate);
 
-    public DriveCommand(DoubleSupplier joystickSpeed, DoubleSupplier joystickTurn, DriveSubsystem driveSubsystem){
+    public DriveCommand(DoubleSupplier joystickSpeed, DoubleSupplier joystickTurn, DoubleSupplier joystickTrim, DriveSubsystem driveSubsystem){
         this.joystickSpeed = joystickSpeed;
         this.joystickTurn = joystickTurn;
         this.driveSubsystem = driveSubsystem;

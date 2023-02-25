@@ -18,8 +18,9 @@
 - ~~Put a cone on pole command~~ !
 - ~~Put a cube on a station command~~ !
 - ~~Put a game piece on the floor~~ !
-- ~~AutoPickupCommand~~ Add Inverse Kinematics
-- ~~GamePieceOnTopCommand~~
+- ~~AutoPickupCommand~~  !
+- ~~GamePieceOnTopCommand~~ !
+- ~~Inverse Kinematics~~ !
 	
 # Subsystems:
 
@@ -27,7 +28,7 @@
 - ArmSubsystem
 - WristSubsystem
 - GripperSubsystem
-- VisionSubsystem (Limelight/PhotonVision)
+- VisionSubsystem (Limelight/PhotonVision/GRIP/OpenCV) haha ha... woo
 
 ## Vision:
 
@@ -51,6 +52,7 @@
 
 ~~slew rate limiter~~
 ~~constant curvature~~ ?
-velocity closed loop driving
+velocity closed loop driving - ima put this on back burner for a while
 
-don't do position closed loop do motion magic closed loop ! ! ! ! ! ! ! ! ! !!  ! ! !!!!!!!!!!
+motion magic instead of position done for all except gripper cuz idk for that one. Tested motion magic with drive subsystem.
+Now create and test trajectories and continue troubleshooting vision so that we can get an accurate pose from april tags and actually use that for cool trajectories.

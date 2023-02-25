@@ -18,7 +18,8 @@
     ".wpilib" : true,
     ".Glass" : true,
     ".gradle" : true,
-    "*.json" : true
+    "*.json" : true,
+    "PathWeaver": true
   },
   "java.test.config": [
     {

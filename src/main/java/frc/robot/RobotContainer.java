@@ -30,12 +30,13 @@ import frc.robot.Constants.Arm;
 import frc.robot.Constants.Drive;
 import frc.robot.Constants.Wrist;
 import frc.robot.Lib.motion.FollowTrajectory;
+import frc.robot.commands.AprilTagCommand;
 import frc.robot.commands.BalanceCommand;
 import frc.robot.commands.Auto.AutoPickupCommand;
 import frc.robot.commands.Auto.PieceOnFloorCommand;
 import frc.robot.commands.Driving.AutoDriveCommand;
 import frc.robot.commands.Driving.AutoTurnCommand;
-import frc.robot.commands.Driving.ButterySmoothDriveCommand;
+import frc.robot.commands.Driving.DriveCommand;
 import frc.robot.commands.Driving.SeekCommand;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
@@ -57,10 +58,10 @@ public class RobotContainer {
 
     public RobotContainer() {
         pigeon.setYaw(0);
-        FollowTrajectory.config(0, 0, 0, 2.0, 0.7, Drive.trackWidthMeters, new PIDController(Drive.kP, Drive.kI, Drive.kD), 0);
+        FollowTrajectory.config(0.31, 1.95, 0.35, 2.0, 0.7, Drive.trackWidthMeters, new PIDController(0.25, 0, 0), 0.875);
         InverseKinematics.config(Arm.jointLengthInches, Wrist.jointLengthInches);
         this.driveSubsystem = new DriveSubsystem(pigeon);
-        driveSubsystem.setDefaultCommand(new ButterySmoothDriveCommand(() -> joystick.getRawAxis(1)*-1 * Drive.speedMultiplier, () -> joystick.getRawAxis(0)*-1,  () -> joystick.getRawAxis(2),driveSubsystem)); // default to driving from joystick input
+        driveSubsystem.setDefaultCommand(new DriveCommand(() -> joystick.getRawAxis(1)*-1 * Drive.speedMultiplier, () -> joystick.getRawAxis(0)*-1,  () -> joystick.getRawAxis(2),driveSubsystem)); // default to driving from joystick input
         if (RobotBase.isReal()) {
             configureCamera();
         }
@@ -72,8 +73,8 @@ public class RobotContainer {
     }
 
     private Command testTrajectory() {
-        TrajectoryConfig config = new TrajectoryConfig(Units.inchesToMeters(6), Units.inchesToMeters(3));
-        Pose2d targetPose = new Pose2d(0, Units.inchesToMeters(12), new Rotation2d()); // 1 foot forward
+        TrajectoryConfig config = new TrajectoryConfig(Units.inchesToMeters(3), Units.inchesToMeters(1));
+        Pose2d targetPose = new Pose2d(0, Units.inchesToMeters(12), Rotation2d.fromDegrees(driveSubsystem.getHeading())); // 1 foot forward
         Trajectory trajectory = TrajectoryGenerator.generateTrajectory(new Pose2d(), new ArrayList<>(), targetPose, config);
         return FollowTrajectory.getCommand(driveSubsystem, trajectory, driveSubsystem.getPose());
     }
@@ -90,10 +91,10 @@ public class RobotContainer {
         new JoystickButton(joystick, 9).onTrue(new SeekCommand(driveSubsystem, visionSubsystem, pigeon, Target.CONE, 12));
         new JoystickButton(joystick, 8).onTrue(pickup);
         // new JoystickButton(joystick, 7).onTrue(Commands.run(() -> driveSubsystem.setPower(.25, .25), driveSubsystem));
-        new JoystickButton(joystick, 7).onTrue(testTrajectory());
-        new JoystickButton(joystick, 6).onTrue(new AutoDriveCommand(Units.inchesToMeters(12), driveSubsystem));
+        new JoystickButton(joystick, 7).onTrue(new AprilTagCommand(new Pose2d(), driveSubsystem, visionSubsystem));
+        new JoystickButton(joystick, 6).onTrue(new AutoDriveCommand(Units.inchesToMeters(36), driveSubsystem));
         new JoystickButton(joystick, 5).onTrue(new AutoTurnCommand(45, driveSubsystem, pigeon));
-        new JoystickButton(joystick, 4).onTrue(new AutoDriveCommand(Units.inchesToMeters(-12), driveSubsystem));
+        new JoystickButton(joystick, 4).onTrue(new AutoDriveCommand(Units.inchesToMeters(-36), driveSubsystem));
         // new JoystickButton(joystick, 3).onTrue(new AutoTurnCommand(-45, driveSubsystem, pigeon));
         new JoystickButton(joystick, 3).onTrue(Commands.startEnd(() -> driveSubsystem.setPower(0.15, 0.15), () -> driveSubsystem.setPower(0, 0), driveSubsystem));
         // new JoystickButton(joystick, 5).onTrue(runOnce(() -> new AutoTurnCommand(visionSubsystem::getTargetYaw, driveSubsystem, pigeon)));

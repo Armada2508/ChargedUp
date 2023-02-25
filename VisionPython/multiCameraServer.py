@@ -39,41 +39,41 @@ networkTableName: Final[str] = "VisionRPI"
 mainTable: NetworkTable = NetworkTableInstance.getDefault().getTable(networkTableName)
 
 # Camera
-resolutionWidth: int = 1920
-resolutionHeight: int = 1080
+resolutionWidth: int = 1280
+resolutionHeight: int = 720
 fps: Final[int] = 30
 exposure: Final[int] = 40
 verticalFOVRad: Final[int] = math.radians(36.9187406) # Calculated manually 
 horizontalFOVRad: Final[int] = math.radians(61.3727249) # Calculated manually
 focalLengthPixels: Final[float] = (resolutionWidth/2) / math.tan(horizontalFOVRad)
 
-# mtx = np.array([ # from calibrating on calibdb at 1280x720
-#     [1105.680719099305, 0, 649.8955569954927], 
-#     [0, 1112.900092858322, 368.57822369954914], 
-#     [0, 0, 1]
-# ])
-
-mtx = np.array([ # from calibrating on calibdb at 1920x1080
-    [1378.7537012386945, 0, 986.8907369291361], 
-    [0, 1375.0934365805474, 513.9387512470897], 
+mtx = np.array([ # from calibrating on calibdb at 1280x720
+    [1105.680719099305, 0, 649.8955569954927], 
+    [0, 1112.900092858322, 368.57822369954914], 
     [0, 0, 1]
 ])
 
-# dist = np.array([ # from calibrating on calibdb at 1280x720
-#     0.14143969201502096,
-#     -1.0324230999881798,
-#     0.0018082578061445586,
-#     -0.002008660193895589,
-#     1.849583138331747
+# mtx = np.array([ # from calibrating on calibdb at 1920x1080
+#     [1378.7537012386945, 0, 986.8907369291361], 
+#     [0, 1375.0934365805474, 513.9387512470897], 
+#     [0, 0, 1]
 # ])
 
-dist = np.array([ # from calibrating on calibdb at 1920x1080
-    0.018146669363971513,
-    -0.09196321148476025,
-    -0.004476722886212248,
-    0.0047711062648038175,
-    -0.045514759364078325
+dist = np.array([ # from calibrating on calibdb at 1280x720
+    0.14143969201502096,
+    -1.0324230999881798,
+    0.0018082578061445586,
+    -0.002008660193895589,
+    1.849583138331747
 ])
+
+# dist = np.array([ # from calibrating on calibdb at 1920x1080
+#     0.018146669363971513,
+#     -0.09196321148476025,
+#     -0.004476722886212248,
+#     0.0047711062648038175,
+#     -0.045514759364078325
+# ])-
 
 def onRPI() -> bool:
     return platform.uname().system == "Linux"
@@ -310,7 +310,7 @@ class ColorPipeline(Pipeline):
 conePipeline: ColorPipeline = ColorPipeline(0, "Cone", 20, 40, 120, 255, 160, 255, 1, 1, 15)
 cubePipeline: ColorPipeline = ColorPipeline(1, "Cube", 120, 150, 30, 255, 80, 255, 1, 4, 15)
 config = AprilTagDetector.Config()
-config.quadDecimate = 0
+config.quadDecimate = 2
 config.decodeSharpening = 0.25
 config.quadSigma = 0
 config.refineEdges = True
@@ -320,7 +320,7 @@ pipelines: tuple[Pipeline] = (conePipeline, cubePipeline, tagPipeline)
 # pipelines: tuple[Pipeline] = (cubePipeline)
 
 aprilTagLengthMeters: Final[float] = 0.1524
-poseEstimator: Final[AprilTagPoseEstimator] = AprilTagPoseEstimator(AprilTagPoseEstimator.Config(aprilTagLengthMeters, focalLengthPixels, focalLengthPixels, resolutionWidth/2, resolutionHeight/2))
+poseEstimator: AprilTagPoseEstimator # defined in main() so the parameters are correct
 poseIterations: Final[int] = 100
 
 def getAreaAprilTag(tag: AprilTagDetection):
@@ -399,8 +399,15 @@ def pointToYawAndPitch(px: int, py: int): # Converts a point in pixel system to 
     ay: float = math.atan(y/1)
     yaw: float = math.degrees(ax)
     pitch: float = math.degrees(ay)
-    # print("Resolution: " + str(resolutionWidth) + " " + str(resolutionHeight) + " Coords: " + str(px) + " " + str(py) + " Pitch: " + str(pitch))
+    # print("Resolution: " + str(resolutionWidth) + " " + str(resolutionHeight) + " Pixel Coords: " + str(px) + " " + str(py) 
+        # + " Standard Coords: " + str(nx) + " " + str(ny) + " Pitch: " + str(pitch))
     return (yaw, pitch)
+
+def getOrientation(width: float, height: float, pipeline: ColorPipeline) -> None:
+    if (width > height) or (width == height):
+        pipeline.orientation.setInteger(0) #0 means landscape
+    else:
+        pipeline.orientation.setInteger(1) #1 means portrait
 
 def colorPipeline(img: Mat, drawnImg: Mat, pipeline: ColorPipeline):
     # Color Converting
@@ -423,13 +430,6 @@ def colorPipeline(img: Mat, drawnImg: Mat, pipeline: ColorPipeline):
     binaryImg = cv2.dilate(binaryImg, kernel, iterations = int(pipeline.dilateIterations.getInteger(0)))
     return proccessContours(binaryImg, drawnImg, pipeline)
 
-def getOrientation(width, height, pipeline: ColorPipeline):
-    if (width > height) or (width == height):
-        # return pipeline.Orientation.landscape
-        pipeline.orientation.setInteger(0) #0 means landscape
-    else:
-        pipeline.orientation.setInteger(1) #1 means portrait
-
 def proccessContours(binaryImg: Mat, drawnImg: Mat, pipeline: ColorPipeline) -> Mat:
     # Contours
     contours, hierarchy = cv2.findContours(binaryImg, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -447,14 +447,14 @@ def proccessContours(binaryImg: Mat, drawnImg: Mat, pipeline: ColorPipeline) -> 
         x, y, w, h = rect
         getOrientation(w, h, pipeline)
         crosshair = (int(x + 1/2*w), int(y + h)) # Crosshair on bottom for measurements 
-        
+        print(str(x) + " " + str(y) + " " + str(w) + " " + str(h) + " " + str(crosshair[0]) + " " + str(crosshair[1]))
         yaw, pitch = pointToYawAndPitch(crosshair[0], crosshair[1])
         pipeline.pitch.setDouble(pitch)
         pipeline.yaw.setDouble(yaw)
         # Draw Stuff
         drawnImg = cv2.drawContours(drawnImg, mainContour, -1, color = (255, 0, 0), thickness = 2)
         drawnImg = cv2.rectangle(drawnImg, (x, y), (x + w, y + h), color = (0, 0, 255), thickness = 2)
-        drawnImg = cv2.circle(drawnImg, center = crosshair, radius = 10, color = (0, 255, 0), thickness = -1)
+        drawnImg = cv2.circle(drawnImg, center = crosshair, radius = 5, color = (0, 255, 0), thickness = -1)
         return drawnImg
     else:
         pipeline.hasTarget.setBoolean(False)
@@ -463,15 +463,21 @@ def proccessContours(binaryImg: Mat, drawnImg: Mat, pipeline: ColorPipeline) -> 
 def main(): # Image proccessing user code
     CameraServer.enableLogging()
     cvSink = CameraServer.getVideo()
+    # print("RESOLUTION: " + str(resolutionWidth) + " " + str(resolutionHeight))
     proccessedStream = CameraServer.putVideo("Proccessed Video", resolutionWidth, resolutionHeight)
     originalStream = CameraServer.putVideo("Original Video", resolutionWidth, resolutionHeight)
     mat = np.zeros(shape=(resolutionWidth, resolutionHeight, 3), dtype=np.uint8)
     mainTable.getEntry("Current Pipeline").setInteger(tagPipeline.pipelineIndex.getInteger(0))
+    global poseEstimator
+    poseEstimator = AprilTagPoseEstimator(AprilTagPoseEstimator.Config(aprilTagLengthMeters, focalLengthPixels, focalLengthPixels, resolutionWidth/2, resolutionHeight/2))
     # loop forever
     while True:
         ts = time.time()
         error, inputImg = cvSink.grabFrame(mat)
-        inputImg = cv2.undistort(inputImg, mtx, dist)
+        inputImg: Mat
+        print(str(inputImg.shape[0]) + " " + str(inputImg.shape[1]) + " " + str(mat.shape[0]) + " " + str(mat.shape[1]))
+        if (resolutionWidth == 1280):
+            inputImg = cv2.undistort(inputImg, mtx, dist)
         if error == 0: # There is an error
             print(cvSink.getError())
             continue
