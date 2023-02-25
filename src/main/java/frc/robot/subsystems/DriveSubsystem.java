@@ -88,6 +88,7 @@ public class DriveSubsystem extends SubsystemBase {
             TrajectoryPoint point = new TrajectoryPoint();
             State sample = samples.get(i);
             // point.position = sample.poseMeters;
+            point.position = 2048 * 2;
             point.velocity = sample.velocityMetersPerSecond;
             point.zeroPos = (i == 0);
             if (i >= samples.size() - 1) {
@@ -97,6 +98,7 @@ public class DriveSubsystem extends SubsystemBase {
             points[i] = point;
         }
         traj.Write(points);
+        
         talonFXL.startMotionProfile(traj, 5, ControlMode.MotionProfile);
         talonFXR.startMotionProfile(traj, 5, ControlMode.MotionProfile);
     }

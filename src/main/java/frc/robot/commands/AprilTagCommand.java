@@ -8,9 +8,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import frc.robot.Lib.motion.FollowTrajectory;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
 
@@ -35,9 +33,10 @@ public class AprilTagCommand extends InstantCommand {
         // targetPose = targetPose.plus(new Transform2d(new Pose2d(), offset));
         Trajectory trajectory = TrajectoryGenerator.generateTrajectory(new Pose2d(), new ArrayList<>(), targetPose, config);
         List<Trajectory.State> samples = getSamples(trajectory);
-        Command command = FollowTrajectory.getCommand(driveSubsystem, trajectory, driveSubsystem.getPose());
-        command.schedule();
+        // Command command = FollowTrajectory.getCommand(driveSubsystem, trajectory, driveSubsystem.getPose());
+        // command.schedule();
         System.out.println(samples);
+        driveSubsystem.doMotionProfile(samples);
     }
 
     private List<Trajectory.State> getSamples(Trajectory trajectory) {
