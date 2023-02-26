@@ -32,5 +32,6 @@
       }
     },
   ],
-  "java.test.defaultConfig": "WPIlibUnitTests"
+  "java.test.defaultConfig": "WPIlibUnitTests",
+  "python.analysis.typeCheckingMode": "basic"
 }

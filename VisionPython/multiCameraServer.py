@@ -14,11 +14,11 @@ from typing import Final
 
 import cv2
 import numpy as np
-from cscore import CameraServer, MjpegServer, UsbCamera, VideoSource
+from cscore import CameraServer, UsbCamera, VideoSource
 from cv2 import Mat
 from ntcore import EventFlags, NetworkTable, NetworkTableInstance
-from robotpy_apriltag import (AprilTag, AprilTagDetection, AprilTagDetector,
-                              AprilTagPoseEstimate, AprilTagPoseEstimator)
+from robotpy_apriltag import (AprilTagDetection, AprilTagDetector,
+                              AprilTagPoseEstimator)
 
 
 class CameraConfig: pass
@@ -39,41 +39,47 @@ networkTableName: Final[str] = "VisionRPI"
 mainTable: NetworkTable = NetworkTableInstance.getDefault().getTable(networkTableName)
 
 # Camera
-resolutionWidth: int = 1280
-resolutionHeight: int = 720
+# resolutionWidth: int = 1280
+# resolutionHeight: int = 720
 fps: Final[int] = 30
 exposure: Final[int] = 40
-verticalFOVRad: Final[int] = math.radians(36.9187406) # Calculated manually 
-horizontalFOVRad: Final[int] = math.radians(61.3727249) # Calculated manually
+# verticalFOVRad: Final[int] = math.radians(36.9187406) # Calculated manually, Microsoft lifecam hd  
+# horizontalFOVRad: Final[int] = math.radians(61.3727249) # Calculated manually, Microsoft lifecam hd 
+
+resolutionWidth: int = 1920
+resolutionHeight: int = 1080
+verticalFOVRad: Final[int] = math.radians(43.30672187287323) # Calculated manually, C920 HD PRO WEBCAM
+horizontalFOVRad: Final[int] = math.radians(70.42796571601109) # Calculated manually, C920 HD PRO WEBCAM
+
 focalLengthPixels: Final[float] = (resolutionWidth/2) / math.tan(horizontalFOVRad)
 
-mtx = np.array([ # from calibrating on calibdb at 1280x720
-    [1105.680719099305, 0, 649.8955569954927], 
-    [0, 1112.900092858322, 368.57822369954914], 
-    [0, 0, 1]
-])
-
-# mtx = np.array([ # from calibrating on calibdb at 1920x1080
-#     [1378.7537012386945, 0, 986.8907369291361], 
-#     [0, 1375.0934365805474, 513.9387512470897], 
+# mtx = np.array([ # from calibrating on calibdb at 1280x720
+#     [1105.680719099305, 0, 649.8955569954927], 
+#     [0, 1112.900092858322, 368.57822369954914], 
 #     [0, 0, 1]
 # ])
 
-dist = np.array([ # from calibrating on calibdb at 1280x720
-    0.14143969201502096,
-    -1.0324230999881798,
-    0.0018082578061445586,
-    -0.002008660193895589,
-    1.849583138331747
-])
+# mtx = np.array([ # from calibrating on calibdb at 1920x1080
+    # [1378.7537012386945, 0, 986.8907369291361], 
+    # [0, 1375.0934365805474, 513.9387512470897], 
+    # [0, 0, 1]
+# ])
+
+# dist = np.array([ # from calibrating on calibdb at 1280x720
+#     0.14143969201502096,
+#     -1.0324230999881798,
+#     0.0018082578061445586,
+#     -0.002008660193895589,
+#     1.849583138331747
+# ])
 
 # dist = np.array([ # from calibrating on calibdb at 1920x1080
-#     0.018146669363971513,
-#     -0.09196321148476025,
-#     -0.004476722886212248,
-#     0.0047711062648038175,
-#     -0.045514759364078325
-# ])-
+    # 0.018146669363971513,
+    # -0.09196321148476025,
+    # -0.004476722886212248,
+    # 0.0047711062648038175,
+    # -0.045514759364078325
+# ])
 
 def onRPI() -> bool:
     return platform.uname().system == "Linux"
@@ -221,17 +227,18 @@ def startSwitchedCamera(config):
     return server
 
 def startCameraDesktop():
-    camNum: str = str(len(cameras))
+    camNum: str = "1"
     """Start running the camera."""
-    print("Starting camera '{}' on {}".format("Camera " + camNum, camNum))
-    camera = CameraServer.startAutomaticCapture(1)
-    camera.setResolution(resolutionWidth, resolutionHeight)
-    print("CS: Camera {}: set resolution to {}x{}".format(camNum, resolutionWidth, resolutionHeight))
+    print("CS: Starting camera {}".format("USB Camera " + camNum))
+    camera = CameraServer.startAutomaticCapture(int(camNum))
+    print("CS: USB Camera {}: Set resolution to {}x{}".format(camNum, resolutionWidth, resolutionHeight))
+    print("CS: Set Resolution Successfully ? " + str(camera.setResolution(resolutionWidth, resolutionHeight)))
+    print("CS: USB Camera {}: Set FPS to {}".format(camNum, fps))
     camera.setFPS(fps)
-    print("CS: Camera {}: set FPS to {}".format(camNum, fps))
     camera.setExposureManual(exposure)
-    print("CS: Camera {}: set exposure to {}".format(camNum, exposure))
+    print("CS: USB Camera {}: Set exposure to {}".format(camNum, exposure))
     camera.setConnectionStrategy(VideoSource.ConnectionStrategy.kConnectionKeepOpen)
+    print("CS: USB Camera {}: Set connection strategy to {}".format(camNum, VideoSource.ConnectionStrategy.kConnectionKeepOpen))
     return camera
 
 class Pipeline:
@@ -317,7 +324,6 @@ config.refineEdges = True
 quadThreshold = AprilTagDetector.QuadThresholdParameters()
 tagPipeline: AprilTagPipeline = AprilTagPipeline(2, "AprilTag", config, quadThreshold, 25, 20)
 pipelines: tuple[Pipeline] = (conePipeline, cubePipeline, tagPipeline)
-# pipelines: tuple[Pipeline] = (cubePipeline)
 
 aprilTagLengthMeters: Final[float] = 0.1524
 poseEstimator: AprilTagPoseEstimator # defined in main() so the parameters are correct
@@ -475,9 +481,8 @@ def main(): # Image proccessing user code
         ts = time.time()
         error, inputImg = cvSink.grabFrame(mat)
         inputImg: Mat
-        print(str(inputImg.shape[0]) + " " + str(inputImg.shape[1]) + " " + str(mat.shape[0]) + " " + str(mat.shape[1]))
-        if (resolutionWidth == 1280):
-            inputImg = cv2.undistort(inputImg, mtx, dist)
+        # print(str(inputImg.shape[0]) + " " + str(inputImg.shape[1]) + " " + str(mat.shape[0]) + " " + str(mat.shape[1]))
+        # inputImg = cv2.undistort(inputImg, mtx, dist)
         if error == 0: # There is an error
             print(cvSink.getError())
             continue
@@ -517,9 +522,8 @@ if __name__ == "__main__":
         ntinst.startClient4("wpilibpi")
         ntinst.setServerTeam(team)
         ntinst.startDSClient()
-
     if (onRPI()):
-        print("On RaspberryPi")
+        print("Running On RaspberryPi")
         # start cameras
         for config in cameraConfigs:
             startCamera(config)
@@ -528,7 +532,7 @@ if __name__ == "__main__":
         for config in switchedCameraConfigs:
             startSwitchedCamera(config)
     else:
-        print("On Desktop")
+        print("Running On Desktop")
         startCameraDesktop()
     # start opencv
     main()
