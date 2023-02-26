@@ -14,7 +14,7 @@ public class ButterySmoothDriveCommand extends CommandBase {
     private DoubleSupplier joystickTrim;
     private DriveSubsystem driveSubsystem;
     private SlewRateLimiter limiterNormal = new SlewRateLimiter(Drive.slewRate);
-    private final double maxEncoderVelocity = 14000;
+    // private final double maxEncoderVelocity = 14000;
 
     public ButterySmoothDriveCommand(DoubleSupplier joystickSpeed, DoubleSupplier joystickTurn, DoubleSupplier joystickTrim,  DriveSubsystem driveSubsystem) {
         this.joystickSpeed = joystickSpeed;
@@ -58,9 +58,9 @@ public class ButterySmoothDriveCommand extends CommandBase {
         return p;
     }
 
-    private double powerToVelocity(double power) {
-        return power * maxEncoderVelocity;
-    }
+    // private double powerToVelocity(double power) {
+    //     return power * maxEncoderVelocity;
+    // }
 
     @Override
     public void end(boolean interrupted) {

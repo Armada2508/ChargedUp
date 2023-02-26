@@ -14,7 +14,7 @@ from typing import Final
 
 import cv2
 import numpy as np
-from cscore import CameraServer, UsbCamera, VideoSource
+from cscore import CameraServer, UsbCamera, VideoMode, VideoSource
 from cv2 import Mat
 from ntcore import EventFlags, NetworkTable, NetworkTableInstance
 from robotpy_apriltag import (AprilTagDetection, AprilTagDetector,
@@ -38,20 +38,20 @@ detector.addFamily("tag16h5")
 networkTableName: Final[str] = "VisionRPI"
 mainTable: NetworkTable = NetworkTableInstance.getDefault().getTable(networkTableName)
 
-# Camera
-resolutionWidth: int = 640
-resolutionHeight: int = 360
-fps: Final[int] = 30
-exposure: Final[int] = 40
-# verticalFOVRad: Final[int] = math.radians(36.9187406) # Calculated manually, Microsoft lifecam hd  
-# horizontalFOVRad: Final[int] = math.radians(61.3727249) # Calculated manually, Microsoft lifecam hd 
-
+# Microsoft Lifecam HD 3000 Camera
+# resolutionWidth: int = 640
+# resolutionHeight: int = 360
+# verticalFOVRad: Final[int] = math.radians(36.9187406) # Calculated manually, Microsoft lifecam hd 3000
+# horizontalFOVRad: Final[int] = math.radians(61.3727249) # Calculated manually, Microsoft lifecam hd 3000
+# Logitech C920 HD Pro Webcam
 resolutionWidth: int = 1920
 resolutionHeight: int = 1080
-verticalFOVRad: Final[int] = math.radians(43.30672187287323) # Calculated manually, C920 HD PRO WEBCAM
-horizontalFOVRad: Final[int] = math.radians(70.42796571601109) # Calculated manually, C920 HD PRO WEBCAM
+verticalFOVRad: Final[float] = math.radians(43.30672187287323) # Calculated manually, Logitech C920 HD Pro Webcam
+horizontalFOVRad: Final[float] = math.radians(70.42796571601109) # Calculated manually, Logitech C920 HD Pro Webcam
 
-focalLengthPixels: Final[float] = (resolutionWidth/2) / math.tan(horizontalFOVRad)
+fps: Final[int] = 30
+exposure: Final[int] = 40
+focalLengthPixels: Final[float] = (resolutionWidth/2) / math.tan(horizontalFOVRad/2)
 
 # mtx = np.array([ # from calibrating on calibdb at 1280x720
 #     [1105.680719099305, 0, 649.8955569954927], 
@@ -59,11 +59,11 @@ focalLengthPixels: Final[float] = (resolutionWidth/2) / math.tan(horizontalFOVRa
 #     [0, 0, 1]
 # ])
 
-# mtx = np.array([ # from calibrating on calibdb at 1920x1080
-    # [1378.7537012386945, 0, 986.8907369291361], 
-    # [0, 1375.0934365805474, 513.9387512470897], 
-    # [0, 0, 1]
-# ])
+mtx = np.array([ # from calibrating on calibdb at 1920x1080
+    [1378.7537012386945, 0, 986.8907369291361], 
+    [0, 1375.0934365805474, 513.9387512470897], 
+    [0, 0, 1]
+])
 
 # dist = np.array([ # from calibrating on calibdb at 1280x720
 #     0.14143969201502096,
@@ -73,22 +73,22 @@ focalLengthPixels: Final[float] = (resolutionWidth/2) / math.tan(horizontalFOVRa
 #     1.849583138331747
 # ])
 
-# dist = np.array([ # from calibrating on calibdb at 1920x1080
-    # 0.018146669363971513,
-    # -0.09196321148476025,
-    # -0.004476722886212248,
-    # 0.0047711062648038175,
-    # -0.045514759364078325
-# ])
+dist = np.array([ # from calibrating on calibdb at 1920x1080
+    0.018146669363971513,
+    -0.09196321148476025,
+    -0.004476722886212248,
+    0.0047711062648038175,
+    -0.045514759364078325
+])
 
 def onRPI() -> bool:
     return platform.uname().system == "Linux"
 
-def parseError(str):
+def parseError(str) -> None:
     """Report parse error."""
     print("config error in '" + configFile + "': " + str, file=sys.stderr)
 
-def readCameraConfig(config):
+def readCameraConfig(config) -> bool:
     """Read single camera configuration."""
     cam = CameraConfig()
 
@@ -114,7 +114,7 @@ def readCameraConfig(config):
     cameraConfigs.append(cam)
     return True
 
-def readSwitchedCameraConfig(config):
+def readSwitchedCameraConfig(config) -> bool:
     """Read single switched camera configuration."""
     cam = CameraConfig()
 
@@ -135,7 +135,7 @@ def readSwitchedCameraConfig(config):
     switchedCameraConfigs.append(cam)
     return True
 
-def readConfig():
+def readConfig() -> bool:
     """Read configuration file."""
     global server
 
@@ -180,7 +180,7 @@ def readConfig():
 
     return True
 
-def startCamera(config):
+def startCamera(config) -> UsbCamera:
     global resolutionWidth, resolutionHeight
     """Start running the camera."""
     print("Starting camera '{}' on {}".format(config.name, config.path))
@@ -226,19 +226,16 @@ def startSwitchedCamera(config):
 
     return server
 
-def startCameraDesktop():
+def startCameraDesktop() -> None:
     camNum: str = "1"
-    """Start running the camera."""
-    print("Starting camera '{}' on {}".format("Camera " + camNum, camNum))
-    camera = CameraServer.startAutomaticCapture(1)
-    camera.setResolution(resolutionWidth, resolutionHeight)
-    print("CS: Camera {}: set resolution to {}x{}".format(camNum, resolutionWidth, resolutionHeight))
-    camera.setFPS(fps)
+    print("Starting camera {}".format("USB Camera " + camNum))
+    camera = CameraServer.startAutomaticCapture(int(camNum))
+    print("CS: USB Camera {}: Setting Video Mode to PixelFormat {}, Width {}, Height {} and FPS {}".format(camNum, VideoMode.PixelFormat.kMJPEG, resolutionWidth, resolutionHeight, fps))
+    print("CS: USB Camera {}: Set Video Mode Successfully ? ".format(camNum) + str(camera.setVideoMode(VideoMode.PixelFormat.kMJPEG, resolutionWidth, resolutionHeight, fps)))
     camera.setExposureManual(exposure)
-    print("CS: USB Camera {}: Set exposure to {}".format(camNum, exposure))
+    print("CS: USB Camera {}: Setting exposure to {}".format(camNum, exposure))
     camera.setConnectionStrategy(VideoSource.ConnectionStrategy.kConnectionKeepOpen)
-    print("CS: USB Camera {}: Set connection strategy to {}".format(camNum, VideoSource.ConnectionStrategy.kConnectionKeepOpen))
-    return camera
+    print("CS: USB Camera {}: Setting connection strategy to {}".format(camNum, VideoSource.ConnectionStrategy.kConnectionKeepOpen))
 
 class Pipeline:
     
@@ -247,7 +244,7 @@ class Pipeline:
         APRILTAG = 1
     
     def __init__(self, index: int, type: Type, subTable: str) -> None:
-        self.type: Final[self.Type] = type
+        self.type: Final[Pipeline.Type] = type
         self.subTable: Final[NetworkTable] = mainTable.getSubTable(subTable)
         self.__setupTableEntries(index)
         
@@ -259,10 +256,10 @@ class Pipeline:
         
 class AprilTagPipeline(Pipeline):
     
-    def __init__(self, index: int, name: str, detectorConfig: AprilTagDetector.Config, quad: AprilTagDetector.QuadThresholdParameters, minArea: float, minDecisionMargin: float) -> None:
-        super().__init__(index, super().Type.APRILTAG, name)
+    def __init__(self, pipelineIndex: int, name: str, detectorConfig: AprilTagDetector.Config, quadParameters: AprilTagDetector.QuadThresholdParameters, minArea: float, minDecisionMargin: float) -> None:
+        super().__init__(pipelineIndex, super().Type.APRILTAG, name)
         self.detectorConfig: Final[AprilTagDetector.Config] = detectorConfig
-        self.detectorQuadParameters = quad
+        self.detectorQuadParameters: Final[AprilTagDetector.QuadThresholdParameters] = quadParameters
         self.__setupTableEntries(minArea, minDecisionMargin)
     
     def __setupTableEntries(self, minArea, minDecisionMargin):
@@ -281,8 +278,8 @@ class AprilTagPipeline(Pipeline):
 
 class ColorPipeline(Pipeline):
     
-    def __init__(self, index: int, name: str, hueMin: int, hueMax: int, saturationMin: int, saturationMax: int, valueMin: int, valueMax: int, erodeIterations: int, dilateIterations: int, minArea: int) -> None:
-        super().__init__(index, super().Type.COLOR, name)
+    def __init__(self, pipelineIndex: int, name: str, hueMin: int, hueMax: int, saturationMin: int, saturationMax: int, valueMin: int, valueMax: int, erodeIterations: int, dilateIterations: int, minArea: int) -> None:
+        super().__init__(pipelineIndex, super().Type.COLOR, name)
         self.__setupTableEntries(minArea, hueMin, hueMax, saturationMin, saturationMax, valueMin, valueMax, erodeIterations, dilateIterations)
         
     def __setupTableEntries(self, minArea, hueMin, hueMax, saturationMin, saturationMax, valueMin, valueMax, erodeIterations, dilateIterations):
@@ -315,20 +312,28 @@ class ColorPipeline(Pipeline):
 # Processing
 conePipeline: ColorPipeline = ColorPipeline(0, "Cone", 20, 40, 120, 255, 160, 255, 1, 1, 15)
 cubePipeline: ColorPipeline = ColorPipeline(0, "Cube", 120, 150, 30, 255, 80, 255, 1, 4, 15)
-config = AprilTagDetector.Config()
-config.quadDecimate = 2
+config: AprilTagDetector.Config = AprilTagDetector.Config()
+config.quadDecimate = 4
 config.decodeSharpening = 0.25
 config.quadSigma = 0
 config.refineEdges = True
-quadThreshold = AprilTagDetector.QuadThresholdParameters()
+config.numThreads = 1
+config.debug = False
+quadThreshold: AprilTagDetector.QuadThresholdParameters = AprilTagDetector.QuadThresholdParameters()
+quadThreshold.criticalAngle = math.radians(10)
+quadThreshold.deglitch = False
+quadThreshold.maxLineFitMSE = 10
+quadThreshold.maxNumMaxima = 10
+quadThreshold.minClusterPixels = 5
+quadThreshold.minWhiteBlackDiff = 5
 tagPipeline: AprilTagPipeline = AprilTagPipeline(2, "AprilTag", config, quadThreshold, 25, 20)
-pipelines: tuple[Pipeline] = (conePipeline, cubePipeline, tagPipeline)
+pipelines: tuple[Pipeline, ...] = (conePipeline, cubePipeline, tagPipeline)
 
 aprilTagLengthMeters: Final[float] = 0.1524
 poseEstimator: AprilTagPoseEstimator # defined in main() so the parameters are correct
 poseIterations: Final[int] = 100
 
-def getAreaAprilTag(tag: AprilTagDetection):
+def getAreaAprilTag(tag: AprilTagDetection) -> float:
     x1: float = abs(tag.getCorner(0).x - tag.getCorner(1).x)
     x2: float = abs(tag.getCorner(0).x - tag.getCorner(2).x)
     y1: float = abs(tag.getCorner(0).y - tag.getCorner(1).y)
@@ -337,16 +342,16 @@ def getAreaAprilTag(tag: AprilTagDetection):
     height: float = max(y1, y2); 
     return width * height
 
-def getTagData(pipeline: AprilTagPipeline, result: AprilTagDetection):
-    estimate = poseEstimator.estimateHomography(result)
+def getTagData(pipeline: AprilTagPipeline, result: AprilTagDetection) -> None:
+    # estimate = poseEstimator.estimateHomography(result)
     # estimate = poseEstimator.estimateOrthogonalIteration(result, poseIterations).pose1
-    # estimate = poseEstimator.estimate(result)
+    estimate = poseEstimator.estimate(result)
     pipeline.X.setDouble(estimate.X())
     pipeline.Y.setDouble(estimate.Y())
     pipeline.Z.setDouble(estimate.Z())
     pipeline.Yaw.setDouble(math.degrees(estimate.rotation().Z()))
 
-def drawDetection(drawnImg: Mat, result: AprilTagDetection):
+def drawDetection(drawnImg: Mat, result: AprilTagDetection) -> Mat:
     # Crosshair
     y1: float = abs(result.getCorner(0).y - result.getCorner(1).y)
     y2: float = abs(result.getCorner(0).y - result.getCorner(2).y)
@@ -360,10 +365,10 @@ def drawDetection(drawnImg: Mat, result: AprilTagDetection):
         (int(result.getCorner(0).x), int(result.getCorner(0).y)), 
         (int(result.getCorner(2).x), int(result.getCorner(2).y)), 
         color = (0, 0, 255), thickness = 2)
-    drawnImg = cv2.putText(drawnImg, str(result.getId()), org = (centerX+11, centerY), fontFace = cv2.FONT_HERSHEY_SIMPLEX, fontScale = 1, color = (255, 0, 0), thickness = 3)
+    drawnImg = cv2.putText(drawnImg, str(result.getId()), org = (centerX+11, centerY), fontFace = cv2.FONT_HERSHEY_SIMPLEX, fontScale = 2, color = (255, 0, 0), thickness = 3)
     return drawnImg
 
-def aprilTagPipeline(input_img: Mat, drawnImg: Mat, pipeline: AprilTagPipeline):
+def aprilTagPipeline(input_img: Mat, drawnImg: Mat, pipeline: AprilTagPipeline) -> Mat:
     # Convert to grayscale
     binary_img: Mat = cv2.cvtColor(input_img, cv2.COLOR_BGR2GRAY) 
     detector.setConfig(pipeline.detectorConfig)
@@ -392,7 +397,7 @@ def aprilTagPipeline(input_img: Mat, drawnImg: Mat, pipeline: AprilTagPipeline):
     pipeline.Yaw.setDouble(0)
     return drawnImg
 
-def pointToYawAndPitch(px: int, py: int): # Converts a point in pixel system to a pitch and a yaw and returns that.
+def pointToYawAndPitch(px: int, py: int) -> tuple[float, float]: # Converts a point in pixel system to a pitch and a yaw and returns that.
     nx: float = (2/resolutionWidth) * (px - ((resolutionWidth/2) - 0.5))
     ny: float = (2/resolutionHeight) * (((resolutionHeight/2) - 0.5) - py)
     vpw: float = 2.0*math.tan(horizontalFOVRad/2)
@@ -411,7 +416,7 @@ def getOrientation(width: float, height: float, pipeline: ColorPipeline) -> None
     else:
         pipeline.orientation.setInteger(1) #1 means portrait
 
-def colorPipeline(img: Mat, drawnImg: Mat, pipeline: ColorPipeline):
+def colorPipeline(img: Mat, drawnImg: Mat, pipeline: ColorPipeline) -> Mat:
     # Color Converting
     hsvImg = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     # Color Thresholding
@@ -432,13 +437,6 @@ def colorPipeline(img: Mat, drawnImg: Mat, pipeline: ColorPipeline):
     binaryImg = cv2.dilate(binaryImg, kernel, iterations = int(pipeline.dilateIterations.getInteger(0)))
     return proccessContours(binaryImg, drawnImg, pipeline)
 
-def getOrientation(width, height, pipeline: ColorPipeline):
-    if (width > height) or (width == height):
-        # return pipeline.Orientation.landscape
-        pipeline.orientation.setInteger(0) #0 means landscape
-    else:
-        pipeline.orientation.setInteger(1) #1 means portrait
-
 def proccessContours(binaryImg: Mat, drawnImg: Mat, pipeline: ColorPipeline) -> Mat:
     # Contours
     contours, hierarchy = cv2.findContours(binaryImg, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -449,7 +447,7 @@ def proccessContours(binaryImg: Mat, drawnImg: Mat, pipeline: ColorPipeline) -> 
                 mainContour = contour
         if (cv2.contourArea(mainContour) < pipeline.minArea.getDouble(0)):
             pipeline.hasTarget.setBoolean(False)
-            return
+            return drawnImg
         pipeline.hasTarget.setBoolean(True)
         # Bounding Rectangle
         rect = cv2.boundingRect(mainContour)
@@ -468,13 +466,13 @@ def proccessContours(binaryImg: Mat, drawnImg: Mat, pipeline: ColorPipeline) -> 
         pipeline.hasTarget.setBoolean(False)
         return drawnImg
         
-def main(): # Image proccessing user code
+def main() -> None: # Image proccessing user code
     CameraServer.enableLogging()
     cvSink = CameraServer.getVideo()
     proccessedStream = CameraServer.putVideo("Proccessed Video", resolutionWidth, resolutionHeight)
     originalStream = CameraServer.putVideo("Original Video", resolutionWidth, resolutionHeight)
     mat = np.zeros(shape=(resolutionWidth, resolutionHeight, 3), dtype=np.uint8)
-    mainTable.getEntry("Current Pipeline").setInteger(conePipeline.pipelineIndex.getInteger(0))
+    mainTable.getEntry("Current Pipeline").setInteger(tagPipeline.pipelineIndex.getInteger(0))
     global poseEstimator
     poseEstimator = AprilTagPoseEstimator(AprilTagPoseEstimator.Config(aprilTagLengthMeters, focalLengthPixels, focalLengthPixels, resolutionWidth/2, resolutionHeight/2))
     # loop forever
@@ -482,11 +480,10 @@ def main(): # Image proccessing user code
         ts = time.time()
         error, inputImg = cvSink.grabFrame(mat)
         inputImg: Mat
-        print(str(inputImg.shape[0]) + " " + str(inputImg.shape[1]) + " " + str(mat.shape[0]) + " " + str(mat.shape[1]))
-        if (resolutionWidth == 1280):
+        if (resolutionWidth == 1280 or resolutionWidth == 1920):
             inputImg = cv2.undistort(inputImg, mtx, dist)
         if error == 0: # There is an error
-            print(cvSink.getError())
+            print("CVSINK ERROR: " + cvSink.getError())
             continue
         drawnImg = inputImg.copy()
         index = mainTable.getEntry("Current Pipeline").getInteger(0)

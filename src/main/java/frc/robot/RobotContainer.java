@@ -36,7 +36,6 @@ import frc.robot.commands.Auto.PieceOnFloorCommand;
 import frc.robot.commands.Driving.AutoDriveCommand;
 import frc.robot.commands.Driving.AutoTurnCommand;
 import frc.robot.commands.Driving.ButterySmoothDriveCommand;
-import frc.robot.commands.Driving.MoveRelativeCommand;
 import frc.robot.commands.Driving.SeekCommand;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
@@ -69,9 +68,9 @@ public class RobotContainer {
         configureButtons();
     }
 
-    private Command testTrajectory() {
-        return new MoveRelativeCommand(Units.inchesToMeters(12), Units.inchesToMeters(12), 0, driveSubsystem, pigeon);
-    }
+    // private Command testTrajectory() {
+    //     return new MoveRelativeCommand(Units.inchesToMeters(12), Units.inchesToMeters(12), 0, driveSubsystem, pigeon);
+    // }
 
     @SuppressWarnings("resource")
     private void configureButtons() {
