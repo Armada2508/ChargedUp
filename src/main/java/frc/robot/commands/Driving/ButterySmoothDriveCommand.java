@@ -41,8 +41,9 @@ public class ButterySmoothDriveCommand extends CommandBase {
 
         double leftSpeed = (speed - turn) * powerFactor;
         double rightSpeed = (speed + turn) * powerFactor;
+        driveSubsystem.setPower(leftSpeed, rightSpeed);
         // System.out.println(leftSpeed + " " + powerToVelocity(leftSpeed));
-        driveSubsystem.setEncoderVelocity(powerToVelocity(leftSpeed), powerToVelocity(rightSpeed));
+        // driveSubsystem.setEncoderVelocity(powerToVelocity(leftSpeed), powerToVelocity(rightSpeed));
     }
 
     private double findSpeed(double left, double right){

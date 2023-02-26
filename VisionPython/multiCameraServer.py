@@ -39,8 +39,8 @@ networkTableName: Final[str] = "VisionRPI"
 mainTable: NetworkTable = NetworkTableInstance.getDefault().getTable(networkTableName)
 
 # Camera
-# resolutionWidth: int = 1280
-# resolutionHeight: int = 720
+resolutionWidth: int = 640
+resolutionHeight: int = 360
 fps: Final[int] = 30
 exposure: Final[int] = 40
 # verticalFOVRad: Final[int] = math.radians(36.9187406) # Calculated manually, Microsoft lifecam hd  
@@ -229,11 +229,10 @@ def startSwitchedCamera(config):
 def startCameraDesktop():
     camNum: str = "1"
     """Start running the camera."""
-    print("CS: Starting camera {}".format("USB Camera " + camNum))
-    camera = CameraServer.startAutomaticCapture(int(camNum))
-    print("CS: USB Camera {}: Set resolution to {}x{}".format(camNum, resolutionWidth, resolutionHeight))
-    print("CS: Set Resolution Successfully ? " + str(camera.setResolution(resolutionWidth, resolutionHeight)))
-    print("CS: USB Camera {}: Set FPS to {}".format(camNum, fps))
+    print("Starting camera '{}' on {}".format("Camera " + camNum, camNum))
+    camera = CameraServer.startAutomaticCapture(1)
+    camera.setResolution(resolutionWidth, resolutionHeight)
+    print("CS: Camera {}: set resolution to {}x{}".format(camNum, resolutionWidth, resolutionHeight))
     camera.setFPS(fps)
     camera.setExposureManual(exposure)
     print("CS: USB Camera {}: Set exposure to {}".format(camNum, exposure))
@@ -315,7 +314,7 @@ class ColorPipeline(Pipeline):
 
 # Processing
 conePipeline: ColorPipeline = ColorPipeline(0, "Cone", 20, 40, 120, 255, 160, 255, 1, 1, 15)
-cubePipeline: ColorPipeline = ColorPipeline(1, "Cube", 120, 150, 30, 255, 80, 255, 1, 4, 15)
+cubePipeline: ColorPipeline = ColorPipeline(0, "Cube", 120, 150, 30, 255, 80, 255, 1, 4, 15)
 config = AprilTagDetector.Config()
 config.quadDecimate = 2
 config.decodeSharpening = 0.25
@@ -385,7 +384,6 @@ def aprilTagPipeline(input_img: Mat, drawnImg: Mat, pipeline: AprilTagPipeline):
         drawDetection(drawnImg, result)
         getTagData(pipeline, result)
         pipeline.hasTarget.setBoolean(True)
-        # print("Done")
         return drawnImg
     pipeline.hasTarget.setBoolean(False)
     pipeline.X.setDouble(0)
@@ -405,8 +403,6 @@ def pointToYawAndPitch(px: int, py: int): # Converts a point in pixel system to 
     ay: float = math.atan(y/1)
     yaw: float = math.degrees(ax)
     pitch: float = math.degrees(ay)
-    # print("Resolution: " + str(resolutionWidth) + " " + str(resolutionHeight) + " Pixel Coords: " + str(px) + " " + str(py) 
-        # + " Standard Coords: " + str(nx) + " " + str(ny) + " Pitch: " + str(pitch))
     return (yaw, pitch)
 
 def getOrientation(width: float, height: float, pipeline: ColorPipeline) -> None:
@@ -436,6 +432,13 @@ def colorPipeline(img: Mat, drawnImg: Mat, pipeline: ColorPipeline):
     binaryImg = cv2.dilate(binaryImg, kernel, iterations = int(pipeline.dilateIterations.getInteger(0)))
     return proccessContours(binaryImg, drawnImg, pipeline)
 
+def getOrientation(width, height, pipeline: ColorPipeline):
+    if (width > height) or (width == height):
+        # return pipeline.Orientation.landscape
+        pipeline.orientation.setInteger(0) #0 means landscape
+    else:
+        pipeline.orientation.setInteger(1) #1 means portrait
+
 def proccessContours(binaryImg: Mat, drawnImg: Mat, pipeline: ColorPipeline) -> Mat:
     # Contours
     contours, hierarchy = cv2.findContours(binaryImg, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -453,7 +456,6 @@ def proccessContours(binaryImg: Mat, drawnImg: Mat, pipeline: ColorPipeline) -> 
         x, y, w, h = rect
         getOrientation(w, h, pipeline)
         crosshair = (int(x + 1/2*w), int(y + h)) # Crosshair on bottom for measurements 
-        print(str(x) + " " + str(y) + " " + str(w) + " " + str(h) + " " + str(crosshair[0]) + " " + str(crosshair[1]))
         yaw, pitch = pointToYawAndPitch(crosshair[0], crosshair[1])
         pipeline.pitch.setDouble(pitch)
         pipeline.yaw.setDouble(yaw)
@@ -469,11 +471,10 @@ def proccessContours(binaryImg: Mat, drawnImg: Mat, pipeline: ColorPipeline) -> 
 def main(): # Image proccessing user code
     CameraServer.enableLogging()
     cvSink = CameraServer.getVideo()
-    # print("RESOLUTION: " + str(resolutionWidth) + " " + str(resolutionHeight))
     proccessedStream = CameraServer.putVideo("Proccessed Video", resolutionWidth, resolutionHeight)
     originalStream = CameraServer.putVideo("Original Video", resolutionWidth, resolutionHeight)
     mat = np.zeros(shape=(resolutionWidth, resolutionHeight, 3), dtype=np.uint8)
-    mainTable.getEntry("Current Pipeline").setInteger(tagPipeline.pipelineIndex.getInteger(0))
+    mainTable.getEntry("Current Pipeline").setInteger(conePipeline.pipelineIndex.getInteger(0))
     global poseEstimator
     poseEstimator = AprilTagPoseEstimator(AprilTagPoseEstimator.Config(aprilTagLengthMeters, focalLengthPixels, focalLengthPixels, resolutionWidth/2, resolutionHeight/2))
     # loop forever
@@ -481,8 +482,9 @@ def main(): # Image proccessing user code
         ts = time.time()
         error, inputImg = cvSink.grabFrame(mat)
         inputImg: Mat
-        # print(str(inputImg.shape[0]) + " " + str(inputImg.shape[1]) + " " + str(mat.shape[0]) + " " + str(mat.shape[1]))
-        # inputImg = cv2.undistort(inputImg, mtx, dist)
+        print(str(inputImg.shape[0]) + " " + str(inputImg.shape[1]) + " " + str(mat.shape[0]) + " " + str(mat.shape[1]))
+        if (resolutionWidth == 1280):
+            inputImg = cv2.undistort(inputImg, mtx, dist)
         if error == 0: # There is an error
             print(cvSink.getError())
             continue
@@ -496,9 +498,12 @@ def main(): # Image proccessing user code
                     drawnImg = aprilTagPipeline(inputImg.copy(), drawnImg, pipeline)
             else:
                 pipeline.hasTarget.setBoolean(False)
-        drawnImg = cv2.circle(drawnImg, (int(resolutionWidth/2), int(resolutionHeight/2)), 10, (255, 255, 255), -1)
-        proccessedStream.putFrame(drawnImg) # Stream Video
-        originalStream.putFrame(inputImg) # Stream Video
+        drawnImg = cv2.circle(drawnImg, (int(resolutionWidth/2), int(resolutionHeight/2)), 5, (255, 255, 255), -1)
+        try:
+            proccessedStream.putFrame(drawnImg) # Stream Video
+            originalStream.putFrame(inputImg) # Stream Video
+        except:
+            continue
         # print(time.time() - ts)
         
         

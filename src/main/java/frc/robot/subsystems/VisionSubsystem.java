@@ -53,7 +53,8 @@ public class VisionSubsystem extends SubsystemBase {
             ));
         }
         // System.out.println((getPoseToTarget(Target.APRILTAG)));
-        // System.out.println("Pitch: " + getTargetPitch(Pipeline.CUBE) + " Yaw: " + getTargetYaw(Pipeline.CUBE) + " Distance: " + distanceFromTargetInInches(Pipeline.CUBE));
+        // distanceFromTargetMeters(Target.CUBE);
+        // System.out.println("Pitch: " + getTargetPitch(Target.CUBE) + " Yaw: " + getTargetYaw(Target.CUBE) + " Distance: " + distanceFromTargetMeters(Target.CUBE));
     }
 
     private PipelineResult getResult(Target pipeline) {
@@ -92,26 +93,28 @@ public class VisionSubsystem extends SubsystemBase {
     }
 
     /**
-     * Calculates distance from the front of the robot to the current target in meters and with the angle given.
+     * Calculates distance from the front of the robot to the current target in meters
      * distance = (h2-h1) / tan(a1+a2)
      * h2 = height of target meters, h1 = height of camera meters, a1 = camera angle degrees, a2 = target angle degrees
      * @return distance in meters
      */
     public double distanceFromTargetMeters(Target pipeline) {
         if (!hasTarget(pipeline)) return Double.NaN;
-        double targetHeight = switch(pipeline) {
+        double targetHeightMeters = switch(pipeline) {
             case NONE -> 0;
             case CONE -> Vision.coneHeightMeters;
             case CUBE -> Vision.cubeHeightMeters;
             case APRILTAG -> Vision.aprilTagHeightMeters; 
         };
+        // System.out.println(Vision.cameraHeightMeters + " " + targetHeightMeters + " " + Vision.mountedCameraAngleRad);
         double distanceMeters = PhotonUtils.calculateDistanceToTargetMeters(
             Vision.cameraHeightMeters, 
-            targetHeight, 
-            Units.degreesToRadians(Vision.mountedCameraAngleDeg), 
+            targetHeightMeters, 
+            Vision.cameraPitchRadians, 
             Units.degreesToRadians(getTargetPitch(pipeline))
         );
-        return Units.metersToInches(distanceMeters) - Vision.distanceToBumperMeters;
+        return distanceMeters;
+        // return distanceMeters - Vision.distanceToBumperMeters;
     }
 
     public int getCurrentPipeline() {

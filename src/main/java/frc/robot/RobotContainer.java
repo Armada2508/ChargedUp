@@ -2,7 +2,6 @@ package frc.robot;
 
 import static edu.wpi.first.wpilibj2.command.Commands.runOnce;
 
-import java.util.ArrayList;
 import java.util.Map;
 
 import com.ctre.phoenix.sensors.PigeonIMU;
@@ -12,9 +11,6 @@ import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.trajectory.Trajectory;
-import edu.wpi.first.math.trajectory.TrajectoryConfig;
-import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -32,11 +28,15 @@ import frc.robot.Constants.Wrist;
 import frc.robot.Lib.motion.FollowTrajectory;
 import frc.robot.commands.AprilTagCommand;
 import frc.robot.commands.BalanceCommand;
+import frc.robot.commands.Arm.CalibrateArmCommand;
+import frc.robot.commands.Arm.CalibrateGripperCommand;
+import frc.robot.commands.Arm.CalibrateWristCommand;
 import frc.robot.commands.Auto.AutoPickupCommand;
 import frc.robot.commands.Auto.PieceOnFloorCommand;
 import frc.robot.commands.Driving.AutoDriveCommand;
 import frc.robot.commands.Driving.AutoTurnCommand;
-import frc.robot.commands.Driving.DriveCommand;
+import frc.robot.commands.Driving.ButterySmoothDriveCommand;
+import frc.robot.commands.Driving.MoveRelativeCommand;
 import frc.robot.commands.Driving.SeekCommand;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
@@ -61,22 +61,16 @@ public class RobotContainer {
         FollowTrajectory.config(0.31, 1.95, 0.35, 2.0, 0.7, Drive.trackWidthMeters, new PIDController(0.25, 0, 0), 0.875);
         InverseKinematics.config(Arm.jointLengthInches, Wrist.jointLengthInches);
         this.driveSubsystem = new DriveSubsystem(pigeon);
-        driveSubsystem.setDefaultCommand(new DriveCommand(() -> joystick.getRawAxis(1)*-1 * Drive.speedMultiplier, () -> joystick.getRawAxis(0)*-1,  () -> joystick.getRawAxis(2),driveSubsystem)); // default to driving from joystick input
+        driveSubsystem.setDefaultCommand(new ButterySmoothDriveCommand(() -> joystick.getRawAxis(1)*-1 * Drive.speedMultiplier, () -> joystick.getRawAxis(0)*-1,  () -> joystick.getRawAxis(2),driveSubsystem)); // default to driving from joystick input
         if (RobotBase.isReal()) {
             configureCamera();
         }
         configureShuffleboard();
         configureButtons();
-        // new CalibrateArmCommand(armSubsystem).schedule();
-        // new CalibrateWristCommand(wristSubsystem).schedule();
-        // new CalibrateGripperCommand(gripperSubsystem).schedule();
     }
 
     private Command testTrajectory() {
-        TrajectoryConfig config = new TrajectoryConfig(Units.inchesToMeters(3), Units.inchesToMeters(1));
-        Pose2d targetPose = new Pose2d(0, Units.inchesToMeters(12), Rotation2d.fromDegrees(driveSubsystem.getHeading())); // 1 foot forward
-        Trajectory trajectory = TrajectoryGenerator.generateTrajectory(new Pose2d(), new ArrayList<>(), targetPose, config);
-        return FollowTrajectory.getCommand(driveSubsystem, trajectory, driveSubsystem.getPose());
+        return new MoveRelativeCommand(Units.inchesToMeters(12), Units.inchesToMeters(12), 0, driveSubsystem, pigeon);
     }
 
     @SuppressWarnings("resource")
@@ -91,15 +85,13 @@ public class RobotContainer {
         new JoystickButton(joystick, 9).onTrue(new SeekCommand(driveSubsystem, visionSubsystem, pigeon, Target.CONE, 12));
         new JoystickButton(joystick, 8).onTrue(pickup);
         // new JoystickButton(joystick, 7).onTrue(Commands.run(() -> driveSubsystem.setPower(.25, .25), driveSubsystem));
-        new JoystickButton(joystick, 7).onTrue(new AprilTagCommand(new Pose2d(), driveSubsystem, visionSubsystem));
+        new JoystickButton(joystick, 7).onTrue(new AprilTagCommand(new Pose2d(Units.inchesToMeters(24), 0, new Rotation2d()), driveSubsystem, visionSubsystem, pigeon));
         new JoystickButton(joystick, 6).onTrue(new AutoDriveCommand(Units.inchesToMeters(36), driveSubsystem));
         new JoystickButton(joystick, 5).onTrue(new AutoTurnCommand(45, driveSubsystem, pigeon));
         new JoystickButton(joystick, 4).onTrue(new AutoDriveCommand(Units.inchesToMeters(-36), driveSubsystem));
-        // new JoystickButton(joystick, 3).onTrue(new AutoTurnCommand(-45, driveSubsystem, pigeon));
-        new JoystickButton(joystick, 3).onTrue(Commands.startEnd(() -> driveSubsystem.setPower(0.15, 0.15), () -> driveSubsystem.setPower(0, 0), driveSubsystem));
+        new JoystickButton(joystick, 3).onTrue(new AutoTurnCommand(-45, driveSubsystem, pigeon));
+        // new JoystickButton(joystick, 3).onTrue(Commands.startEnd(() -> driveSubsystem.setPower(0.15, 0.15), () -> driveSubsystem.setPower(0, 0), driveSubsystem));
         // new JoystickButton(joystick, 5).onTrue(runOnce(() -> new AutoTurnCommand(visionSubsystem::getTargetYaw, driveSubsystem, pigeon)));
-        // new JoystickButton(joystick, 4).onTrue(runOnce(() -> visionSubsystem.setPipeline(0)));
-        // new JoystickButton(joystick, 3).onTrue(runOnce(() -> visionSubsystem.setPipeline(1)));
         // Buttonboard 
         new JoystickButton(buttonBoard, 1).whileTrue(Commands.startEnd(() -> armSubsystem.setPower(0.1), () -> armSubsystem.setPower(0), armSubsystem));
         new JoystickButton(buttonBoard, 2).whileTrue(Commands.startEnd(() -> armSubsystem.setPower(-0.1), () -> armSubsystem.setPower(0), armSubsystem));
@@ -112,6 +104,11 @@ public class RobotContainer {
             wristSubsystem.calibrate(Wrist.minDegrees);
             gripperSubsystem.calibrate(0);
         }));
+        new JoystickButton(buttonBoard, 8).onTrue(new SequentialCommandGroup(
+            new CalibrateArmCommand(armSubsystem),
+            new CalibrateWristCommand(wristSubsystem),
+            new CalibrateGripperCommand(gripperSubsystem)
+        )); 
         new JoystickButton(buttonBoard, 11).onTrue(new BalanceCommand(driveSubsystem, pigeon));
         new JoystickButton(buttonBoard, 12).onTrue(new InstantCommand(CommandScheduler.getInstance()::cancelAll)); // AutoStop 
         // Combo Button Example

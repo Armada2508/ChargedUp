@@ -2,7 +2,6 @@ package frc.robot.commands.Driving;
 
 import java.util.function.DoubleSupplier;
 
-import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants.Drive;
 import frc.robot.subsystems.DriveSubsystem;
@@ -12,7 +11,6 @@ public class DriveCommand extends CommandBase{
     private DoubleSupplier joystickSpeed;
     private DoubleSupplier joystickTurn;
     private DriveSubsystem driveSubsystem;
-    private SlewRateLimiter limiter = new SlewRateLimiter(Drive.slewRate);
 
     public DriveCommand(DoubleSupplier joystickSpeed, DoubleSupplier joystickTurn, DoubleSupplier joystickTrim, DriveSubsystem driveSubsystem){
         this.joystickSpeed = joystickSpeed;
@@ -29,8 +27,6 @@ public class DriveCommand extends CommandBase{
         // Deadband
         if (Math.abs(speed) < Drive.joystickDeadband) speed = 0;
         if (Math.abs(turn) < Drive.joystickDeadband) turn = 0;
-
-        speed = limiter.calculate(speed);
 
         double powerFactor = findSpeed((speed - turn), (speed + turn));
 
