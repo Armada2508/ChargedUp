@@ -36,7 +36,7 @@ public class AutoPickupCommand extends SequentialCommandGroup {
             new WaitCommand(0.05),
             new ConditionalCommand(
                 new SequentialCommandGroup(
-                    new SeekCommand(driveSubsystem, visionSubsystem, pigeon, this::getPreviousTarget, distanceFromTargetMeters),
+                    new SeekCommand(this::getPreviousTarget, distanceFromTargetMeters, driveSubsystem, visionSubsystem, pigeon),
                     new ConditionalCommand(
                         new ConditionalCommand(
                             InverseKinematics.getIKPositionCommand(coneDown.getFirst(), coneDown.getSecond(), ArmSubsystem, WristSubsystem), /*On True  | Landscape Orientation*/

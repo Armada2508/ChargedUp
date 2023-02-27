@@ -13,11 +13,11 @@ import frc.robot.subsystems.VisionSubsystem.Target;
 
 public class SeekCommand extends SequentialCommandGroup {
 
-    public SeekCommand(DriveSubsystem driveSubsystem, VisionSubsystem visionSubsystem, PigeonIMU pigeon, Target target, double distanceFromTargetMeters) {
-        this(driveSubsystem, visionSubsystem, pigeon, () -> target, distanceFromTargetMeters);
+    public SeekCommand(Target target, double distanceFromTargetMeters, DriveSubsystem driveSubsystem, VisionSubsystem visionSubsystem, PigeonIMU pigeon) {
+        this( () -> target, distanceFromTargetMeters, driveSubsystem, visionSubsystem, pigeon);
     }
 
-    public SeekCommand(DriveSubsystem driveSubsystem, VisionSubsystem visionSubsystem, PigeonIMU pigeon, Supplier<Target> target, double distanceFromTargetMeters) {
+    public SeekCommand(Supplier<Target> target, double distanceFromTargetMeters, DriveSubsystem driveSubsystem, VisionSubsystem visionSubsystem, PigeonIMU pigeon) {
         addCommands(
             new AutoTurnCommand(() -> visionSubsystem.getTargetYaw(target.get()), driveSubsystem, pigeon),
             new DriveUntilCommand(driveSubsystem, visionSubsystem, target.get()),
