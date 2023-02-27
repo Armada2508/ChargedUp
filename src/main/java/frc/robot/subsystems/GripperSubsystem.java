@@ -30,8 +30,11 @@ public class GripperSubsystem extends SubsystemBase {
         talon.configClosedLoopPeakOutput(0, Gripper.maxSpeed);
     }
 
+    /**
+     * @param power to set the motor between -1.0 and 1.0
+     */
     public void setPower(double power) {
-        talonFX.set(power);
+        talonFX.set(TalonFXControlMode.PercentOutput, power);
     }
 
     /**

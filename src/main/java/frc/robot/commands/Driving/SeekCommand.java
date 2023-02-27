@@ -35,6 +35,7 @@ public class SeekCommand extends SequentialCommandGroup {
             this.driveSubsystem = driveSubsystem;
             this.visionSubsystem = visionSubsystem;
             this.target = target;
+            addRequirements(driveSubsystem);
         }
 
         @Override
