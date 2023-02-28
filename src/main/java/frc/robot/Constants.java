@@ -83,8 +83,6 @@ public class Constants {
         public static final int maxDegrees = 90;
         // IK
         public static final double jointLengthInches = 35.75;
-        // Gripper 
-        public static final double gripperRevolutionOffset = 3;
     }
 
     public static final class Wrist {
@@ -107,8 +105,6 @@ public class Constants {
 
         // IK
         public static final double jointLengthInches = 13;
-        // Gripper 
-        public static final double gripperRevolutionOffset = 1;
     }
 
     public static final class Gripper {
@@ -122,6 +118,10 @@ public class Constants {
         public static final double kD = 0;
         public static final double kF = 0;
         public static final double maxSpeed = 0.25;
+
+        // Bad Engineering Constants
+        public static final double armSensorOffset = 3;
+        public static final double wristSensorOffset = 1;
     }
 
     // ========================================

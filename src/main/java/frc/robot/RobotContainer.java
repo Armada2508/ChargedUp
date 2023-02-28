@@ -29,9 +29,9 @@ public class RobotContainer {
     private final Joystick joystick = new Joystick(0);
     private final Joystick buttonBoard = new Joystick(1);
     private final VisionSubsystem visionSubsystem = new VisionSubsystem();
-    private final GripperSubsystem gripperSubsystem = new GripperSubsystem();
-    private final ArmSubsystem armSubsystem = new ArmSubsystem(gripperSubsystem);
-    private final WristSubsystem wristSubsystem = new WristSubsystem(gripperSubsystem);
+    private final ArmSubsystem armSubsystem = new ArmSubsystem();
+    private final WristSubsystem wristSubsystem = new WristSubsystem();
+    private final GripperSubsystem gripperSubsystem = new GripperSubsystem(armSubsystem, wristSubsystem);
     private final DriveSubsystem driveSubsystem;
     private final PigeonIMU pigeon = new PigeonIMU(Constants.pigeonID);
 

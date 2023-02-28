@@ -9,16 +9,15 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.Arm;
 import frc.robot.Constants.Drive;
+import frc.robot.InverseKinematics;
 import frc.robot.Lib.Encoder;
 
 public class ArmSubsystem extends SubsystemBase {
     
     private final WPI_TalonFX talonFX = new WPI_TalonFX(Arm.motorID);
     private final WPI_TalonFX talonFXFollow = new WPI_TalonFX(Arm.motorIDFollow);
-    private GripperSubsystem gripperSubsystem;
 
-    public ArmSubsystem(GripperSubsystem gripperSubsystem) {
-        this.gripperSubsystem = gripperSubsystem;
+    public ArmSubsystem() {
         configureMotor(talonFX);
         configureMotor(talonFXFollow);
         talonFXFollow.follow(talonFX);
@@ -37,7 +36,7 @@ public class ArmSubsystem extends SubsystemBase {
     }
 
     public void periodic() {
-
+        System.out.println(InverseKinematics.coordinatesToAngles(14.25, 23.5));
     }
 
     /**
@@ -55,8 +54,6 @@ public class ArmSubsystem extends SubsystemBase {
         if (theta > Arm.maxDegrees || theta < Arm.minDegrees) return;
         double targetPosition = fromAngle(theta);
         talonFX.set(TalonFXControlMode.MotionMagic, targetPosition, DemandType.ArbitraryFeedForward, getFeedForward());
-        double rev = ((talonFX.getSelectedSensorPosition() * Arm.encoderUnitsPerRev) - (targetPosition * Arm.encoderUnitsPerRev)) * Arm.gripperRevolutionOffset;
-        gripperSubsystem.addOffset(rev);
     }
 
     /**
@@ -81,6 +78,14 @@ public class ArmSubsystem extends SubsystemBase {
 
     public double getMotionMagicPosition() {
         return toAngle(talonFX.getActiveTrajectoryPosition());
+    }
+
+    public void holdPosition() {
+        talonFX.set(TalonFXControlMode.Position, talonFX.getSelectedSensorPosition());
+    }
+
+    public double getSensorPosition() {
+        return talonFX.getSelectedSensorPosition();
     }
 
     private double toAngle(double sensorUnits) {
