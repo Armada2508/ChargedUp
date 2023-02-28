@@ -13,6 +13,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.Constants.Drive;
 import frc.robot.Lib.Encoder;
 import frc.robot.Lib.util.Util;
@@ -44,13 +45,14 @@ public class DriveSubsystem extends SubsystemBase {
     private void configureMotor(TalonFX talon) {
         talon.configFactoryDefault();
         talon.selectProfileSlot(0, 0);
-        talon.configSelectedFeedbackSensor(TalonFXFeedbackDevice.IntegratedSensor, 0, Drive.timeoutMs);
+        talon.configSelectedFeedbackSensor(TalonFXFeedbackDevice.IntegratedSensor, 0, Constants.timeoutMs);
         talon.config_kP(0, Drive.kP);
         talon.config_kI(0, Drive.kI);
         talon.config_kD(0, Drive.kD);
         talon.config_kF(0, Drive.kF);
         talon.configNeutralDeadband(0.001);
         talon.configClosedLoopPeakOutput(0, Drive.maxDriveSpeed);
+        
     }
 
     @Override

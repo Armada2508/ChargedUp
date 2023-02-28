@@ -6,6 +6,7 @@ import frc.robot.Lib.util.Util;
 public class Constants {
 
     public static final int pigeonID = 8;
+    public static final int timeoutMs = 30;
     
     public static final class Drive {
         public static final int RID = 0;
@@ -23,7 +24,6 @@ public class Constants {
         public static final double kD = 0;
         public static final double kF = 0; // Probably keep this at 0
         public static final double maxDriveSpeed = 1;
-        public static final int timeoutMs = 30;
 
         // Closed Loop Turning (WPILib not on Falcons)
         public static final double turnkP = 0.01;
@@ -122,6 +122,9 @@ public class Constants {
         // Bad Engineering Constants
         public static final double armSensorOffset = 3;
         public static final double wristSensorOffset = 1;
+
+        public static final double min = 0;
+        public static final double max = 1;
     }
 
     // ========================================

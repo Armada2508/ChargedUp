@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+
 import com.ctre.phoenix.motorcontrol.DemandType;
 import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
 import com.ctre.phoenix.motorcontrol.TalonFXFeedbackDevice;
@@ -7,7 +8,7 @@ import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.Drive;
+import frc.robot.Constants;
 import frc.robot.Constants.Wrist;
 import frc.robot.Lib.Encoder;
 
@@ -22,13 +23,17 @@ public class WristSubsystem extends SubsystemBase {
     private void configureMotor(TalonFX talon) {
         talon.configFactoryDefault();
         talon.selectProfileSlot(0, 0);
-        talon.configSelectedFeedbackSensor(TalonFXFeedbackDevice.IntegratedSensor, 0, Drive.timeoutMs);
+        talon.configSelectedFeedbackSensor(TalonFXFeedbackDevice.IntegratedSensor, 0, Constants.timeoutMs);
         talon.config_kP(0, Wrist.kP);
         talon.config_kI(0, Wrist.kI);
         talon.config_kD(0, Wrist.kD);
         talon.config_kF(0, Wrist.kF);
         talon.configNeutralDeadband(0.001);
         talon.configClosedLoopPeakOutput(0, Wrist.maxSpeed);
+        talonFX.configForwardSoftLimitThreshold(fromAngle(Wrist.maxDegrees), Constants.timeoutMs);
+        talonFX.configReverseSoftLimitThreshold(fromAngle(Wrist.minDegrees), Constants.timeoutMs);
+        talonFX.configForwardSoftLimitEnable(true, Constants.timeoutMs);
+        talonFX.configReverseSoftLimitEnable(true, Constants.timeoutMs);
     }
 
     /**
@@ -43,7 +48,6 @@ public class WristSubsystem extends SubsystemBase {
      * @param theta degrees to go to
      */
     public void setPosition(double theta) {
-        if (theta > Wrist.maxDegrees || theta < Wrist.minDegrees) return;
         double targetPosition = fromAngle(theta);
         talonFX.set(TalonFXControlMode.MotionMagic, targetPosition, DemandType.ArbitraryFeedForward, getFeedForward());
     }
