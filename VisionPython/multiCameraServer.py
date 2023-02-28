@@ -23,6 +23,18 @@ from robotpy_apriltag import (AprilTagDetection, AprilTagDetector,
 
 class CameraConfig: pass
 
+def getHorizontalFOVRad(resolutionWidth: int, resolutionHeight: int, diagonalFOVDeg: float) -> float:
+    DfRad: float = math.radians(diagonalFOVDeg)
+    Da: float = math.sqrt((resolutionWidth * resolutionWidth) + (resolutionHeight * resolutionHeight))
+    Hf: float = math.atan(math.tan(DfRad/2) * (resolutionWidth/Da)) * 2
+    return Hf
+    
+def getVerticalFOVRad(resolutionWidth: int, resolutionHeight: int, diagonalFOVDeg: float) -> float:
+    DfRad: float = math.radians(diagonalFOVDeg)
+    Da: float = math.sqrt((resolutionWidth * resolutionWidth) + (resolutionHeight * resolutionHeight))
+    Vf: float = math.atan(math.tan(DfRad/2) * (resolutionHeight/Da)) * 2
+    return Vf
+
 configFile = "/boot/frc.json"
 team: Final[int] = 2508
 server = False
@@ -39,47 +51,48 @@ networkTableName: Final[str] = "VisionRPI"
 mainTable: NetworkTable = NetworkTableInstance.getDefault().getTable(networkTableName)
 
 # Microsoft Lifecam HD 3000 Camera
-# resolutionWidth: int = 640
-# resolutionHeight: int = 360
-# verticalFOVRad: Final[int] = math.radians(36.9187406) # Calculated manually, Microsoft lifecam hd 3000
-# horizontalFOVRad: Final[int] = math.radians(61.3727249) # Calculated manually, Microsoft lifecam hd 3000
+resolutionWidth: int = 640
+resolutionHeight: int = 360
+diagonalFOV: Final[float] = 68.5
 # Logitech C920 HD Pro Webcam
-resolutionWidth: int = 1920
-resolutionHeight: int = 1080
-verticalFOVRad: Final[float] = math.radians(43.30672187287323) # Calculated manually, Logitech C920 HD Pro Webcam
-horizontalFOVRad: Final[float] = math.radians(70.42796571601109) # Calculated manually, Logitech C920 HD Pro Webcam
+# resolutionWidth: int = 1920
+# resolutionHeight: int = 1080
 
+verticalFOVRad: float 
+horizontalFOVRad: float 
+focalLengthPixels: float
 fps: Final[int] = 30
 exposure: Final[int] = 40
-focalLengthPixels: Final[float] = (resolutionWidth/2) / math.tan(horizontalFOVRad/2)
 
-# mtx = np.array([ # from calibrating on calibdb at 1280x720
-#     [1105.680719099305, 0, 649.8955569954927], 
-#     [0, 1112.900092858322, 368.57822369954914], 
-#     [0, 0, 1]
-# ])
-
-mtx = np.array([ # from calibrating on calibdb at 1920x1080
-    [1378.7537012386945, 0, 986.8907369291361], 
-    [0, 1375.0934365805474, 513.9387512470897], 
+mtx = np.array([ # from calibrating on calibdb at 1280x720
+    [1105.680719099305, 0, 649.8955569954927], 
+    [0, 1112.900092858322, 368.57822369954914], 
     [0, 0, 1]
 ])
 
-# dist = np.array([ # from calibrating on calibdb at 1280x720
-#     0.14143969201502096,
-#     -1.0324230999881798,
-#     0.0018082578061445586,
-#     -0.002008660193895589,
-#     1.849583138331747
+# mtx = np.array([ # from calibrating on calibdb at 1920x1080
+#     [1378.7537012386945, 0, 986.8907369291361], 
+#     [0, 1375.0934365805474, 513.9387512470897], 
+#     [0, 0, 1]
 # ])
 
-dist = np.array([ # from calibrating on calibdb at 1920x1080
-    0.018146669363971513,
-    -0.09196321148476025,
-    -0.004476722886212248,
-    0.0047711062648038175,
-    -0.045514759364078325
+dist = np.array([ # from calibrating on calibdb at 1280x720
+    0.14143969201502096,
+    -1.0324230999881798,
+    0.0018082578061445586,
+    -0.002008660193895589,
+    1.849583138331747
 ])
+
+# dist = np.array([ # from calibrating on calibdb at 1920x1080
+#     0.018146669363971513,
+#     -0.09196321148476025,
+#     -0.004476722886212248,
+#     0.0047711062648038175,
+#     -0.045514759364078325
+# ])
+
+
 
 def onRPI() -> bool:
     return platform.uname().system == "Linux"
@@ -310,8 +323,8 @@ class ColorPipeline(Pipeline):
 
 
 # Processing
-conePipeline: ColorPipeline = ColorPipeline(0, "Cone", 20, 40, 120, 255, 160, 255, 1, 1, 15)
-cubePipeline: ColorPipeline = ColorPipeline(0, "Cube", 120, 150, 30, 255, 80, 255, 1, 4, 15)
+conePipeline: ColorPipeline = ColorPipeline(0, "Cone", 15, 40, 150, 255, 180, 255, 1, 1, 150)
+cubePipeline: ColorPipeline = ColorPipeline(0, "Cube", 120, 150, 30, 255, 80, 255, 1, 4, 150)
 config: AprilTagDetector.Config = AprilTagDetector.Config()
 config.quadDecimate = 4
 config.decodeSharpening = 0.25
@@ -398,6 +411,7 @@ def aprilTagPipeline(input_img: Mat, drawnImg: Mat, pipeline: AprilTagPipeline) 
     return drawnImg
 
 def pointToYawAndPitch(px: int, py: int) -> tuple[float, float]: # Converts a point in pixel system to a pitch and a yaw and returns that.
+    # print("{}, {}, {}, {}".format(resolutionWidth, resolutionHeight, math.degrees(horizontalFOVRad), math.degrees(verticalFOVRad)))
     nx: float = (2/resolutionWidth) * (px - ((resolutionWidth/2) - 0.5))
     ny: float = (2/resolutionHeight) * (((resolutionHeight/2) - 0.5) - py)
     vpw: float = 2.0*math.tan(horizontalFOVRad/2)
@@ -465,15 +479,23 @@ def proccessContours(binaryImg: Mat, drawnImg: Mat, pipeline: ColorPipeline) -> 
     else:
         pipeline.hasTarget.setBoolean(False)
         return drawnImg
+       
+def setupCameraConstants() -> None:
+    global horizontalFOVRad, verticalFOVRad  
+    horizontalFOVRad = getHorizontalFOVRad(resolutionWidth, resolutionHeight, diagonalFOV)
+    verticalFOVRad = getVerticalFOVRad(resolutionWidth, resolutionHeight, diagonalFOV)
+    
         
 def main() -> None: # Image proccessing user code
     CameraServer.enableLogging()
     cvSink = CameraServer.getVideo()
+    setupCameraConstants()
     proccessedStream = CameraServer.putVideo("Proccessed Video", resolutionWidth, resolutionHeight)
     originalStream = CameraServer.putVideo("Original Video", resolutionWidth, resolutionHeight)
     mat = np.zeros(shape=(resolutionWidth, resolutionHeight, 3), dtype=np.uint8)
-    mainTable.getEntry("Current Pipeline").setInteger(tagPipeline.pipelineIndex.getInteger(0))
-    global poseEstimator
+    mainTable.getEntry("Current Pipeline").setInteger(conePipeline.pipelineIndex.getInteger(0))
+    global focalLengthPixels, poseEstimator
+    focalLengthPixels = (resolutionWidth/2) / math.tan(horizontalFOVRad/2)
     poseEstimator = AprilTagPoseEstimator(AprilTagPoseEstimator.Config(aprilTagLengthMeters, focalLengthPixels, focalLengthPixels, resolutionWidth/2, resolutionHeight/2))
     # loop forever
     while True:

@@ -52,6 +52,7 @@ public class VisionSubsystem extends SubsystemBase {
                 (int) table.getEntry("Orientation").getInteger(0)
             ));
         }
+        System.out.println(getCameraPitch(0.755 + Vision.distanceToBumperMeters, Target.CONE));
         // System.out.println((getPoseToTarget(Target.APRILTAG)));
         // distanceFromTargetMeters(Target.CUBE);
         // System.out.println("Pitch: " + getTargetPitch(Target.CUBE) + " Yaw: " + getTargetYaw(Target.CUBE) + " Distance: " + distanceFromTargetMeters(Target.CUBE));
@@ -106,7 +107,6 @@ public class VisionSubsystem extends SubsystemBase {
             case CUBE -> Vision.cubeHeightMeters;
             case APRILTAG -> Vision.aprilTagHeightMeters; 
         };
-        // System.out.println(Vision.cameraHeightMeters + " " + targetHeightMeters + " " + Vision.mountedCameraAngleRad);
         double distanceMeters = PhotonUtils.calculateDistanceToTargetMeters(
             Vision.cameraHeightMeters, 
             targetHeightMeters, 
@@ -114,6 +114,10 @@ public class VisionSubsystem extends SubsystemBase {
             Units.degreesToRadians(getTargetPitch(pipeline))
         );
         return distanceMeters - Vision.distanceToBumperMeters;
+    }
+
+    public double getCameraPitch(double distanceMeters, Target pipeline) {
+        return Math.toDegrees(Math.atan((Vision.cameraHeightMeters - 0) / distanceMeters)) - getTargetPitch(pipeline);
     }
 
     public int getCurrentPipeline() {
