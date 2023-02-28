@@ -12,14 +12,11 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.Constants.Arm;
 import frc.robot.Constants.Drive;
 import frc.robot.Constants.Wrist;
 import frc.robot.Lib.motion.FollowTrajectory;
-import frc.robot.commands.BalanceCommand;
-import frc.robot.commands.Driving.AutoDriveCommand;
-import frc.robot.commands.Driving.AutoTurnCommand;
 import frc.robot.commands.Driving.ButterySmoothDriveCommand;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
@@ -32,9 +29,9 @@ public class RobotContainer {
     private final Joystick joystick = new Joystick(0);
     private final Joystick buttonBoard = new Joystick(1);
     private final VisionSubsystem visionSubsystem = new VisionSubsystem();
-    private final ArmSubsystem armSubsystem = new ArmSubsystem();
-    private final WristSubsystem wristSubsystem = new WristSubsystem();
     private final GripperSubsystem gripperSubsystem = new GripperSubsystem();
+    private final ArmSubsystem armSubsystem = new ArmSubsystem(gripperSubsystem);
+    private final WristSubsystem wristSubsystem = new WristSubsystem(gripperSubsystem);
     private final DriveSubsystem driveSubsystem;
     private final PigeonIMU pigeon = new PigeonIMU(Constants.pigeonID);
 
@@ -143,12 +140,13 @@ public class RobotContainer {
     }
 
     public Command getAutoCommand() {
-        return new SequentialCommandGroup(
-            new AutoTurnCommand(90, driveSubsystem, pigeon),
-            new AutoDriveCommand(24, driveSubsystem),
-            new AutoTurnCommand(-90, driveSubsystem, pigeon),
-            new BalanceCommand(driveSubsystem, pigeon)
-        );
+        return new InstantCommand();
+        // return new SequentialCommandGroup(
+            // new AutoTurnCommand(90, driveSubsystem, pigeon),
+            // new AutoDriveCommand(24, driveSubsystem),
+            // new AutoTurnCommand(-90, driveSubsystem, pigeon),
+            // new BalanceCommand(driveSubsystem, pigeon)
+        // );
     }
 
 }

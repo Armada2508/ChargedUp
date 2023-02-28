@@ -14,8 +14,10 @@ import frc.robot.Lib.Encoder;
 public class WristSubsystem extends SubsystemBase {
 
     private final WPI_TalonFX talonFX = new WPI_TalonFX(Wrist.motorID);
+    private GripperSubsystem gripperSubsystem;
 
-    public WristSubsystem() {
+    public WristSubsystem(GripperSubsystem gripperSubsystem) {
+        this.gripperSubsystem = gripperSubsystem;
        configureMotor(talonFX);
     }
 
@@ -46,6 +48,8 @@ public class WristSubsystem extends SubsystemBase {
         if (theta > Wrist.maxDegrees || theta < Wrist.minDegrees) return;
         double targetPosition = fromAngle(theta);
         talonFX.set(TalonFXControlMode.MotionMagic, targetPosition, DemandType.ArbitraryFeedForward, getFeedForward());
+        double rev = ((talonFX.getSelectedSensorPosition() * Wrist.encoderUnitsPerRev) - (targetPosition * Wrist.encoderUnitsPerRev)) * Wrist.gripperRevolutionOffset;
+        gripperSubsystem.addOffset(rev);
     }
 
     /**
@@ -66,6 +70,10 @@ public class WristSubsystem extends SubsystemBase {
         talonFX.setIntegralAccumulator(0);
         talonFX.configMotionCruiseVelocity(fromVelocity(velocity));
         talonFX.configMotionAcceleration(fromVelocity(acceleration));
+    }
+
+    public double getMotionMagicPosition() {
+        return toAngle(talonFX.getActiveTrajectoryPosition());
     }
 
     private double toAngle(double sensorUnits) {

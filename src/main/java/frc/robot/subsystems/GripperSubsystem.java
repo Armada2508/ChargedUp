@@ -11,11 +11,17 @@ import frc.robot.Constants.Gripper;
 
 public class GripperSubsystem extends SubsystemBase {
     
-    private final double positionScalar = 4;
+    private double currentRevolutionsOffset = 0 * Gripper.encoderUnitsPerRev;
+    private final double revolutionsToClosed = 4;
     private final WPI_TalonFX talonFX = new WPI_TalonFX(Gripper.motorID);
 
     public GripperSubsystem() {
         configureMotor(talonFX);
+    }
+
+    @Override
+    public void periodic() {
+        
     }
 
     private void configureMotor(TalonFX talon) {
@@ -38,22 +44,43 @@ public class GripperSubsystem extends SubsystemBase {
     }
 
     /**
-     * @return Grippers percent being closed, 1 is fully closed, 0 is fully open
-     */
-    public double getPercentClosed() { 
-        return talonFX.getSelectedSensorPosition() / Gripper.encoderUnitsPerRev / positionScalar;
-    }
-
-    /**
      * Sets percent closed of the gripper, 1 is fully closed, 0 is fully open
      * @param percent
      */
     public void setPercentClosed(double percent) {
         if (percent < 0 || percent > 1) return;
-        double targetPosition = percent * positionScalar * Gripper.encoderUnitsPerRev;
-        talonFX.set(TalonFXControlMode.Position, targetPosition);
+        double targetPosition = fromPercent(percent);
+        talonFX.set(TalonFXControlMode.MotionMagic, targetPosition);
     }
-    
+
+    /**
+     * @return Grippers percent being closed, 1 is fully closed, 0 is fully open
+     */
+    public double getPercentClosed() { 
+        return toPercent(talonFX.getSelectedSensorPosition());
+    }
+
+    public double getMotionMagicPosition() {
+        return toPercent(talonFX.getActiveTrajectoryPosition());
+    }
+
+    public void addOffset(double revolutions) {
+        currentRevolutionsOffset += revolutions * Gripper.encoderUnitsPerRev;
+        talonFX.set(TalonFXControlMode.MotionMagic, talonFX.getSelectedSensorPosition() + (revolutions * Gripper.encoderUnitsPerRev));
+    }
+
+    public void holdPosition() {
+        talonFX.set(TalonFXControlMode.Position, talonFX.getSelectedSensorPosition());
+    }
+
+    private double toPercent(double sensorPos) {
+        return ((sensorPos / Gripper.encoderUnitsPerRev) / revolutionsToClosed) + currentRevolutionsOffset;
+    }
+
+    private double fromPercent(double percent) {
+        return (percent * revolutionsToClosed * Gripper.encoderUnitsPerRev) + currentRevolutionsOffset;
+    }
+
     public boolean pollLimitSwitch() {
         return talonFX.isFwdLimitSwitchClosed() == 1;
     }

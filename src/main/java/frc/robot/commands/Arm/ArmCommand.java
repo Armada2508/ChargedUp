@@ -47,8 +47,8 @@ public class ArmCommand extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        double currentDegrees = armSubsystem.getPosition();
-        return (Math.abs(currentDegrees) < targetDegrees.getAsDouble()+degreesDeadband);
+        double currentDegrees = armSubsystem.getMotionMagicPosition();
+        return (currentDegrees < targetDegrees.getAsDouble()+degreesDeadband && currentDegrees > targetDegrees.getAsDouble()-degreesDeadband);
     }
     
 }

@@ -113,8 +113,7 @@ public class VisionSubsystem extends SubsystemBase {
             Vision.cameraPitchRadians, 
             Units.degreesToRadians(getTargetPitch(pipeline))
         );
-        return distanceMeters;
-        // return distanceMeters - Vision.distanceToBumperMeters;
+        return distanceMeters - Vision.distanceToBumperMeters;
     }
 
     public int getCurrentPipeline() {

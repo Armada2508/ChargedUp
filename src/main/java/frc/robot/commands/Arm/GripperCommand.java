@@ -7,7 +7,7 @@ import frc.robot.subsystems.GripperSubsystem;
 
 public class GripperCommand extends CommandBase {
 
-    private final int degreesDeadband = 1;
+    private final double percentDeadband = 0.1;
     private DoubleSupplier percentClosed;
     private GripperSubsystem gripperSubsystem;
 
@@ -33,12 +33,13 @@ public class GripperCommand extends CommandBase {
     @Override
     public void end(boolean interrupted) {
         gripperSubsystem.setPower(0);
+        gripperSubsystem.holdPosition();
     }
 
     @Override
     public boolean isFinished() {
-        double currentDegrees = gripperSubsystem.getPercentClosed();
-        return (Math.abs(currentDegrees) < percentClosed.getAsDouble()+degreesDeadband);
+        double currentPercent = gripperSubsystem.getMotionMagicPosition();
+        return (currentPercent < percentClosed.getAsDouble()+percentDeadband && currentPercent > percentClosed.getAsDouble()-percentDeadband);
     }
 
 }

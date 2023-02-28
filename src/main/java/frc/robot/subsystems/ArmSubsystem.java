@@ -15,8 +15,10 @@ public class ArmSubsystem extends SubsystemBase {
     
     private final WPI_TalonFX talonFX = new WPI_TalonFX(Arm.motorID);
     private final WPI_TalonFX talonFXFollow = new WPI_TalonFX(Arm.motorIDFollow);
+    private GripperSubsystem gripperSubsystem;
 
-    public ArmSubsystem() {
+    public ArmSubsystem(GripperSubsystem gripperSubsystem) {
+        this.gripperSubsystem = gripperSubsystem;
         configureMotor(talonFX);
         configureMotor(talonFXFollow);
         talonFXFollow.follow(talonFX);
@@ -53,6 +55,8 @@ public class ArmSubsystem extends SubsystemBase {
         if (theta > Arm.maxDegrees || theta < Arm.minDegrees) return;
         double targetPosition = fromAngle(theta);
         talonFX.set(TalonFXControlMode.MotionMagic, targetPosition, DemandType.ArbitraryFeedForward, getFeedForward());
+        double rev = ((talonFX.getSelectedSensorPosition() * Arm.encoderUnitsPerRev) - (targetPosition * Arm.encoderUnitsPerRev)) * Arm.gripperRevolutionOffset;
+        gripperSubsystem.addOffset(rev);
     }
 
     /**
@@ -73,6 +77,10 @@ public class ArmSubsystem extends SubsystemBase {
         talonFX.setIntegralAccumulator(0);
         talonFX.configMotionCruiseVelocity(fromVelocity(velocity));
         talonFX.configMotionAcceleration(fromVelocity(acceleration));
+    }
+
+    public double getMotionMagicPosition() {
+        return toAngle(talonFX.getActiveTrajectoryPosition());
     }
 
     private double toAngle(double sensorUnits) {
