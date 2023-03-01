@@ -87,10 +87,12 @@ public class VisionSubsystem extends SubsystemBase {
      */
     public Pose2d getPoseToTarget(Target pipeline) {
         if (!hasTarget(pipeline)) return new Pose2d();
-        double x = getResult(pipeline).x();
-        double z = getResult(pipeline).z();
-        double yaw = getResult(pipeline).yaw();
-        return new Pose2d(x, z, Rotation2d.fromDegrees(yaw));
+        PipelineResult result = getResult(pipeline);
+        double yaw = result.yaw();
+        double distance = Math.sqrt((result.z() * result.z()) - (result.y() * result.y()));
+        double x = distance * Math.sin(Math.toRadians(yaw));
+        double y = distance * Math.cos(Math.toRadians(yaw));
+        return new Pose2d(x, y, Rotation2d.fromDegrees(yaw));
     }
 
     /**

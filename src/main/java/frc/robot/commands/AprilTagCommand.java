@@ -1,11 +1,17 @@
 package frc.robot.commands;
 
+import java.util.ArrayList;
+
 import com.ctre.phoenix.sensors.PigeonIMU;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import frc.robot.Lib.motion.FollowTrajectory;
 import frc.robot.commands.Driving.MoveRelativeCommand;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
@@ -14,6 +20,7 @@ import frc.robot.subsystems.VisionSubsystem.Target;
 public class AprilTagCommand extends InstantCommand {
     
     private Pose2d offset = new Pose2d();
+    private final TrajectoryConfig config = new TrajectoryConfig(2, 1);
     private final DriveSubsystem driveSubsystem;
     private final VisionSubsystem visionSubsystem;
     private final PigeonIMU pigeon;
@@ -33,6 +40,12 @@ public class AprilTagCommand extends InstantCommand {
         targetPose = targetPose.plus(new Transform2d(new Pose2d(), offset));
         Command command = new MoveRelativeCommand(targetPose.getX(), targetPose.getY(), targetPose.getRotation().getDegrees(), driveSubsystem, pigeon);
         command.schedule();
+        getTrajectoryCommand(targetPose);
+    }
+
+    private Command getTrajectoryCommand(Pose2d pose) {
+        Trajectory trajectory = TrajectoryGenerator.generateTrajectory(new Pose2d(), new ArrayList<>(), pose, config);
+        return FollowTrajectory.getCommand(driveSubsystem, trajectory, driveSubsystem.getPose());
     }
 
     // private List<Trajectory.State> getSamples(Trajectory trajectory) {
