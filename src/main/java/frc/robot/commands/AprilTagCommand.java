@@ -1,6 +1,7 @@
 package frc.robot.commands;
 
 import java.util.ArrayList;
+import java.util.function.Supplier;
 
 import com.ctre.phoenix.sensors.PigeonIMU;
 
@@ -23,11 +24,9 @@ public class AprilTagCommand extends InstantCommand {
     private final DriveSubsystem driveSubsystem;
     private final VisionSubsystem visionSubsystem;
     private final PigeonIMU pigeon;
-    private Position position;
-    private double xOffset = 0;
-    private double yOffset = 0;
+    private Supplier<Position> position;    
 
-    public AprilTagCommand(Position position, DriveSubsystem driveSubsystem, VisionSubsystem visionSubsystem, PigeonIMU pigeon) {
+    public AprilTagCommand(Supplier<Position> position, DriveSubsystem driveSubsystem, VisionSubsystem visionSubsystem, PigeonIMU pigeon) {
         this.position = position;
         this.driveSubsystem = driveSubsystem;
         this.visionSubsystem = visionSubsystem;
@@ -37,6 +36,8 @@ public class AprilTagCommand extends InstantCommand {
 
     @Override
     public void initialize() {
+        private double xOffset;
+        private double yOffset = 0.3556;
         Pose2d targetPose = visionSubsystem.getPoseToTarget(Target.APRILTAG);
         // Pose2d targetPose = new Pose2d(5, 5, Rotation2d.fromDegrees(0));
         switch (position) {
@@ -59,12 +60,6 @@ public class AprilTagCommand extends InstantCommand {
     private Command getTrajectoryCommand(Pose2d pose) {
         Trajectory trajectory = TrajectoryGenerator.generateTrajectory(new Pose2d(), new ArrayList<>(), pose, config);
         return FollowTrajectory.getCommand(driveSubsystem, trajectory, driveSubsystem.getPose());
-    }
-
-    public enum Position {
-        LEFT,
-        CENTER,
-        RIGHT
     }
 
     public enum Position {
