@@ -20,6 +20,7 @@ from ntcore import EventFlags, NetworkTable, NetworkTableInstance
 from robotpy_apriltag import (AprilTagDetection, AprilTagDetector,
                               AprilTagPoseEstimator)
 
+cv2.setUseOptimized(True)
 
 class CameraConfig: pass
 
@@ -490,7 +491,7 @@ def main() -> None: # Image proccessing user code
     proccessedStream = CameraServer.putVideo("Proccessed Video", resolutionWidth, resolutionHeight)
     originalStream = CameraServer.putVideo("Original Video", resolutionWidth, resolutionHeight)
     mat = np.zeros(shape=(resolutionWidth, resolutionHeight, 3), dtype=np.uint8)
-    mainTable.getEntry("Current Pipeline").setInteger(tagPipeline.pipelineIndex.getInteger(0))
+    mainTable.getEntry("Current Pipeline").setInteger(conePipeline.pipelineIndex.getInteger(0))
     global focalLengthPixels, poseEstimator
     focalLengthPixels = (resolutionWidth/2) / math.tan(horizontalFOVRad/2)
     poseEstimator = AprilTagPoseEstimator(AprilTagPoseEstimator.Config(aprilTagLengthMeters, focalLengthPixels, focalLengthPixels, resolutionWidth/2, resolutionHeight/2))
@@ -510,9 +511,9 @@ def main() -> None: # Image proccessing user code
         for pipeline in pipelines:
             if (pipeline.pipelineIndex.getInteger(0) == index):
                 if (pipeline.type == Pipeline.Type.COLOR):
-                    drawnImg = colorPipeline(inputImg.copy(), drawnImg, pipeline)
+                    drawnImg = colorPipeline(inputImg, drawnImg, pipeline)
                 elif (pipeline.type == Pipeline.Type.APRILTAG):
-                    drawnImg = aprilTagPipeline(inputImg.copy(), drawnImg, pipeline)
+                    drawnImg = aprilTagPipeline(inputImg, drawnImg, pipeline)
             else:
                 pipeline.hasTarget.setBoolean(False)
         drawnImg = cv2.circle(drawnImg, (int(resolutionWidth/2), int(resolutionHeight/2)), 5, (255, 255, 255), -1)
