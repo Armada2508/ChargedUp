@@ -36,11 +36,11 @@ public class AprilTagCommand extends InstantCommand {
 
     @Override
     public void initialize() {
-        private double xOffset;
-        private double yOffset = 0.3556;
+        double xOffset = 0;
+        double yOffset = 0.3556;
         Pose2d targetPose = visionSubsystem.getPoseToTarget(Target.APRILTAG);
         // Pose2d targetPose = new Pose2d(5, 5, Rotation2d.fromDegrees(0));
-        switch (position) {
+        switch (position.get()) {
             case LEFT:
             xOffset = 0.47625; //temporary
             break;
