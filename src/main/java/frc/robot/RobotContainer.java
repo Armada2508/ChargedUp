@@ -55,12 +55,13 @@ public class RobotContainer {
     // @SuppressWarnings("resource")
     private void configureButtons() {
         // Joystick
-        // final AutoPickupCommand pickup = new AutoPickupCommand(visionSubsystem, driveSubsystem, pigeon, armSubsystem, wristSubsystem, gripperSubsystem);
+        // ? final AutoPickupCommand pickup = new AutoPickupCommand(visionSubsystem, driveSubsystem, pigeon, armSubsystem, wristSubsystem, gripperSubsystem);
         // new JoystickButton(joystick, 12).onTrue(CommandBase.runOnce(CommandScheduler.getInstance()::cancelAll)); // AutoStop 
         // new JoystickButton(joystick, 11).onTrue(new BalanceCommand(driveSubsystem, pigeon));
         // new JoystickButton(buttonBoard, 12).onTrue(new PieceOnTopCommand(pickup::getPreviousTarget, Height.HIGH, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem)); 
         // new JoystickButton(buttonBoard, 11).onTrue(new PieceOnTopCommand(pickup::getPreviousTarget, Height.MID, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem)); 
         // new JoystickButton(buttonBoard, 10).onTrue(new PieceOnFloorCommand(driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem));
+        // ? new JoystickButton(joystick, 9).and(new JoystickButton(joystick, 10)).onTrue(new PositionAndPlaceCommand(joystick, pickup::getPreviousTarget, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem, visionSubsystem, pigeon));
         // new JoystickButton(joystick, 9).onTrue(new SeekCommand(Target.CONE, Units.inchesToMeters(12), driveSubsystem, visionSubsystem, pigeon));
         // new JoystickButton(joystick, 8).onTrue(pickup);
         // new JoystickButton(joystick, 7).onTrue(new AltSeekCommand(() -> Target.CONE, Units.inchesToMeters(12), driveSubsystem, visionSubsystem, pigeon));
