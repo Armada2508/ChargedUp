@@ -15,7 +15,7 @@ public class Constants {
         public static final int LFID = 3;
         public static final int turnAdjustment = 3;
         public static final double speedMultiplier = 1; // For Fredy
-        public static final double joystickDeadband = 0.05;
+        public static final double joystickDeadband = 0.08;
         public static final double slewRate = 1; // This is what helps you not stop abruptly, higher value = stop faster
 
         // Closed Loop Driving
