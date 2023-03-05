@@ -13,7 +13,7 @@ public class ArmCommand extends CommandBase {
 
     /**
      * 
-     * @param theta degree to go to, 0 is straight out.
+     * @param theta degree to go to, 0 is straight down.
      * @param armSubsystem
      */
     public ArmCommand(double theta, ArmSubsystem armSubsystem) {
@@ -22,7 +22,7 @@ public class ArmCommand extends CommandBase {
 
     /**
      * 
-     * @param theta degree to go to, 0 is straight out.
+     * @param theta degree to go to, 0 is straight down.
      * @param armSubsystem
      */
     public ArmCommand(DoubleSupplier theta, ArmSubsystem armSubsystem) {
@@ -33,6 +33,7 @@ public class ArmCommand extends CommandBase {
 
     @Override
     public void initialize() {
+        armSubsystem.configMotionMagic(degreesDeadband, degreesDeadband);
         armSubsystem.setPosition(targetDegrees.getAsDouble());  
     }
 

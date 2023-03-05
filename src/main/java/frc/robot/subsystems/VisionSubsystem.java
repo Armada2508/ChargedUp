@@ -52,7 +52,7 @@ public class VisionSubsystem extends SubsystemBase {
                 (int) table.getEntry("Orientation").getInteger(0)
             ));
         }
-        System.out.println(getCameraPitch(0.755 + Vision.distanceToBumperMeters, Target.CONE));
+        // System.out.println(getCameraPitch(0.755 + Vision.distanceToBumperMeters, Target.CONE));
         // System.out.println((getPoseToTarget(Target.APRILTAG)));
         // distanceFromTargetMeters(Target.CUBE);
         // System.out.println("Pitch: " + getTargetPitch(Target.CUBE) + " Yaw: " + getTargetYaw(Target.CUBE) + " Distance: " + distanceFromTargetMeters(Target.CUBE));

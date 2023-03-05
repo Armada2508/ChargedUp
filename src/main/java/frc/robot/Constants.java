@@ -76,11 +76,11 @@ public class Constants {
         public static final double kI = 0;
         public static final double kD = 0;
         public static final double kF = 0;
-        public static final double gravityFeedForward = 0.07;
+        public static final double gravityFeedForward = 0; // 0.07
         public static final double maxSpeed = 0.25;
 
-        public static final int minDegrees = -18; // Straight down is 0.
-        public static final int maxDegrees = 90;
+        public static final int minDegrees = -5; // Straight down is 0.
+        public static final int maxDegrees = 60;
         // IK
         public static final double jointLengthInches = 35.75;
     }

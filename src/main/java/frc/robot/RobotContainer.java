@@ -12,11 +12,15 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Constants.Arm;
 import frc.robot.Constants.Drive;
 import frc.robot.Constants.Wrist;
 import frc.robot.Lib.motion.FollowTrajectory;
+import frc.robot.commands.Arm.ArmCommand;
 import frc.robot.commands.Driving.ButterySmoothDriveCommand;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
@@ -52,11 +56,23 @@ public class RobotContainer {
     //     return new MoveRelativeCommand(Units.inchesToMeters(12), Units.inchesToMeters(12), 0, driveSubsystem, pigeon);
     // }
 
-    // @SuppressWarnings("resource")
+    public void mapButton(Command c, int button) {
+        new JoystickButton(joystick, button).onTrue(c);
+    }
+
+    private void panicButton() {
+        CommandScheduler.getInstance().cancelAll();
+        driveSubsystem.setPower(0, 0);
+        armSubsystem.setPower(0);
+        wristSubsystem.setPower(0);
+        gripperSubsystem.setPower(0);
+    }
+
     private void configureButtons() {
         // Joystick
+        mapButton(new ArmCommand(45, armSubsystem), 10);
         // ? final AutoPickupCommand pickup = new AutoPickupCommand(visionSubsystem, driveSubsystem, pigeon, armSubsystem, wristSubsystem, gripperSubsystem);
-        // new JoystickButton(joystick, 12).onTrue(CommandBase.runOnce(CommandScheduler.getInstance()::cancelAll)); // AutoStop 
+        new JoystickButton(joystick, 11).onTrue(Commands.runOnce(this::panicButton)); // AutoStop 
         // new JoystickButton(joystick, 11).onTrue(new BalanceCommand(driveSubsystem, pigeon));
         // new JoystickButton(buttonBoard, 12).onTrue(new PieceOnTopCommand(pickup::getPreviousTarget, Height.HIGH, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem)); 
         // new JoystickButton(buttonBoard, 11).onTrue(new PieceOnTopCommand(pickup::getPreviousTarget, Height.MID, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem)); 
@@ -118,8 +134,9 @@ public class RobotContainer {
             .withSize(4, 3);
     }
 
-    private static int i = 0;
+    // private static int i = 0;
     public static void addPIDToShuffleBoard(PIDController pid, String name) {
+        int i = 1;
         Shuffleboard.getTab("PID Tuning")
             .add(name + " PID Controller", pid)
             .withPosition(i*7, 0)

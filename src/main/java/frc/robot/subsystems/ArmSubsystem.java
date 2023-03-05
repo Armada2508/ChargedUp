@@ -6,12 +6,14 @@ import com.ctre.phoenix.motorcontrol.TalonFXFeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
-
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.Arm;
 import frc.robot.Constants;
-import frc.robot.InverseKinematics;
+import frc.robot.Constants.Arm;
 import frc.robot.Lib.Encoder;
+import frc.robot.commands.Arm.CalibrateArmCommand;
 
 public class ArmSubsystem extends SubsystemBase {
     
@@ -21,7 +23,6 @@ public class ArmSubsystem extends SubsystemBase {
     public ArmSubsystem() {
         configureMotor(talonFX);
         configureMotor(talonFXFollow);
-        talonFXFollow.follow(talonFX);
     }
 
     private void configureMotor(TalonFX talon) {
@@ -34,14 +35,17 @@ public class ArmSubsystem extends SubsystemBase {
         talon.config_kF(0, Arm.kF);
         talon.configNeutralDeadband(0.001);
         talon.configClosedLoopPeakOutput(0, Arm.maxSpeed);
-        talonFX.configForwardSoftLimitThreshold(fromAngle(Arm.maxDegrees), Constants.timeoutMs);
-        talonFX.configReverseSoftLimitThreshold(fromAngle(Arm.minDegrees), Constants.timeoutMs);
-        talonFX.configForwardSoftLimitEnable(true, Constants.timeoutMs);
-        talonFX.configReverseSoftLimitEnable(true, Constants.timeoutMs);
+        talon.configForwardSoftLimitThreshold(fromAngle(Arm.maxDegrees), Constants.timeoutMs);
+        talon.configReverseSoftLimitThreshold(fromAngle(Arm.minDegrees), Constants.timeoutMs);
+        talon.configForwardSoftLimitEnable(true, Constants.timeoutMs);
+        talon.configReverseSoftLimitEnable(true, Constants.timeoutMs);
     }
 
     public void periodic() {
-        System.out.println(InverseKinematics.coordinatesToAngles(14.25, 23.5));
+    }
+
+    public void followMotor() {
+        talonFXFollow.follow(talonFX);
     }
 
     /**
@@ -52,7 +56,7 @@ public class ArmSubsystem extends SubsystemBase {
     }
 
     /**
-     * Have arm go to a desired degrees. Must be between min and max degrees.
+     * Have arm go to a desired degrees. Must be between min and max degrees. You should call configMotionMagic() before calling this method.
      * @param theta degrees to go to
      */
     public void setPosition(double theta) {
@@ -80,12 +84,16 @@ public class ArmSubsystem extends SubsystemBase {
         talonFX.configMotionAcceleration(fromVelocity(acceleration));
     }
 
+    /**
+     * 
+     * @return Arm's position in degrees when in motion magic mode
+     */
     public double getMotionMagicPosition() {
         return toAngle(talonFX.getActiveTrajectoryPosition());
     }
 
     public void holdPosition() {
-        talonFX.set(TalonFXControlMode.Position, talonFX.getSelectedSensorPosition());
+        talonFX.set(TalonFXControlMode.Position, talonFX.getSelectedSensorPosition(), DemandType.ArbitraryFeedForward, getFeedForward());
     }
 
     public double getSensorPosition() {
@@ -116,6 +124,14 @@ public class ArmSubsystem extends SubsystemBase {
 
     public void calibrate(double pos) {
         talonFX.setSelectedSensorPosition(pos);
+    }
+
+    public Command getCalibrateSequence() {
+        return new SequentialCommandGroup(
+            new CalibrateArmCommand(this, talonFX),
+            new CalibrateArmCommand(this, talonFXFollow),
+            new InstantCommand(this::followMotor, this)
+        );
     }
 
 }

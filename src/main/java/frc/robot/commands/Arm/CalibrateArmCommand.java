@@ -1,21 +1,26 @@
 package frc.robot.commands.Arm;
 
+import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
+import com.ctre.phoenix.motorcontrol.can.TalonFX;
+
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants.Arm;
 import frc.robot.subsystems.ArmSubsystem;
 
 public class CalibrateArmCommand extends CommandBase {
 
+    private TalonFX armMotor;
     private ArmSubsystem armSubsystem;
 
-    public CalibrateArmCommand(ArmSubsystem armSubsystem) {
+    public CalibrateArmCommand(ArmSubsystem armSubsystem, TalonFX talon) {
+        this.armMotor = talon;
         this.armSubsystem = armSubsystem;
         addRequirements(armSubsystem);
     }
 
     @Override
     public void initialize() {
-        armSubsystem.setPower(-0.1);
+        armMotor.set(TalonFXControlMode.PercentOutput, -0.1);
     }
 
     @Override
@@ -24,13 +29,13 @@ public class CalibrateArmCommand extends CommandBase {
    
     @Override
     public void end(boolean interrupted) {
-        armSubsystem.setPower(0);
-        armSubsystem.calibrate(Arm.minDegrees);
+        armMotor.set(TalonFXControlMode.PercentOutput, 0);
+        armMotor.setSelectedSensorPosition(Arm.minDegrees);
     }
 
     @Override
     public boolean isFinished() {
         return armSubsystem.pollLimitSwitch();
     }
-    
+
 }
