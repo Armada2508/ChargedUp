@@ -131,20 +131,22 @@ public class ArmSubsystem extends SubsystemBase {
         talonFXFollow.setSelectedSensorPosition(pos);
     }
 
-    public void enableSoftwareLimits() {
-        talonFX.configForwardSoftLimitEnable(true, Constants.timeoutMs);
-        talonFX.configReverseSoftLimitEnable(true, Constants.timeoutMs);
-        talonFXFollow.configForwardSoftLimitEnable(true, Constants.timeoutMs);
-        talonFXFollow.configReverseSoftLimitEnable(true, Constants.timeoutMs);
+    public void configSoftwareLimits(boolean enable) {
+        talonFX.configForwardSoftLimitEnable(enable, Constants.timeoutMs);
+        talonFX.configReverseSoftLimitEnable(enable, Constants.timeoutMs);
+        talonFXFollow.configForwardSoftLimitEnable(enable, Constants.timeoutMs);
+        talonFXFollow.configReverseSoftLimitEnable(enable, Constants.timeoutMs);
     }
 
     public Command getCalibrateSequence() {
         return new SequentialCommandGroup(
+            new InstantCommand(() -> talonFXFollow.set(TalonFXControlMode.PercentOutput, 0)),
+            new InstantCommand(() -> configSoftwareLimits(false), this),
             new CalibrateArmCommand(this, talonFX),
             new ArmCommand(0, this),
             new CalibrateArmCommand(this, talonFXFollow),
             new InstantCommand(this::followMotor, this),
-            new InstantCommand(this::enableSoftwareLimits, this)
+            new InstantCommand(() -> configSoftwareLimits(true), this)
         );
     }
 

@@ -20,7 +20,7 @@ public class GripperSubsystem extends SubsystemBase {
     private double lastArm = 0;
     private double lastWrist = 0;
     private boolean moving = true;
-    private final double revolutionsToClosed = 4;
+    private final double revolutionsToClosed = 1/3;
     private final WPI_TalonFX talonFX = new WPI_TalonFX(Gripper.motorID);
     private final ArmSubsystem armSubsystem;
     private final WristSubsystem wristSubsystem;
