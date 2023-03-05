@@ -7,7 +7,7 @@ import frc.robot.subsystems.ArmSubsystem;
 
 public class ArmCommand extends CommandBase {
 
-    private final int degreesDeadband = 1;
+    private final double degreesDeadband = 0.5;
     private DoubleSupplier targetDegrees;
     private ArmSubsystem armSubsystem;
 
@@ -33,12 +33,13 @@ public class ArmCommand extends CommandBase {
 
     @Override
     public void initialize() {
-        armSubsystem.configMotionMagic(degreesDeadband, degreesDeadband);
+        armSubsystem.configMotionMagic(180, 120);
         armSubsystem.setPosition(targetDegrees.getAsDouble());  
     }
 
     @Override
     public void execute() {
+        System.out.println("Goin !");
     }
    
     @Override
@@ -49,7 +50,8 @@ public class ArmCommand extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        double currentDegrees = armSubsystem.getMotionMagicPosition();
+        double currentDegrees = armSubsystem.getPosition();
+        System.out.println(currentDegrees + " " + targetDegrees.getAsDouble());
         return (currentDegrees < targetDegrees.getAsDouble()+degreesDeadband && currentDegrees > targetDegrees.getAsDouble()-degreesDeadband);
     }
     

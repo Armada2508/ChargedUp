@@ -55,6 +55,15 @@
 ~~constant curvature~~ ?
 velocity closed loop driving - ima put this on back burner for a while
 
-motion magic instead of position done for all. Tested motion magic with drive subsystem.
-Now create and test trajectories and continue troubleshooting vision so that we can get an accurate pose from april tags and actually use that for cool trajectories.
-made a move to relative command for simple- trajectories
+Layers of protection against slamming into things
+
+~~Software limits,~~
+~~Clamping position in setPosition methods~~
+set max velocity or max acceleration in talon firmware
+
+limit switches
+
+arm - blue and white are forward, white is gnd
+arm - red and black are reverse, red is gnd
+
+add check in subsystems to disallow movement without calibration

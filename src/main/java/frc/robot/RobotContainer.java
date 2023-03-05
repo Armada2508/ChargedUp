@@ -46,7 +46,7 @@ public class RobotContainer {
         this.driveSubsystem = new DriveSubsystem(pigeon);
         driveSubsystem.setDefaultCommand(new ButterySmoothDriveCommand(() -> joystick.getRawAxis(1)*-1 * Drive.speedMultiplier, () -> joystick.getRawAxis(0)*-1,  () -> joystick.getRawAxis(2),driveSubsystem)); // default to driving from joystick input
         if (RobotBase.isReal()) {
-            configureCamera();
+            // configureCamera();
         }
         configureShuffleboard();
         configureButtons();
@@ -70,7 +70,10 @@ public class RobotContainer {
 
     private void configureButtons() {
         // Joystick
-        mapButton(new ArmCommand(45, armSubsystem), 10);
+        mapButton(new ArmCommand(90, armSubsystem), 3);
+        mapButton(new ArmCommand(0, armSubsystem), 5);
+        mapButton(new InstantCommand(() -> armSubsystem.calibrate(0)), 4);
+        mapButton(armSubsystem.getCalibrateSequence(), 6);
         // ? final AutoPickupCommand pickup = new AutoPickupCommand(visionSubsystem, driveSubsystem, pigeon, armSubsystem, wristSubsystem, gripperSubsystem);
         new JoystickButton(joystick, 11).onTrue(Commands.runOnce(this::panicButton)); // AutoStop 
         // new JoystickButton(joystick, 11).onTrue(new BalanceCommand(driveSubsystem, pigeon));

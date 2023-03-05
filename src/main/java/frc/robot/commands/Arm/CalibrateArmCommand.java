@@ -13,6 +13,7 @@ public class CalibrateArmCommand extends CommandBase {
     private ArmSubsystem armSubsystem;
 
     public CalibrateArmCommand(ArmSubsystem armSubsystem, TalonFX talon) {
+        System.out.println(talon.getDeviceID());
         this.armMotor = talon;
         this.armSubsystem = armSubsystem;
         addRequirements(armSubsystem);
@@ -30,7 +31,7 @@ public class CalibrateArmCommand extends CommandBase {
     @Override
     public void end(boolean interrupted) {
         armMotor.set(TalonFXControlMode.PercentOutput, 0);
-        armMotor.setSelectedSensorPosition(Arm.minDegrees);
+        armMotor.setSelectedSensorPosition(armSubsystem.fromAngle(Arm.minDegrees));
     }
 
     @Override

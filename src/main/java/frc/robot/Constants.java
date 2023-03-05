@@ -72,15 +72,15 @@ public class Constants {
         public static final int gearboxRatio = 100;
 
         // Closed Loop
-        public static final double kP = 0;
+        public static final double kP = 0.15;
         public static final double kI = 0;
         public static final double kD = 0;
         public static final double kF = 0;
         public static final double gravityFeedForward = 0; // 0.07
-        public static final double maxSpeed = 0.25;
+        public static final double maxSpeed = 0.30;
 
-        public static final int minDegrees = -5; // Straight down is 0.
-        public static final int maxDegrees = 60;
+        public static final int minDegrees = -15; // Straight down is 0.
+        public static final int maxDegrees = 90;
         // IK
         public static final double jointLengthInches = 35.75;
     }
