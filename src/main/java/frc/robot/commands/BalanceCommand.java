@@ -44,7 +44,7 @@ public class BalanceCommand extends CommandBase {
             currentRoll = pigeon.getRoll() + Balance.rollOffset;
         }
         if (Math.abs(currentPitch) < Balance.balanceAngle) {
-            driveSubsystem.setPower(0, 0);
+            driveSubsystem.stop();
         } else {
             double pitchSpeed = Balance.pitchSpeed * -Math.signum(currentPitch);
             double rollSpeed = rollController.calculate(currentRoll);
@@ -59,7 +59,7 @@ public class BalanceCommand extends CommandBase {
 
     @Override
     public void end(boolean interrupted) {
-        driveSubsystem.setPower(0, 0);
+        driveSubsystem.stop();
     }
 
     @Override

@@ -77,6 +77,11 @@ public class DriveSubsystem extends SubsystemBase {
         talonFXR.set(TalonFXControlMode.MotionMagic, talonFXR.getSelectedSensorPosition()+sensorUnits);
     }
 
+    public void stop() {
+        talonFXL.neutralOutput();
+        talonFXR.neutralOutput();
+    }
+
     /**
      * Configures motion magic values for next run. If your acceleration is the same value as your velocity
      * then it will take 1 second to reach your velocity. Higher values of acceleration will make it get there faster, 

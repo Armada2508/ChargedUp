@@ -64,7 +64,7 @@ public class ButterySmoothDriveCommand extends CommandBase {
 
     @Override
     public void end(boolean interrupted) {
-        driveSubsystem.setPower(0, 0);
+        driveSubsystem.stop();
     }
 
 }

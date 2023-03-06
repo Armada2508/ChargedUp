@@ -4,20 +4,14 @@ import java.util.function.DoubleSupplier;
 
 import com.ctre.phoenix.sensors.PigeonIMU;
 
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.DriveSubsystem;
 
-public class MoveRelativeCommand extends CommandBase {
+public class MoveRelativeCommand extends SequentialCommandGroup {
 
-    private DoubleSupplier targetX; // in feet, pos is right, negative is left
-    private DoubleSupplier targetY; // in feet, pos is forwards, negative is back
-    private DoubleSupplier targetDegrees;
-    private SequentialCommandGroup group;
-    private final DriveSubsystem driveSubsystem;
-    private final PigeonIMU pigeon;
+    private DoubleSupplier targetX;
+    private double degreeOffset = 0;
 
     /**
      * Moves the robot to a position in 2D space relative to its current position
@@ -36,49 +30,24 @@ public class MoveRelativeCommand extends CommandBase {
      * @param subsystem DriveSubsystem
      * @param rotation the ending rotation that the robot should be at
      */
-    public MoveRelativeCommand(DoubleSupplier x, DoubleSupplier y, DoubleSupplier degrees, DriveSubsystem driveSubsystem, PigeonIMU pigeon) {
-        targetX = x;
-        targetY = y;
-        targetDegrees = degrees;
-        this.driveSubsystem = driveSubsystem;
-        this.pigeon = pigeon;
-        addRequirements(driveSubsystem);
+    public MoveRelativeCommand(DoubleSupplier targetX, DoubleSupplier targetY, DoubleSupplier targetDegrees, DriveSubsystem driveSubsystem, PigeonIMU pigeon) {
+        this.targetX = targetX;
+        addCommands(
+            new InstantCommand(this::getDegreeOffset),
+            new AutoDriveCommand(targetY.getAsDouble(), driveSubsystem),
+            new AutoTurnCommand(degreeOffset, driveSubsystem, pigeon),
+            new AutoDriveCommand(targetX.getAsDouble(), driveSubsystem),
+            new AutoTurnCommand(targetDegrees.getAsDouble() - degreeOffset, driveSubsystem, pigeon)
+        );
     }
 
-    @Override
-    public void initialize() {
-        Command firstTurn = new InstantCommand();
-        double degreeOffset = 0;
+    private void getDegreeOffset() {
         if (targetX.getAsDouble() > 0) {
-            firstTurn = new AutoTurnCommand(90, driveSubsystem, pigeon);
             degreeOffset = 90;
         }
         else if (targetX.getAsDouble() < 0) {
-            firstTurn = new AutoTurnCommand(-90, driveSubsystem, pigeon);
             degreeOffset = -90;
         }
-        Command endTurn = new AutoTurnCommand(targetDegrees.getAsDouble() - degreeOffset, driveSubsystem, pigeon);
-        group = new SequentialCommandGroup(
-            new AutoDriveCommand(targetY.getAsDouble(), driveSubsystem),
-            firstTurn,
-            new AutoDriveCommand(targetX.getAsDouble(), driveSubsystem),
-            endTurn
-        );
-        group.schedule();
     }
 
-    @Override
-    public void execute() {
-    }
-
-    @Override
-    public void end(boolean interrupted) {
-        group.end(interrupted);
-        driveSubsystem.setPower(0, 0);
-    }
-
-    @Override
-    public boolean isFinished() {
-        return group.isFinished();
-    }
 }

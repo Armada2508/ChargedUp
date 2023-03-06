@@ -45,7 +45,7 @@ public class SeekCommand extends SequentialCommandGroup {
 
         @Override
         public void end(boolean interrupted) {
-            driveSubsystem.setPower(0, 0);
+            driveSubsystem.stop();
         }
 
         @Override
