@@ -9,19 +9,18 @@ import frc.robot.subsystems.ArmSubsystem;
 
 public class CalibrateArmCommand extends CommandBase {
 
-    private TalonFX armMotor;
+    private TalonFX talon;
     private ArmSubsystem armSubsystem;
 
     public CalibrateArmCommand(ArmSubsystem armSubsystem, TalonFX talon) {
-        System.out.println(talon.getDeviceID());
-        this.armMotor = talon;
+        this.talon = talon;
         this.armSubsystem = armSubsystem;
         addRequirements(armSubsystem);
     }
 
     @Override
     public void initialize() {
-        armMotor.set(TalonFXControlMode.PercentOutput, -0.1);
+        talon.set(TalonFXControlMode.PercentOutput, -0.1);
     }
 
     @Override
@@ -30,8 +29,8 @@ public class CalibrateArmCommand extends CommandBase {
    
     @Override
     public void end(boolean interrupted) {
-        armMotor.set(TalonFXControlMode.PercentOutput, 0);
-        armMotor.setSelectedSensorPosition(armSubsystem.fromAngle(Arm.minDegrees));
+        talon.neutralOutput();
+        talon.setSelectedSensorPosition(armSubsystem.fromAngle(Arm.minDegrees));
     }
 
     @Override

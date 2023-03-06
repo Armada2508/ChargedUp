@@ -36,6 +36,8 @@ public class WristSubsystem extends SubsystemBase {
         talon.config_kF(0, Wrist.kF);
         talon.configNeutralDeadband(0.001);
         talon.configClosedLoopPeakOutput(0, Wrist.maxSpeed);
+        talon.configNominalOutputForward(Wrist.minSpeed);
+        talon.configNominalOutputReverse(Wrist.minSpeed);
         talon.configForwardSoftLimitThreshold(fromAngle(Wrist.maxDegrees), Constants.timeoutMs);
         talon.configReverseSoftLimitThreshold(fromAngle(Wrist.minDegrees), Constants.timeoutMs);
     }
@@ -44,7 +46,7 @@ public class WristSubsystem extends SubsystemBase {
      * @param power to set the motor between -1.0 and 1.0
      */
     public void setPower(double power) {
-        talonFX.set(TalonFXControlMode.PercentOutput, power, DemandType.ArbitraryFeedForward, getFeedForward());
+        talonFX.set(TalonFXControlMode.PercentOutput, power);
     }
 
     /**

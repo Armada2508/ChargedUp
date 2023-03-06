@@ -66,4 +66,6 @@ limit switches
 arm - blue and white are forward, white is gnd
 arm - red and black are reverse, red is gnd
 
-add check in subsystems to disallow movement without calibration
+add check in subsystems to disallow movement without calibration, wrist and gripper
+
+neutral output reset method all subsyetsm

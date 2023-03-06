@@ -78,6 +78,7 @@ public class Constants {
         public static final double kF = 0;
         public static final double gravityFeedForward = 0; // 0.07
         public static final double maxSpeed = 0.30;
+        public static final double minSpeed = 0.05;
 
         public static final int minDegrees = -15; // Straight down is 0.
         public static final int maxDegrees = 90;
@@ -86,7 +87,7 @@ public class Constants {
     }
 
     public static final class Wrist {
-        public static final int motorID = 6;
+        public static final int motorID = 7;
         public static final int encoderUnitsPerRev = 2048;
         public static final int driverPully = 20;
         public static final int drivenPulley = 20;
@@ -97,8 +98,9 @@ public class Constants {
         public static final double kI = 0;
         public static final double kD = 0;
         public static final double kF = 0;
-        public static final double gravityFeedForward = 0.07;
+        public static final double gravityFeedForward = 0; // 0.07
         public static final double maxSpeed = 0.25;
+        public static final double minSpeed = 0.05;
 
         public static final int minDegrees = -30; // Straight out is 0.
         public static final int maxDegrees = 30;
@@ -108,7 +110,7 @@ public class Constants {
     }
 
     public static final class Gripper {
-        public static final int motorID = 7;
+        public static final int motorID = 6;
         public static final int encoderUnitsPerRev = 2048;
         public static final int gearboxRatio = 100;
 
@@ -118,6 +120,7 @@ public class Constants {
         public static final double kD = 0;
         public static final double kF = 0;
         public static final double maxSpeed = 0.25;
+        public static final double minSpeed = 0.05;
 
         // Bad Engineering Constants
         public static final double armSensorOffset = 3;

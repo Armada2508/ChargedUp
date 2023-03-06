@@ -1,6 +1,8 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.DemandType;
+import com.ctre.phoenix.motorcontrol.LimitSwitchNormal;
+import com.ctre.phoenix.motorcontrol.LimitSwitchSource;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
 import com.ctre.phoenix.motorcontrol.TalonFXFeedbackDevice;
@@ -8,17 +10,19 @@ import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants;
 import frc.robot.Constants.Arm;
 import frc.robot.Lib.Encoder;
-import frc.robot.commands.Arm.ArmCommand;
 import frc.robot.commands.Arm.CalibrateArmCommand;
 
 public class ArmSubsystem extends SubsystemBase {
     
+    private boolean calibrated = false;
     private final WPI_TalonFX talonFX = new WPI_TalonFX(Arm.motorID);
     private final WPI_TalonFX talonFXFollow = new WPI_TalonFX(Arm.motorIDFollow);
 
@@ -30,7 +34,6 @@ public class ArmSubsystem extends SubsystemBase {
 
     private void configureMotor(TalonFX talon) {
         talon.configFactoryDefault();
-        talon.setNeutralMode(NeutralMode.Brake);
         talon.selectProfileSlot(0, 0);
         talon.configSelectedFeedbackSensor(TalonFXFeedbackDevice.IntegratedSensor, 0, Constants.timeoutMs);
         talon.config_kP(0, Arm.kP);
@@ -39,22 +42,24 @@ public class ArmSubsystem extends SubsystemBase {
         talon.config_kF(0, Arm.kF);
         talon.configNeutralDeadband(0.001);
         talon.configClosedLoopPeakOutput(0, Arm.maxSpeed);
+        talon.configNominalOutputForward(Arm.minSpeed);
+        talon.configNominalOutputReverse(Arm.minSpeed);
         talon.configForwardSoftLimitThreshold(fromAngle(Arm.maxDegrees), Constants.timeoutMs);
         talon.configReverseSoftLimitThreshold(fromAngle(Arm.minDegrees), Constants.timeoutMs);
+        // TODO switch to talon(both motors) once they are hooked up to the same limit switch
+        talonFX.configReverseLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyClosed);
     }
 
     public void periodic() {
-    }
-
-    private void followMotor() {
-        talonFXFollow.follow(talonFX);
+        // System.out.println(pollLimitSwitch());
     }
 
     /**
      * @param power to set the motor between -1.0 and 1.0
      */
     public void setPower(double power) {
-        talonFX.set(TalonFXControlMode.PercentOutput, power, DemandType.ArbitraryFeedForward, getFeedForward());
+        if (!calibrated) return;
+        talonFX.set(TalonFXControlMode.PercentOutput, power);
     }
 
     /**
@@ -62,10 +67,16 @@ public class ArmSubsystem extends SubsystemBase {
      * @param theta degrees to go to
      */
     public void setPosition(double theta) {
+        if (!calibrated) return;
         if (theta > Arm.maxDegrees) theta = Arm.maxDegrees;
         if (theta < Arm.minDegrees) theta = Arm.minDegrees;
         double targetPosition = fromAngle(theta);
         talonFX.set(TalonFXControlMode.MotionMagic, targetPosition, DemandType.ArbitraryFeedForward, getFeedForward());
+    }
+
+    public void holdPosition() {
+        if (!calibrated) return;
+        talonFX.set(TalonFXControlMode.Position, talonFX.getSelectedSensorPosition(), DemandType.ArbitraryFeedForward, getFeedForward());
     }
 
     /**
@@ -96,10 +107,6 @@ public class ArmSubsystem extends SubsystemBase {
         return toAngle(talonFX.getActiveTrajectoryPosition());
     }
 
-    public void holdPosition() {
-        talonFX.set(TalonFXControlMode.Position, talonFX.getSelectedSensorPosition(), DemandType.ArbitraryFeedForward, getFeedForward());
-    }
-
     public double getSensorPosition() {
         return talonFX.getSelectedSensorPosition();
     }
@@ -123,7 +130,7 @@ public class ArmSubsystem extends SubsystemBase {
     }
 
     public boolean pollLimitSwitch() {
-        return talonFX.isRevLimitSwitchClosed() == 1;
+        return talonFX.isRevLimitSwitchClosed() == 0;
     }
 
     public void calibrate(double pos) {
@@ -138,15 +145,35 @@ public class ArmSubsystem extends SubsystemBase {
         talonFXFollow.configReverseSoftLimitEnable(enable, Constants.timeoutMs);
     }
 
+    private void startCalibrate() {
+        talonFX.setNeutralMode(NeutralMode.Coast);
+        talonFXFollow.setNeutralMode(NeutralMode.Coast);
+        talonFX.neutralOutput();
+        talonFXFollow.neutralOutput();
+        configSoftwareLimits(false);
+    }
+
+    private void endCalibrate() {
+        talonFXFollow.follow(talonFX);
+        configSoftwareLimits(true);
+        talonFX.setNeutralMode(NeutralMode.Brake);
+        talonFXFollow.setNeutralMode(NeutralMode.Brake);
+    }
+
     public Command getCalibrateSequence() {
         return new SequentialCommandGroup(
-            new InstantCommand(() -> talonFXFollow.set(TalonFXControlMode.PercentOutput, 0)),
-            new InstantCommand(() -> configSoftwareLimits(false), this),
+            new InstantCommand(this::startCalibrate, this),
+            new ConditionalCommand(
+                new SequentialCommandGroup(
+                    new InstantCommand(() -> talonFX.set(TalonFXControlMode.PercentOutput, 0.1)),
+                    new WaitCommand(1)), 
+                new InstantCommand(), this::pollLimitSwitch
+            ),
             new CalibrateArmCommand(this, talonFX),
-            new ArmCommand(0, this),
+            new InstantCommand(() -> talonFXFollow.set(TalonFXControlMode.PercentOutput, 0.1)),
+            new WaitCommand(1),
             new CalibrateArmCommand(this, talonFXFollow),
-            new InstantCommand(this::followMotor, this),
-            new InstantCommand(() -> configSoftwareLimits(true), this)
+            new InstantCommand(this::endCalibrate, this)
         );
     }
 
