@@ -46,8 +46,7 @@ public class ArmSubsystem extends SubsystemBase {
         talon.configNominalOutputReverse(Arm.minSpeed);
         talon.configForwardSoftLimitThreshold(fromAngle(Arm.maxDegrees), Constants.timeoutMs);
         talon.configReverseSoftLimitThreshold(fromAngle(Arm.minDegrees), Constants.timeoutMs);
-        // TODO switch to talon(both motors) once they are hooked up to the same limit switch
-        talonFX.configReverseLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyClosed);
+        talon.configReverseLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyClosed);
     }
 
     public void periodic() {
@@ -99,14 +98,6 @@ public class ArmSubsystem extends SubsystemBase {
         talonFX.configMotionAcceleration(fromVelocity(acceleration));
     }
 
-    /**
-     * 
-     * @return Arm's position in degrees when in motion magic mode
-     */
-    public double getMotionMagicPosition() {
-        return toAngle(talonFX.getActiveTrajectoryPosition());
-    }
-
     public double getSensorPosition() {
         return talonFX.getSelectedSensorPosition();
     }
@@ -146,6 +137,7 @@ public class ArmSubsystem extends SubsystemBase {
     }
 
     private void startCalibrate() {
+        calibrated = false;
         talonFX.setNeutralMode(NeutralMode.Coast);
         talonFXFollow.setNeutralMode(NeutralMode.Coast);
         talonFX.neutralOutput();
@@ -158,20 +150,22 @@ public class ArmSubsystem extends SubsystemBase {
         configSoftwareLimits(true);
         talonFX.setNeutralMode(NeutralMode.Brake);
         talonFXFollow.setNeutralMode(NeutralMode.Brake);
+        calibrated = true;
     }
 
     public Command getCalibrateSequence() {
+        double waitTime = 1;
         return new SequentialCommandGroup(
             new InstantCommand(this::startCalibrate, this),
             new ConditionalCommand(
                 new SequentialCommandGroup(
                     new InstantCommand(() -> talonFX.set(TalonFXControlMode.PercentOutput, 0.1)),
-                    new WaitCommand(1)), 
+                    new WaitCommand(waitTime)), 
                 new InstantCommand(), this::pollLimitSwitch
             ),
             new CalibrateArmCommand(this, talonFX),
             new InstantCommand(() -> talonFXFollow.set(TalonFXControlMode.PercentOutput, 0.1)),
-            new WaitCommand(1),
+            new WaitCommand(waitTime),
             new CalibrateArmCommand(this, talonFXFollow),
             new InstantCommand(this::endCalibrate, this)
         );

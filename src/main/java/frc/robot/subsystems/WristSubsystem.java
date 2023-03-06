@@ -9,9 +9,11 @@ import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants;
 import frc.robot.Constants.Wrist;
 import frc.robot.Lib.Encoder;
@@ -19,6 +21,7 @@ import frc.robot.commands.Arm.CalibrateWristCommand;
 
 public class WristSubsystem extends SubsystemBase {
 
+    private boolean calibrated = false;
     private final WPI_TalonFX talonFX = new WPI_TalonFX(Wrist.motorID);
 
     public WristSubsystem() {
@@ -46,6 +49,7 @@ public class WristSubsystem extends SubsystemBase {
      * @param power to set the motor between -1.0 and 1.0
      */
     public void setPower(double power) {
+        if (!calibrated) return;
         talonFX.set(TalonFXControlMode.PercentOutput, power);
     }
 
@@ -54,10 +58,16 @@ public class WristSubsystem extends SubsystemBase {
      * @param theta degrees to go to
      */
     public void setPosition(double theta) {
+        if (!calibrated) return;
         if (theta > Wrist.maxDegrees) theta = Wrist.maxDegrees;
         if (theta < Wrist.minDegrees) theta = Wrist.minDegrees;
         double targetPosition = fromAngle(theta);
         talonFX.set(TalonFXControlMode.MotionMagic, targetPosition, DemandType.ArbitraryFeedForward, getFeedForward());
+    }
+
+    public void holdPosition() {
+        if (!calibrated) return;
+        talonFX.set(TalonFXControlMode.Position, talonFX.getSelectedSensorPosition());
     }
 
     /**
@@ -80,14 +90,6 @@ public class WristSubsystem extends SubsystemBase {
         talonFX.configMotionAcceleration(fromVelocity(acceleration));
     }
 
-    public double getMotionMagicPosition() {
-        return toAngle(talonFX.getActiveTrajectoryPosition());
-    }
-
-    public void holdPosition() {
-        talonFX.set(TalonFXControlMode.Position, talonFX.getSelectedSensorPosition());
-    }
-
     public double getSensorPosition() {
         return talonFX.getSelectedSensorPosition();
     }
@@ -96,7 +98,7 @@ public class WristSubsystem extends SubsystemBase {
         return Encoder.toRotationalAngle(sensorUnits, Wrist.encoderUnitsPerRev, Wrist.pulleyRatio);
     }
 
-    private double fromAngle(double theta) {
+    public double fromAngle(double theta) {
         return Encoder.fromRotationalAngle(theta, Wrist.encoderUnitsPerRev, Wrist.pulleyRatio);
     }
 
@@ -118,15 +120,36 @@ public class WristSubsystem extends SubsystemBase {
         talonFX.setSelectedSensorPosition(pos);
     }
 
-    public void enableSoftwareLimits() {
-        talonFX.configForwardSoftLimitEnable(true, Constants.timeoutMs);
-        talonFX.configReverseSoftLimitEnable(true, Constants.timeoutMs);
+    public void configSoftwareLimits(boolean enable) {
+        talonFX.configForwardSoftLimitEnable(enable, Constants.timeoutMs);
+        talonFX.configReverseSoftLimitEnable(enable, Constants.timeoutMs);
+    }
+
+    private void startCalibrate() {
+        calibrated = false;
+        talonFX.setNeutralMode(NeutralMode.Coast);
+        talonFX.neutralOutput();
+        configSoftwareLimits(false);
+    }
+
+    private void endCalibrate() {
+        configSoftwareLimits(true);
+        talonFX.setNeutralMode(NeutralMode.Brake);
+        calibrated = true;
     }
 
     public Command getCalibrateSequence() {
+        double waitTime = 1;
         return new SequentialCommandGroup(
+            new InstantCommand(this::startCalibrate, this),
+            new ConditionalCommand(
+                new SequentialCommandGroup(
+                    new InstantCommand(() -> talonFX.set(TalonFXControlMode.PercentOutput, 0.1)),
+                    new WaitCommand(waitTime)), 
+                new InstantCommand(), this::pollLimitSwitch
+            ),
             new CalibrateWristCommand(this),
-            new InstantCommand(this::enableSoftwareLimits, this)
+            new InstantCommand(this::endCalibrate, this)
         );
     }
 

@@ -38,7 +38,7 @@ public class GripperCommand extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        double currentPercent = gripperSubsystem.getMotionMagicPosition();
+        double currentPercent = gripperSubsystem.getPercentClosed();
         return (currentPercent < percentClosed.getAsDouble()+percentDeadband && currentPercent > percentClosed.getAsDouble()-percentDeadband);
     }
 

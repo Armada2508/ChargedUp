@@ -48,7 +48,7 @@ public class WristCommand extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        double currentDegrees = wristSubsystem.getMotionMagicPosition();
+        double currentDegrees = wristSubsystem.getPosition();
         return (currentDegrees < targetDegrees.getAsDouble()+degreesDeadband && currentDegrees > targetDegrees.getAsDouble()-degreesDeadband);
     }
 }

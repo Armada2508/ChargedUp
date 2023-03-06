@@ -85,10 +85,6 @@ public class GripperSubsystem extends SubsystemBase {
         return toPercent(talonFX.getSelectedSensorPosition());
     }
 
-    public double getMotionMagicPosition() {
-        return toPercent(talonFX.getActiveTrajectoryPosition());
-    }
-
     public void finishedMoving() {
         moving = false;
     }
@@ -97,7 +93,7 @@ public class GripperSubsystem extends SubsystemBase {
         return (((sensorPos - currentOffset) / Gripper.encoderUnitsPerRev) / revolutionsToClosed);
     }
 
-    private double fromPercent(double percent) {
+    public double fromPercent(double percent) {
         return (percent * revolutionsToClosed * Gripper.encoderUnitsPerRev) + currentOffset;
     }
 
