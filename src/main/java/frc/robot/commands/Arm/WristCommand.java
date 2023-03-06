@@ -42,7 +42,7 @@ public class WristCommand extends CommandBase {
    
     @Override
     public void end(boolean interrupted) {
-        wristSubsystem.setPower(0);
+        wristSubsystem.stop();
         wristSubsystem.holdPosition();
     }
 

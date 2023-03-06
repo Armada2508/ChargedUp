@@ -7,15 +7,18 @@ import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants;
 import frc.robot.Constants.Gripper;
 import frc.robot.commands.Arm.CalibrateGripperCommand;
 
 public class GripperSubsystem extends SubsystemBase {
     
+    private boolean calibrated = false;
     private double currentOffset = 0;
     private double lastArm = 0;
     private double lastWrist = 0;
@@ -62,6 +65,7 @@ public class GripperSubsystem extends SubsystemBase {
      * @param power to set the motor between -1.0 and 1.0
      */
     public void setPower(double power) {
+        if (!calibrated) return;
         moving = true;
         talonFX.set(TalonFXControlMode.PercentOutput, power);
     }
@@ -71,11 +75,16 @@ public class GripperSubsystem extends SubsystemBase {
      * @param percent
      */
     public void setPercentClosed(double percent) {
+        if (!calibrated) return;
         if (percent > Gripper.max) percent = Gripper.max;
         if (percent < Gripper.min) percent = Gripper.min;
         moving = true;
         double targetPosition = fromPercent(percent);
         talonFX.set(TalonFXControlMode.MotionMagic, targetPosition);
+    }
+
+    public void stop() {
+        talonFX.neutralOutput();
     }
 
     /**
@@ -105,15 +114,36 @@ public class GripperSubsystem extends SubsystemBase {
         talonFX.setSelectedSensorPosition(pos);
     }
 
-    public void enableSoftwareLimits() {
-        talonFX.configForwardSoftLimitEnable(true, Constants.timeoutMs);
-        talonFX.configReverseSoftLimitEnable(true, Constants.timeoutMs);
+    public void configSoftwareLimits(boolean enable) {
+        talonFX.configForwardSoftLimitEnable(enable, Constants.timeoutMs);
+        talonFX.configReverseSoftLimitEnable(enable, Constants.timeoutMs);
+    }
+
+    private void startCalibrate() {
+        calibrated = false;
+        talonFX.setNeutralMode(NeutralMode.Coast);
+        talonFX.neutralOutput();
+        configSoftwareLimits(false);
+    }
+
+    private void endCalibrate() {
+        configSoftwareLimits(true);
+        talonFX.setNeutralMode(NeutralMode.Brake);
+        calibrated = true;
     }
 
     public Command getCalibrateSequence() {
+        double waitTime = 1;
         return new SequentialCommandGroup(
+            new InstantCommand(this::startCalibrate, this),
+            new ConditionalCommand(
+                new SequentialCommandGroup(
+                    new InstantCommand(() -> talonFX.set(TalonFXControlMode.PercentOutput, 0.1)),
+                    new WaitCommand(waitTime)), 
+                new InstantCommand(), this::pollLimitSwitch
+            ),
             new CalibrateGripperCommand(this),
-            new InstantCommand(this::enableSoftwareLimits, this)
+            new InstantCommand(this::endCalibrate, this)
         );
     }
 

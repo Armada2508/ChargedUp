@@ -24,7 +24,7 @@ public class CalibrateWristCommand extends CommandBase {
    
     @Override
     public void end(boolean interrupted) {
-        wristSubsystem.setPower(0);
+        wristSubsystem.stop();
         wristSubsystem.calibrate(wristSubsystem.fromAngle(Wrist.minDegrees));
     }
 

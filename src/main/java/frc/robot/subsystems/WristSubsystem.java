@@ -70,6 +70,10 @@ public class WristSubsystem extends SubsystemBase {
         talonFX.set(TalonFXControlMode.Position, talonFX.getSelectedSensorPosition());
     }
 
+    public void stop() {
+        talonFX.neutralOutput();
+    }
+
     /**
      * @return Wrist's current position in degrees
      */

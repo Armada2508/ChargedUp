@@ -63,9 +63,9 @@ public class RobotContainer {
     private void panicButton() {
         CommandScheduler.getInstance().cancelAll();
         driveSubsystem.setPower(0, 0);
-        armSubsystem.setPower(0);
-        wristSubsystem.setPower(0);
-        gripperSubsystem.setPower(0);
+        armSubsystem.stop();
+        wristSubsystem.stop();
+        gripperSubsystem.stop();
     }
 
     private void configureButtons() {

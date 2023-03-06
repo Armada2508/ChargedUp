@@ -32,7 +32,7 @@ public class GripperCommand extends CommandBase {
    
     @Override
     public void end(boolean interrupted) {
-        gripperSubsystem.setPower(0);
+        gripperSubsystem.stop();
         gripperSubsystem.finishedMoving();
     }
 

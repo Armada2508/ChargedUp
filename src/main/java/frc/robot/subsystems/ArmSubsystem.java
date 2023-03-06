@@ -78,6 +78,10 @@ public class ArmSubsystem extends SubsystemBase {
         talonFX.set(TalonFXControlMode.Position, talonFX.getSelectedSensorPosition(), DemandType.ArbitraryFeedForward, getFeedForward());
     }
 
+    public void stop() {
+        talonFX.neutralOutput();
+    }
+
     /**
      * @return Arm's current position in degrees
      */
