@@ -45,6 +45,7 @@ public class DriveSubsystem extends SubsystemBase {
     private void configureMotor(TalonFX talon) {
         talon.configFactoryDefault();
         talon.selectProfileSlot(0, 0);
+        talon.setNeutralMode(NeutralMode.Brake);
         talon.configSelectedFeedbackSensor(TalonFXFeedbackDevice.IntegratedSensor, 0, Constants.timeoutMs);
         talon.config_kP(0, Drive.kP);
         talon.config_kI(0, Drive.kI);

@@ -40,13 +40,14 @@ public class GripperSubsystem extends SubsystemBase {
             double arm = (armSubsystem.getSensorPosition() - lastArm) * Gripper.armSensorOffset;
             double wrist = (wristSubsystem.getSensorPosition() - lastWrist) * Gripper.wristSensorOffset;
             currentOffset += (arm + wrist);
-            // talonFX.set(TalonFXControlMode.Position, talonFX.getSelectedSensorPosition() + arm + wrist);        
+            // talonFX.set(TalonFXControlMode.Position, talonFX.getSelectedSensorPosition() + arm + wrist);    
+            lastArm = arm;
+            lastWrist = wrist;    
         }
     }
 
     private void configureMotor(TalonFX talon) {
         talon.configFactoryDefault();
-        talon.setNeutralMode(NeutralMode.Brake);
         talon.selectProfileSlot(0, 0);
         talon.configSelectedFeedbackSensor(TalonFXFeedbackDevice.IntegratedSensor, 0, Constants.timeoutMs);
         talon.config_kP(0, Gripper.kP);

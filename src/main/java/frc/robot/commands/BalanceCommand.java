@@ -32,7 +32,6 @@ public class BalanceCommand extends CommandBase {
     @Override
     public void initialize() {
         rollController.reset();
-        driveSubsystem.brake();
     }
 
     @Override

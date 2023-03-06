@@ -30,7 +30,6 @@ public class WristSubsystem extends SubsystemBase {
 
     private void configureMotor(TalonFX talon) {
         talon.configFactoryDefault();
-        talon.setNeutralMode(NeutralMode.Brake);
         talon.selectProfileSlot(0, 0);
         talon.configSelectedFeedbackSensor(TalonFXFeedbackDevice.IntegratedSensor, 0, Constants.timeoutMs);
         talon.config_kP(0, Wrist.kP);
@@ -99,11 +98,11 @@ public class WristSubsystem extends SubsystemBase {
     }
 
     private double toAngle(double sensorUnits) {
-        return Encoder.toRotationalAngle(sensorUnits, Wrist.encoderUnitsPerRev, Wrist.pulleyRatio);
+        return Encoder.toRotationalAngle(sensorUnits, Wrist.encoderUnitsPerRev, Wrist.movementRatio);
     }
 
     public double fromAngle(double theta) {
-        return Encoder.fromRotationalAngle(theta, Wrist.encoderUnitsPerRev, Wrist.pulleyRatio);
+        return Encoder.fromRotationalAngle(theta, Wrist.encoderUnitsPerRev, Wrist.movementRatio);
     }
 
     private double fromVelocity(double velocity) {

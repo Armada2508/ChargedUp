@@ -89,9 +89,10 @@ public class Constants {
     public static final class Wrist {
         public static final int motorID = 7;
         public static final int encoderUnitsPerRev = 2048;
-        public static final int driverPully = 20;
-        public static final int drivenPulley = 20;
-        public static final int pulleyRatio = drivenPulley/driverPully;
+        public static final int gearboxRatio = 100;
+        public static final int driverPully = 32;
+        public static final int drivenPulley = 46;
+        public static final int movementRatio = (drivenPulley/driverPully) * gearboxRatio;
 
         // Closed Loop
         public static final double kP = 0;
@@ -123,8 +124,8 @@ public class Constants {
         public static final double minSpeed = 0.05;
 
         // Bad Engineering Constants
-        public static final double armSensorOffset = 3;
-        public static final double wristSensorOffset = 1;
+        public static final double armSensorOffset = 0.5;
+        public static final double wristSensorOffset = 0.1;
 
         public static final double min = 0;
         public static final double max = 1;

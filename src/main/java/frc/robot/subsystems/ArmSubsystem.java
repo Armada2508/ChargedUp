@@ -128,11 +128,6 @@ public class ArmSubsystem extends SubsystemBase {
         return talonFX.isRevLimitSwitchClosed() == 0;
     }
 
-    public void calibrate(double pos) {
-        talonFX.setSelectedSensorPosition(pos);
-        talonFXFollow.setSelectedSensorPosition(pos);
-    }
-
     public void configSoftwareLimits(boolean enable) {
         talonFX.configForwardSoftLimitEnable(enable, Constants.timeoutMs);
         talonFX.configReverseSoftLimitEnable(enable, Constants.timeoutMs);
