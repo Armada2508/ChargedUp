@@ -8,6 +8,8 @@ import frc.robot.subsystems.ArmSubsystem;
 public class ArmCommand extends CommandBase {
 
     private final double degreesDeadband = 0.5;
+    private double velocity;
+    private double acceleration;
     private DoubleSupplier targetDegrees;
     private ArmSubsystem armSubsystem;
 
@@ -17,7 +19,7 @@ public class ArmCommand extends CommandBase {
      * @param armSubsystem
      */
     public ArmCommand(double theta, ArmSubsystem armSubsystem) {
-        this(() -> theta, armSubsystem);
+        this(() -> theta, 45, 45, armSubsystem);
     }
 
     /**
@@ -25,7 +27,9 @@ public class ArmCommand extends CommandBase {
      * @param theta degree to go to, 0 is straight down.
      * @param armSubsystem
      */
-    public ArmCommand(DoubleSupplier theta, ArmSubsystem armSubsystem) {
+    public ArmCommand(DoubleSupplier theta, double velocity, double acceleration, ArmSubsystem armSubsystem) {
+        this.velocity = velocity;
+        this.acceleration = acceleration;
         targetDegrees = theta;
         this.armSubsystem = armSubsystem;
         addRequirements(armSubsystem);
@@ -33,7 +37,7 @@ public class ArmCommand extends CommandBase {
 
     @Override
     public void initialize() {
-        armSubsystem.configMotionMagic(120, 120);
+        armSubsystem.configMotionMagic(velocity, acceleration);
         armSubsystem.setPosition(targetDegrees.getAsDouble());  
     }
 
@@ -50,9 +54,10 @@ public class ArmCommand extends CommandBase {
 
     @Override
     public boolean isFinished() {
+        // System.out.println("FINISHED MOTION MAGIC");
         double currentDegrees = armSubsystem.getPosition();
-        // System.out.println(currentDegrees + " " + targetDegrees.getAsDouble());
-        return (currentDegrees < targetDegrees.getAsDouble()+degreesDeadband && currentDegrees > targetDegrees.getAsDouble()-degreesDeadband);
+        // System.out.println(currentDegrees + " " + armSubsystem.getTarget());
+        return (currentDegrees < armSubsystem.getTarget()+degreesDeadband && currentDegrees > armSubsystem.getTarget()-degreesDeadband);
     }
     
 }

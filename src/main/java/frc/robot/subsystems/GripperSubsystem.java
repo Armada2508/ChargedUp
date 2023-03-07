@@ -55,9 +55,9 @@ public class GripperSubsystem extends SubsystemBase {
         talon.config_kD(0, Gripper.kD);
         talon.config_kF(0, Gripper.kF);
         talon.configNeutralDeadband(0.001);
-        talon.configClosedLoopPeakOutput(0, Gripper.maxSpeed);
-        talon.configNominalOutputForward(Gripper.minSpeed);
-        talon.configNominalOutputReverse(Gripper.minSpeed);
+        talon.configClosedLoopPeakOutput(0, Gripper.maxOutput);
+        talon.configNominalOutputForward(Gripper.minOutput);
+        talon.configNominalOutputReverse(Gripper.minOutput);
         talon.configForwardSoftLimitThreshold(fromPercent(Gripper.max), Constants.timeoutMs);
         talon.configReverseSoftLimitThreshold(fromPercent(Gripper.min), Constants.timeoutMs);
     }

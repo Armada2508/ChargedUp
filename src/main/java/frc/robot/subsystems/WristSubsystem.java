@@ -37,9 +37,9 @@ public class WristSubsystem extends SubsystemBase {
         talon.config_kD(0, Wrist.kD);
         talon.config_kF(0, Wrist.kF);
         talon.configNeutralDeadband(0.001);
-        talon.configClosedLoopPeakOutput(0, Wrist.maxSpeed);
-        talon.configNominalOutputForward(Wrist.minSpeed);
-        talon.configNominalOutputReverse(Wrist.minSpeed);
+        talon.configClosedLoopPeakOutput(0, Wrist.maxOutput);
+        talon.configNominalOutputForward(Wrist.minOutput);
+        talon.configNominalOutputReverse(Wrist.minOutput);
         talon.configForwardSoftLimitThreshold(fromAngle(Wrist.maxDegrees), Constants.timeoutMs);
         talon.configReverseSoftLimitThreshold(fromAngle(Wrist.minDegrees), Constants.timeoutMs);
     }

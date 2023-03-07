@@ -22,7 +22,7 @@ public class CalibrateArmCommand extends CommandBase {
     @Override
     public void initialize() {
         talon.setNeutralMode(NeutralMode.Brake);
-        talon.set(TalonFXControlMode.PercentOutput, -0.1);
+        talon.set(TalonFXControlMode.PercentOutput, -0.04);
     }
 
     @Override

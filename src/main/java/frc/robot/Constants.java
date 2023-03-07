@@ -72,15 +72,23 @@ public class Constants {
         public static final int gearboxRatio = 100;
 
         // Closed Loop
-        public static final double kP = 0.15;
-        public static final double kI = 0;
-        public static final double kD = 0;
-        public static final double kF = 0;
-        public static final double gravityFeedForward = 0; // 0.07
-        public static final double maxSpeed = 0.25;
-        public static final double minSpeed = 0;
+        public static final int moveSlot = 0;
+        public static final int holdSlot = 1;
 
-        public static final int minDegrees = -15; // Straight down is 0.
+        public static final double kPMove = 0;
+        public static final double kIMove = 0;
+        public static final double kDMove = 0;
+        public static final double kFMove = 0;
+        public static final double kPHold = 0;
+        public static final double kIHold = 0;
+        public static final double kDHold = 0;
+        public static final double kFHold = 0;
+        public static final double gravityFeedForward = 0.01; // 0.07
+        public static final double maxOutput = 1;
+        public static final double minOutput = 0;
+        public static final double maxVelocity = 90; // deg/sec
+
+        public static final int minDegrees = -23; // Straight down is 0.
         public static final int maxDegrees = 90;
         public static final int limitMargin = 2;
         public static final int allowedMotorDifference = 7;
@@ -103,8 +111,8 @@ public class Constants {
         public static final double kD = 0;
         public static final double kF = 0;
         public static final double gravityFeedForward = 0; // 0.07
-        public static final double maxSpeed = 0.25;
-        public static final double minSpeed = 0;
+        public static final double maxOutput = 1;
+        public static final double minOutput = 0;
 
         public static final int minDegrees = -30; // Straight out is 0.
         public static final int maxDegrees = 30;
@@ -123,8 +131,8 @@ public class Constants {
         public static final double kI = 0;
         public static final double kD = 0;
         public static final double kF = 0;
-        public static final double maxSpeed = 0.25;
-        public static final double minSpeed = 0;
+        public static final double maxOutput = 1;
+        public static final double minOutput = 0;
 
         // Bad Engineering Constants
         public static final double armSensorOffset = 0.5;

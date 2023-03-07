@@ -486,7 +486,7 @@ def setupCameraConstants() -> None:
     
 def main() -> None: # Image proccessing user code
     CameraServer.enableLogging()
-    cvSink = CameraServer.getVideo()
+    cvSink = CameraServer.getVideo("Camera 0")
     setupCameraConstants()
     proccessedStream = CameraServer.putVideo("Proccessed Video", resolutionWidth, resolutionHeight)
     originalStream = CameraServer.putVideo("Original Video", resolutionWidth, resolutionHeight)

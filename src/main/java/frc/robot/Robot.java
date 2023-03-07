@@ -17,7 +17,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
  */
 public class Robot extends TimedRobot {
 
-  private RobotContainer container; 
+  private RobotContainer container;
   private PigeonIMU pigeon = new PigeonIMU(Constants.pigeonID);
 
   /**
@@ -79,6 +79,7 @@ public class Robot extends TimedRobot {
   @Override
   public void disabledInit() {
     CommandScheduler.getInstance().cancelAll();
+    container.disabled();
   }
 
   /** This function is called periodically when disabled. */
