@@ -56,7 +56,7 @@ resolutionHeight: int = 360
 # Microsoft Lifecam HD 3000 Camera
 # diagonalFOV: Final[float] = 68.5
 # Logitech C920 HD Pro Webcam
-diagonalFOV: Final[float] = 78
+diagonalFOV: Final[float] = 170
 
 verticalFOVRad: float 
 horizontalFOVRad: float 

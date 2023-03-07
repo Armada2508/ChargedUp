@@ -44,13 +44,21 @@ public class ArmSubsystem extends SubsystemBase {
         talon.configClosedLoopPeakOutput(0, Arm.maxSpeed);
         talon.configNominalOutputForward(Arm.minSpeed);
         talon.configNominalOutputReverse(Arm.minSpeed);
-        talon.configForwardSoftLimitThreshold(fromAngle(Arm.maxDegrees), Constants.timeoutMs);
-        talon.configReverseSoftLimitThreshold(fromAngle(Arm.minDegrees), Constants.timeoutMs);
+        talon.configForwardSoftLimitThreshold(fromAngle(Arm.maxDegrees - Arm.limitMargin), Constants.timeoutMs);
+        talon.configReverseSoftLimitThreshold(fromAngle(Arm.minDegrees + Arm.limitMargin), Constants.timeoutMs);
         talon.configReverseLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyClosed);
     }
 
     public void periodic() {
         // System.out.println(pollLimitSwitch());
+       double left = toAngle(talonFX.getSelectedSensorPosition());
+       double right = toAngle(talonFXFollow.getSelectedSensorPosition());
+       if ((Math.abs(right - left) > Arm.allowedMotorDifference) && calibrated) {
+            if (this.getCurrentCommand() != null) {
+                this.getCurrentCommand().cancel();
+            }
+            talonFX.neutralOutput(); 
+       }
     }
 
     /**
@@ -66,9 +74,10 @@ public class ArmSubsystem extends SubsystemBase {
      * @param theta degrees to go to
      */
     public void setPosition(double theta) {
+        // System.out.println("Setting " + calibrated);
         if (!calibrated) return;
-        if (theta > Arm.maxDegrees) theta = Arm.maxDegrees;
-        if (theta < Arm.minDegrees) theta = Arm.minDegrees;
+        if (theta > Arm.maxDegrees - Arm.limitMargin) theta = Arm.maxDegrees - Arm.limitMargin;
+        if (theta < Arm.minDegrees + Arm.limitMargin) theta = Arm.minDegrees + Arm.limitMargin;
         double targetPosition = fromAngle(theta);
         talonFX.set(TalonFXControlMode.MotionMagic, targetPosition, DemandType.ArbitraryFeedForward, getFeedForward());
     }
@@ -128,6 +137,11 @@ public class ArmSubsystem extends SubsystemBase {
         return talonFX.isRevLimitSwitchClosed() == 0;
     }
 
+    public void calibrate(double pos) {
+        talonFX.setSelectedSensorPosition(pos);
+        talonFXFollow.setSelectedSensorPosition(pos);
+    }
+
     public void configSoftwareLimits(boolean enable) {
         talonFX.configForwardSoftLimitEnable(enable, Constants.timeoutMs);
         talonFX.configReverseSoftLimitEnable(enable, Constants.timeoutMs);
@@ -149,7 +163,6 @@ public class ArmSubsystem extends SubsystemBase {
         configSoftwareLimits(true);
         talonFX.setNeutralMode(NeutralMode.Brake);
         talonFXFollow.setNeutralMode(NeutralMode.Brake);
-        calibrated = true;
     }
 
     public Command getCalibrateSequence() {
@@ -166,7 +179,10 @@ public class ArmSubsystem extends SubsystemBase {
             new InstantCommand(() -> talonFXFollow.set(TalonFXControlMode.PercentOutput, 0.1)),
             new WaitCommand(waitTime),
             new CalibrateArmCommand(this, talonFXFollow),
-            new InstantCommand(this::endCalibrate, this)
+            new InstantCommand(this::endCalibrate, this),
+            new InstantCommand(() -> talonFX.set(TalonFXControlMode.PercentOutput, 0.1)),
+            new WaitCommand(.1), 
+            new InstantCommand(() -> calibrated = true)
         );
     }
 

@@ -77,11 +77,14 @@ public class Constants {
         public static final double kD = 0;
         public static final double kF = 0;
         public static final double gravityFeedForward = 0; // 0.07
-        public static final double maxSpeed = 0.30;
-        public static final double minSpeed = 0.05;
+        public static final double maxSpeed = 0.25;
+        public static final double minSpeed = 0;
 
         public static final int minDegrees = -15; // Straight down is 0.
         public static final int maxDegrees = 90;
+        public static final int limitMargin = 2;
+        public static final int allowedMotorDifference = 7;
+
         // IK
         public static final double jointLengthInches = 35.75;
     }
@@ -101,7 +104,7 @@ public class Constants {
         public static final double kF = 0;
         public static final double gravityFeedForward = 0; // 0.07
         public static final double maxSpeed = 0.25;
-        public static final double minSpeed = 0.05;
+        public static final double minSpeed = 0;
 
         public static final int minDegrees = -30; // Straight out is 0.
         public static final int maxDegrees = 30;
@@ -121,7 +124,7 @@ public class Constants {
         public static final double kD = 0;
         public static final double kF = 0;
         public static final double maxSpeed = 0.25;
-        public static final double minSpeed = 0.05;
+        public static final double minSpeed = 0;
 
         // Bad Engineering Constants
         public static final double armSensorOffset = 0.5;

@@ -75,6 +75,9 @@ public class RobotContainer {
         mapButton(armSubsystem.getCalibrateSequence(), 8);
         mapButton(wristSubsystem.getCalibrateSequence(), 10);
         mapButton(gripperSubsystem.getCalibrateSequence(), 12);
+        mapButton(new InstantCommand( () -> {
+            armSubsystem.calibrate(armSubsystem.fromAngle(Arm.minDegrees));
+        }), 9);
         // mapButton(new ConeOnPoleCommand(() -> Height.MID, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), 9);
         // ? final AutoPickupCommand pickup = new AutoPickupCommand(visionSubsystem, driveSubsystem, pigeon, armSubsystem, wristSubsystem, gripperSubsystem);
         new JoystickButton(joystick, 11).onTrue(Commands.runOnce(this::panicButton)); // AutoStop

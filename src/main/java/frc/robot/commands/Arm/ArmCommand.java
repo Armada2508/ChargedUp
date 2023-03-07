@@ -33,13 +33,13 @@ public class ArmCommand extends CommandBase {
 
     @Override
     public void initialize() {
-        armSubsystem.configMotionMagic(180, 120);
+        armSubsystem.configMotionMagic(120, 120);
         armSubsystem.setPosition(targetDegrees.getAsDouble());  
     }
 
     @Override
     public void execute() {
-        System.out.println("Goin !");
+        // System.out.println("Goin !");
     }
    
     @Override
@@ -51,7 +51,7 @@ public class ArmCommand extends CommandBase {
     @Override
     public boolean isFinished() {
         double currentDegrees = armSubsystem.getPosition();
-        System.out.println(currentDegrees + " " + targetDegrees.getAsDouble());
+        // System.out.println(currentDegrees + " " + targetDegrees.getAsDouble());
         return (currentDegrees < targetDegrees.getAsDouble()+degreesDeadband && currentDegrees > targetDegrees.getAsDouble()-degreesDeadband);
     }
     

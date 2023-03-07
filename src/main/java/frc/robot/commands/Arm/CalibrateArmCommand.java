@@ -1,5 +1,6 @@
 package frc.robot.commands.Arm;
 
+import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 
@@ -20,6 +21,7 @@ public class CalibrateArmCommand extends CommandBase {
 
     @Override
     public void initialize() {
+        talon.setNeutralMode(NeutralMode.Brake);
         talon.set(TalonFXControlMode.PercentOutput, -0.1);
     }
 
@@ -29,6 +31,7 @@ public class CalibrateArmCommand extends CommandBase {
    
     @Override
     public void end(boolean interrupted) {
+        talon.setNeutralMode(NeutralMode.Coast);
         talon.neutralOutput();
         talon.setSelectedSensorPosition(armSubsystem.fromAngle(Arm.minDegrees));
     }
