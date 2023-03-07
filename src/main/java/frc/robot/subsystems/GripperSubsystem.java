@@ -49,6 +49,7 @@ public class GripperSubsystem extends SubsystemBase {
     private void configureMotor(TalonFX talon) {
         talon.configFactoryDefault();
         talon.selectProfileSlot(0, 0);
+        talon.setNeutralMode(NeutralMode.Brake);
         talon.configSelectedFeedbackSensor(TalonFXFeedbackDevice.IntegratedSensor, 0, Constants.timeoutMs);
         talon.config_kP(0, Gripper.kP);
         talon.config_kI(0, Gripper.kI);
@@ -84,6 +85,19 @@ public class GripperSubsystem extends SubsystemBase {
         talonFX.set(TalonFXControlMode.MotionMagic, targetPosition);
     }
 
+    /**
+     * Configures motion magic values for next run. If your acceleration is the same value as your velocity
+     * then it will take 1 second to reach your velocity. Higher values of acceleration will make it get there faster, 
+     * lower values will make it get there slower.
+     * @param velocity in percent/second
+     * @param acceleration in percent/second/second
+     */
+    public void configMotionMagic(double velocity, double acceleration) {
+        talonFX.setIntegralAccumulator(0);
+        talonFX.configMotionCruiseVelocity(fromVelocity(velocity));
+        talonFX.configMotionAcceleration(fromVelocity(acceleration));
+    }
+
     public void stop() {
         talonFX.neutralOutput();
     }
@@ -95,16 +109,24 @@ public class GripperSubsystem extends SubsystemBase {
         return toPercent(talonFX.getSelectedSensorPosition());
     }
 
+    public double getTarget() {
+        return toPercent(talonFX.getClosedLoopTarget());
+    }
+
     public void finishedMoving() {
         moving = false;
     }
 
-    private double toPercent(double sensorPos) {
+    public double toPercent(double sensorPos) {
         return (((sensorPos - currentOffset) / Gripper.encoderUnitsPerRev) / revolutionsToClosed);
     }
 
     public double fromPercent(double percent) {
         return (percent * revolutionsToClosed * Gripper.encoderUnitsPerRev) + currentOffset;
+    }
+
+    public double fromVelocity(double velocity) {
+        return fromPercent(velocity) * 0.1;
     }
 
     public boolean pollLimitSwitch() {
@@ -115,21 +137,19 @@ public class GripperSubsystem extends SubsystemBase {
         talonFX.setSelectedSensorPosition(pos);
     }
 
-    public void configSoftwareLimits(boolean enable) {
+    private void configSoftwareLimits(boolean enable) {
         talonFX.configForwardSoftLimitEnable(enable, Constants.timeoutMs);
         talonFX.configReverseSoftLimitEnable(enable, Constants.timeoutMs);
     }
 
     private void startCalibrate() {
         calibrated = false;
-        talonFX.setNeutralMode(NeutralMode.Coast);
         talonFX.neutralOutput();
         configSoftwareLimits(false);
     }
 
     private void endCalibrate() {
         configSoftwareLimits(true);
-        talonFX.setNeutralMode(NeutralMode.Brake);
         calibrated = true;
     }
 

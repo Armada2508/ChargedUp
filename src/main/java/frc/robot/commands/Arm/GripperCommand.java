@@ -7,15 +7,17 @@ import frc.robot.subsystems.GripperSubsystem;
 
 public class GripperCommand extends CommandBase {
 
-    private final double percentDeadband = 0.1;
+    private final double percentDeadband = 0.05;
+    private double velocity;
+    private double acceleration;
     private DoubleSupplier percentClosed;
     private GripperSubsystem gripperSubsystem;
 
     public GripperCommand(double percentClosed, GripperSubsystem gripperSubsystem) {
-       this(() -> percentClosed, gripperSubsystem);
+       this(() -> percentClosed, 0.1, 0.1, gripperSubsystem);
     }
 
-    public GripperCommand(DoubleSupplier percentClosed, GripperSubsystem gripperSubsystem) {
+    public GripperCommand(DoubleSupplier percentClosed, double velocity, double acceleration, GripperSubsystem gripperSubsystem) {
         this.percentClosed = percentClosed;
         this.gripperSubsystem = gripperSubsystem;
         addRequirements(gripperSubsystem);
@@ -23,6 +25,7 @@ public class GripperCommand extends CommandBase {
 
     @Override
     public void initialize() {
+        gripperSubsystem.configMotionMagic(velocity, acceleration);
         gripperSubsystem.setPercentClosed(percentClosed.getAsDouble());  
     }
 
@@ -39,7 +42,7 @@ public class GripperCommand extends CommandBase {
     @Override
     public boolean isFinished() {
         double currentPercent = gripperSubsystem.getPercentClosed();
-        return (currentPercent < percentClosed.getAsDouble()+percentDeadband && currentPercent > percentClosed.getAsDouble()-percentDeadband);
+        return (currentPercent < gripperSubsystem.getTarget()+percentDeadband && currentPercent > gripperSubsystem.getTarget()-percentDeadband);
     }
 
 }

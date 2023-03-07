@@ -69,7 +69,7 @@ public class RobotContainer {
     }
 
     public void disabled() {
-        armSubsystem.disabled();
+        armSubsystem.disable();
     }
 
     private void configureButtons() {

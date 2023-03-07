@@ -15,7 +15,7 @@ public class CalibrateWristCommand extends CommandBase {
 
     @Override
     public void initialize() {
-        wristSubsystem.setPower(-0.1);
+        wristSubsystem.setPower(-0.05);
     }
 
     @Override

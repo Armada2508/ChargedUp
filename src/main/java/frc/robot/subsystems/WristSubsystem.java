@@ -31,6 +31,7 @@ public class WristSubsystem extends SubsystemBase {
     private void configureMotor(TalonFX talon) {
         talon.configFactoryDefault();
         talon.selectProfileSlot(0, 0);
+        talon.setNeutralMode(NeutralMode.Brake);
         talon.configSelectedFeedbackSensor(TalonFXFeedbackDevice.IntegratedSensor, 0, Constants.timeoutMs);
         talon.config_kP(0, Wrist.kP);
         talon.config_kI(0, Wrist.kI);
@@ -61,12 +62,12 @@ public class WristSubsystem extends SubsystemBase {
         if (theta > Wrist.maxDegrees) theta = Wrist.maxDegrees;
         if (theta < Wrist.minDegrees) theta = Wrist.minDegrees;
         double targetPosition = fromAngle(theta);
-        talonFX.set(TalonFXControlMode.MotionMagic, targetPosition, DemandType.ArbitraryFeedForward, getFeedForward());
+        talonFX.set(TalonFXControlMode.MotionMagic, targetPosition, DemandType.ArbitraryFeedForward, getFeedForward(theta));
     }
 
     public void holdPosition() {
         if (!calibrated) return;
-        talonFX.set(TalonFXControlMode.Position, talonFX.getSelectedSensorPosition());
+        talonFX.set(TalonFXControlMode.Position, talonFX.getClosedLoopTarget(), DemandType.ArbitraryFeedForward, getFeedForward(getPosition()));
     }
 
     public void stop() {
@@ -78,6 +79,10 @@ public class WristSubsystem extends SubsystemBase {
      */
     public double getPosition() {
         return toAngle(talonFX.getSelectedSensorPosition());
+    }
+
+    public double getTarget() {
+        return toAngle(talonFX.getClosedLoopTarget());
     }
     
     /**
@@ -97,7 +102,7 @@ public class WristSubsystem extends SubsystemBase {
         return talonFX.getSelectedSensorPosition();
     }
 
-    private double toAngle(double sensorUnits) {
+    public double toAngle(double sensorUnits) {
         return Encoder.toRotationalAngle(sensorUnits, Wrist.encoderUnitsPerRev, Wrist.movementRatio);
     }
 
@@ -105,12 +110,11 @@ public class WristSubsystem extends SubsystemBase {
         return Encoder.fromRotationalAngle(theta, Wrist.encoderUnitsPerRev, Wrist.movementRatio);
     }
 
-    private double fromVelocity(double velocity) {
+    public double fromVelocity(double velocity) {
         return fromAngle(velocity) * 0.1;
     }
     
-    private double getFeedForward() {
-        double degrees = getPosition();
+    private double getFeedForward(double degrees) {
         double scalar = Math.cos(Math.toRadians(degrees));
         return Wrist.gravityFeedForward * scalar;
     }
@@ -123,21 +127,19 @@ public class WristSubsystem extends SubsystemBase {
         talonFX.setSelectedSensorPosition(pos);
     }
 
-    public void configSoftwareLimits(boolean enable) {
+    private void configSoftwareLimits(boolean enable) {
         talonFX.configForwardSoftLimitEnable(enable, Constants.timeoutMs);
         talonFX.configReverseSoftLimitEnable(enable, Constants.timeoutMs);
     }
 
     private void startCalibrate() {
         calibrated = false;
-        talonFX.setNeutralMode(NeutralMode.Coast);
         talonFX.neutralOutput();
         configSoftwareLimits(false);
     }
 
     private void endCalibrate() {
         configSoftwareLimits(true);
-        talonFX.setNeutralMode(NeutralMode.Brake);
         calibrated = true;
     }
 

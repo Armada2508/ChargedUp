@@ -110,7 +110,7 @@ public class ArmSubsystem extends SubsystemBase {
         talonFX.neutralOutput();
     }
 
-    public void disabled() {
+    public void disable() {
         stop();
         talonFX.setNeutralMode(NeutralMode.Coast);
         talonFXFollow.setNeutralMode(NeutralMode.Coast);
@@ -152,13 +152,13 @@ public class ArmSubsystem extends SubsystemBase {
         return Encoder.fromRotationalAngle(theta, Arm.encoderUnitsPerRev, Arm.gearboxRatio);
     }
 
-    private double fromVelocity(double velocity) {
+    public double fromVelocity(double velocity) {
         return fromAngle(velocity) * 0.1;
     }
 
     private double getFeedForward(double degrees) {
         double scalar = Math.sin(Math.toRadians(degrees));
-        System.out.println(Arm.gravityFeedForward * scalar);
+        // System.out.println(Arm.gravityFeedForward * scalar);
         return Arm.gravityFeedForward * scalar;
     }
 
@@ -166,12 +166,7 @@ public class ArmSubsystem extends SubsystemBase {
         return talonFX.isRevLimitSwitchClosed() == 0;
     }
 
-    public void calibrate(double pos) {
-        talonFX.setSelectedSensorPosition(pos);
-        talonFXFollow.setSelectedSensorPosition(pos);
-    }
-
-    public void configSoftwareLimits(boolean enable) {
+    private void configSoftwareLimits(boolean enable) {
         talonFX.configForwardSoftLimitEnable(enable, Constants.timeoutMs);
         talonFX.configReverseSoftLimitEnable(enable, Constants.timeoutMs);
         talonFXFollow.configForwardSoftLimitEnable(enable, Constants.timeoutMs);
