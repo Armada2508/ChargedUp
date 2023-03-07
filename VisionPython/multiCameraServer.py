@@ -54,9 +54,9 @@ mainTable: NetworkTable = NetworkTableInstance.getDefault().getTable(networkTabl
 resolutionWidth: int = 640
 resolutionHeight: int = 360
 # Microsoft Lifecam HD 3000 Camera
-# diagonalFOV: Final[float] = 68.5
+diagonalFOV: Final[float] = 68.5
 # Logitech C920 HD Pro Webcam
-diagonalFOV: Final[float] = 170
+# diagonalFOV: Final[float] = 170
 
 verticalFOVRad: float 
 horizontalFOVRad: float 
@@ -486,7 +486,8 @@ def setupCameraConstants() -> None:
     
 def main() -> None: # Image proccessing user code
     CameraServer.enableLogging()
-    cvSink = CameraServer.getVideo("Camera 0")
+    cvSinkHigh = CameraServer.getVideo("Camera Color")
+    cvSinkLow = CameraServer.getVideo("Camera Tag")
     setupCameraConstants()
     proccessedStream = CameraServer.putVideo("Proccessed Video", resolutionWidth, resolutionHeight)
     originalStream = CameraServer.putVideo("Original Video", resolutionWidth, resolutionHeight)
@@ -499,6 +500,14 @@ def main() -> None: # Image proccessing user code
     # loop forever
     while True:
         ts = time.time()
+        index = mainTable.getEntry("Current Pipeline").getInteger(0)
+        cvSink = cvSinkLow
+        for pipeline in pipelines:
+            if (pipeline.pipelineIndex.getInteger(0) == index):
+                if (pipeline.type == Pipeline.Type.COLOR):
+                    cvSink = cvSinkHigh
+                elif (pipeline.type == Pipeline.Type.APRILTAG):
+                    cvSink = cvSinkLow
         error, inputImg = cvSink.grabFrame(mat)
         inputImg: Mat
         if (resolutionWidth == 1280 or resolutionWidth == 1920):
@@ -507,7 +516,6 @@ def main() -> None: # Image proccessing user code
             print("CVSINK ERROR: " + cvSink.getError())
             continue
         drawnImg = inputImg.copy()
-        index = mainTable.getEntry("Current Pipeline").getInteger(0)
         for pipeline in pipelines:
             if (pipeline.pipelineIndex.getInteger(0) == index):
                 if (pipeline.type == Pipeline.Type.COLOR):

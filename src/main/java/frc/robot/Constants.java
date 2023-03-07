@@ -83,7 +83,7 @@ public class Constants {
         public static final double kIHold = 0;
         public static final double kDHold = 0;
         public static final double kFHold = 0;
-        public static final double gravityFeedForward = 0.01; // 0.07
+        public static final double gravityFeedForward = 0.05; // 0.07
         public static final double maxOutput = 1;
         public static final double minOutput = 0;
         public static final double maxVelocity = 90; // deg/sec
