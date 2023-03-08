@@ -18,8 +18,8 @@ public class WristCommand extends CommandBase {
      * @param theta degree to go to, 0 is straight out.
      * @param wristSubsystem
      */
-    public WristCommand(double theta, WristSubsystem wristSubsystem) {
-       this(() -> theta, 30, 30, wristSubsystem);
+    public WristCommand(double theta, double velocity, double acceleration, WristSubsystem wristSubsystem) {
+       this(() -> theta, velocity, acceleration, wristSubsystem);
     }
 
     /**

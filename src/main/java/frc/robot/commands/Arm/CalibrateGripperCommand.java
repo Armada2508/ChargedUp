@@ -15,7 +15,7 @@ public class CalibrateGripperCommand extends CommandBase {
 
     @Override
     public void initialize() {
-        gripperSubsystem.setPower(-0.05);
+        gripperSubsystem.setPower(0.12);
     }
 
     @Override
@@ -25,8 +25,7 @@ public class CalibrateGripperCommand extends CommandBase {
     @Override
     public void end(boolean interrupted) {
         gripperSubsystem.stop();
-        gripperSubsystem.calibrate(gripperSubsystem.fromPercent(Gripper.min));
-        gripperSubsystem.finishedMoving();
+        gripperSubsystem.calibrate(gripperSubsystem.fromPosition(Gripper.max));
     }
 
     @Override

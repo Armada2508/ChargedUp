@@ -44,8 +44,8 @@ public class InverseKinematics {
     public static SequentialCommandGroup getIKPositionCommand(double x, double y, ArmSubsystem armSubsystem, WristSubsystem wristSubsystem) {
         BetterPair<Double, Double> angles = InverseKinematics.coordinatesToAngles(x, y);
         return new SequentialCommandGroup(
-            new ArmCommand(angles.getFirst(), armSubsystem),
-            new WristCommand(angles.getFirst() + angles.getSecond(), wristSubsystem)
+            new ArmCommand(angles.getFirst(), 45, 45, armSubsystem),
+            new WristCommand(angles.getFirst() + angles.getSecond(), 10, 10, wristSubsystem)
         );
     }
 

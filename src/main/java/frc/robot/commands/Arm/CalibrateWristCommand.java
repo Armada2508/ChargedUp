@@ -1,15 +1,17 @@
 package frc.robot.commands.Arm;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.Constants.Wrist;
+import frc.robot.subsystems.GripperSubsystem;
 import frc.robot.subsystems.WristSubsystem;
 
 public class CalibrateWristCommand extends CommandBase {
     
     private WristSubsystem wristSubsystem;
+    private GripperSubsystem gripperSubsystem;
 
-    public CalibrateWristCommand(WristSubsystem wristSubsystem) {
+    public CalibrateWristCommand(WristSubsystem wristSubsystem, GripperSubsystem gripperSubsystem) {
         this.wristSubsystem = wristSubsystem;
+        this.gripperSubsystem = gripperSubsystem;
         addRequirements(wristSubsystem);
     }
 
@@ -24,8 +26,10 @@ public class CalibrateWristCommand extends CommandBase {
    
     @Override
     public void end(boolean interrupted) {
+        double calibrateAngle = 0;
         wristSubsystem.stop();
-        wristSubsystem.calibrate(wristSubsystem.fromAngle(Wrist.minDegrees));
+        gripperSubsystem.setWristOffset(wristSubsystem.getSensorPosition() - wristSubsystem.fromAngle(calibrateAngle));
+        wristSubsystem.calibrate(wristSubsystem.fromAngle(calibrateAngle));
     }
 
     @Override

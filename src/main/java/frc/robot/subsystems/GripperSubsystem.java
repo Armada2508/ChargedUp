@@ -6,6 +6,7 @@ import com.ctre.phoenix.motorcontrol.TalonFXFeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -19,11 +20,11 @@ import frc.robot.commands.Arm.CalibrateGripperCommand;
 public class GripperSubsystem extends SubsystemBase {
     
     private boolean calibrated = false;
-    private double currentOffset = 0;
-    private double lastArm = 0;
-    private double lastWrist = 0;
-    private boolean moving = true;
-    private final double revolutionsToClosed = 1/3;
+    private double desiredPosition = 1;
+    private double armOffset = 0;
+    private double wristOffset = 0;
+    private final SlewRateLimiter limiter = new SlewRateLimiter(1);
+    private final double revolutionsToClosed = 25;
     private final WPI_TalonFX talonFX = new WPI_TalonFX(Gripper.motorID);
     private final ArmSubsystem armSubsystem;
     private final WristSubsystem wristSubsystem;
@@ -32,18 +33,38 @@ public class GripperSubsystem extends SubsystemBase {
         this.armSubsystem = armSubsystem;
         this.wristSubsystem = wristSubsystem;
         configureMotor(talonFX);
+        setArmOffset(-armSubsystem.getSensorPosition());
+        setWristOffset(-wristSubsystem.getSensorPosition());
     }
 
     @Override
     public void periodic() {
-        if (!moving) {
-            double arm = (armSubsystem.getSensorPosition() - lastArm) * Gripper.armSensorOffset;
-            double wrist = (wristSubsystem.getSensorPosition() - lastWrist) * Gripper.wristSensorOffset;
-            currentOffset += (arm + wrist);
-            // talonFX.set(TalonFXControlMode.Position, talonFX.getSelectedSensorPosition() + arm + wrist);    
-            lastArm = arm;
-            lastWrist = wrist;    
+        // System.out.println(getPercentClosed());
+        // System.out.println(pollLimitSwitch());
+        // System.out.println(talonFX.getSelectedSensorPosition());
+        // System.out.println(fromPercent(1) + " " + fromVelocity(1) + " " + toPercent(fromPercent(1)));
+        // System.out.println(talonFX.getClosedLoopError());
+        // System.out.println(fromPosition(0.01));
+        if (pollLimitSwitch()) {
+            armSubsystem.stop();
+            wristSubsystem.stop();
         }
+        if (calibrated) {
+            double arm = armSubsystem.getSensorPosition();
+            double wrist = wristSubsystem.getSensorPosition();
+            double pos = limiter.calculate(desiredPosition);
+            System.out.println("Desired Position: " + desiredPosition + " Limited Position: " + pos + " Arm: " + arm + " Wrist: " + wrist + " ArmOffset: " + armOffset + " WristOffset: " + wristOffset);
+            talonFX.set(TalonFXControlMode.Position, fromPosition(pos) + ((arm + armOffset) * Gripper.armSensorMultiplier) + ((wrist + wristOffset) * Gripper.wristSensorMultiplier));    
+        }
+    }
+
+    public void setArmOffset(double offset) {
+        System.out.println("Arm Offset: " + offset);
+        armOffset = offset;
+    }
+
+    public void setWristOffset(double offset) {
+        wristOffset = offset;
     }
 
     private void configureMotor(TalonFX talon) {
@@ -59,43 +80,25 @@ public class GripperSubsystem extends SubsystemBase {
         talon.configClosedLoopPeakOutput(0, Gripper.maxOutput);
         talon.configNominalOutputForward(Gripper.minOutput);
         talon.configNominalOutputReverse(Gripper.minOutput);
-        talon.configForwardSoftLimitThreshold(fromPercent(Gripper.max), Constants.timeoutMs);
-        talon.configReverseSoftLimitThreshold(fromPercent(Gripper.min), Constants.timeoutMs);
+        // talon.configForwardSoftLimitThreshold(fromPosition(Gripper.max), Constants.timeoutMs);
+        talon.configReverseSoftLimitThreshold(fromPosition(Gripper.min), Constants.timeoutMs);
     }
 
     /**
      * @param power to set the motor between -1.0 and 1.0
      */
     public void setPower(double power) {
-        if (!calibrated) return;
-        moving = true;
         talonFX.set(TalonFXControlMode.PercentOutput, power);
     }
 
     /**
-     * Sets percent closed of the gripper, 1 is fully closed, 0 is fully open
+     * Sets position of the gripper, 1 is fully closed, 0 is fully open
      * @param percent
      */
-    public void setPercentClosed(double percent) {
+    public void setPosition(double position) {
         if (!calibrated) return;
-        if (percent > Gripper.max) percent = Gripper.max;
-        if (percent < Gripper.min) percent = Gripper.min;
-        moving = true;
-        double targetPosition = fromPercent(percent);
-        talonFX.set(TalonFXControlMode.MotionMagic, targetPosition);
-    }
-
-    /**
-     * Configures motion magic values for next run. If your acceleration is the same value as your velocity
-     * then it will take 1 second to reach your velocity. Higher values of acceleration will make it get there faster, 
-     * lower values will make it get there slower.
-     * @param velocity in percent/second
-     * @param acceleration in percent/second/second
-     */
-    public void configMotionMagic(double velocity, double acceleration) {
-        talonFX.setIntegralAccumulator(0);
-        talonFX.configMotionCruiseVelocity(fromVelocity(velocity));
-        talonFX.configMotionAcceleration(fromVelocity(acceleration));
+        if (position < Gripper.min) position = Gripper.min;
+        desiredPosition = position;
     }
 
     public void stop() {
@@ -103,34 +106,31 @@ public class GripperSubsystem extends SubsystemBase {
     }
 
     /**
-     * @return Grippers percent being closed, 1 is fully closed, 0 is fully open
+     * @return position of the gripper, 1 is fully closed, 0 is fully open
      */
-    public double getPercentClosed() { 
-        return toPercent(talonFX.getSelectedSensorPosition());
+    public double getPosition() { 
+        return toPosition(talonFX.getSelectedSensorPosition());
     }
 
     public double getTarget() {
-        return toPercent(talonFX.getClosedLoopTarget());
+        return toPosition(talonFX.getClosedLoopTarget());
     }
 
-    public void finishedMoving() {
-        moving = false;
+    public double toPosition(double sensorPos) {
+        return ((sensorPos / Gripper.encoderUnitsPerRev) / revolutionsToClosed);
     }
 
-    public double toPercent(double sensorPos) {
-        return (((sensorPos - currentOffset) / Gripper.encoderUnitsPerRev) / revolutionsToClosed);
-    }
-
-    public double fromPercent(double percent) {
-        return (percent * revolutionsToClosed * Gripper.encoderUnitsPerRev) + currentOffset;
+    public double fromPosition(double position) {
+        // System.out.println("Pos: " + position + ", RevToClosed: " + revolutionsToClosed + ", EPR: " + Gripper.encoderUnitsPerRev + ", CurrentOffset:" + currentOffset);
+        return (position * revolutionsToClosed * Gripper.encoderUnitsPerRev);
     }
 
     public double fromVelocity(double velocity) {
-        return fromPercent(velocity) * 0.1;
+        return fromPosition(velocity) * 0.1;
     }
 
     public boolean pollLimitSwitch() {
-        return talonFX.isRevLimitSwitchClosed() == 1;
+        return talonFX.isFwdLimitSwitchClosed() == 1;
     }
 
     public void calibrate(double pos) {
@@ -138,11 +138,12 @@ public class GripperSubsystem extends SubsystemBase {
     }
 
     private void configSoftwareLimits(boolean enable) {
-        talonFX.configForwardSoftLimitEnable(enable, Constants.timeoutMs);
+        // talonFX.configForwardSoftLimitEnable(enable, Constants.timeoutMs);
         talonFX.configReverseSoftLimitEnable(enable, Constants.timeoutMs);
     }
 
     private void startCalibrate() {
+        desiredPosition = 1;
         calibrated = false;
         talonFX.neutralOutput();
         configSoftwareLimits(false);
@@ -151,18 +152,16 @@ public class GripperSubsystem extends SubsystemBase {
     private void endCalibrate() {
         configSoftwareLimits(true);
         calibrated = true;
+        System.out.println("Ended Gripper Calibration.");
     }
 
     public Command getCalibrateSequence() {
-        double waitTime = 1;
         return new SequentialCommandGroup(
             new InstantCommand(this::startCalibrate, this),
-            new ConditionalCommand(
-                new SequentialCommandGroup(
-                    new InstantCommand(() -> talonFX.set(TalonFXControlMode.PercentOutput, 0.1)),
-                    new WaitCommand(waitTime)), 
-                new InstantCommand(), this::pollLimitSwitch
-            ),
+            new ConditionalCommand(new SequentialCommandGroup(
+                new InstantCommand(() -> talonFX.set(TalonFXControlMode.PercentOutput, -0.05)),
+                new WaitCommand(1.5)
+            ), new InstantCommand(), this::pollLimitSwitch),
             new CalibrateGripperCommand(this),
             new InstantCommand(this::endCalibrate, this)
         );

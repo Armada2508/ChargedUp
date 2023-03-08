@@ -18,8 +18,8 @@ public class ArmCommand extends CommandBase {
      * @param theta degree to go to, 0 is straight down.
      * @param armSubsystem
      */
-    public ArmCommand(double theta, ArmSubsystem armSubsystem) {
-        this(() -> theta, 45, 45, armSubsystem);
+    public ArmCommand(double theta, double velocity, double acceleration, ArmSubsystem armSubsystem) {
+        this(() -> theta, velocity, acceleration, armSubsystem);
     }
 
     /**

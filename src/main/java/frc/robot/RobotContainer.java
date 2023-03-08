@@ -4,8 +4,6 @@ import java.util.Map;
 
 import com.ctre.phoenix.sensors.PigeonIMU;
 
-import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -15,17 +13,26 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Constants.Arm;
 import frc.robot.Constants.Drive;
+import frc.robot.Constants.Gripper;
 import frc.robot.Constants.Wrist;
 import frc.robot.Lib.motion.FollowTrajectory;
 import frc.robot.commands.Arm.ArmCommand;
+import frc.robot.commands.Arm.GripperCommand;
+import frc.robot.commands.Auto.AprilTagCommand;
+import frc.robot.commands.Auto.AprilTagCommand.Position;
+import frc.robot.commands.Auto.PlacePieceCommand;
+import frc.robot.commands.Auto.PlacePieceCommand.Height;
+import frc.robot.commands.Driving.AutoDriveCommand;
 import frc.robot.commands.Driving.ButterySmoothDriveCommand;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.GripperSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
+import frc.robot.subsystems.VisionSubsystem.Target;
 import frc.robot.subsystems.WristSubsystem;
 
 public class RobotContainer {
@@ -44,7 +51,7 @@ public class RobotContainer {
         FollowTrajectory.config(0.31, 1.95, 0.35, 2.0, 0.7, Drive.trackWidthMeters, new PIDController(0.25, 0, 0), 0.875);
         InverseKinematics.config(Arm.jointLengthInches, Wrist.jointLengthInches);
         this.driveSubsystem = new DriveSubsystem(pigeon);
-        driveSubsystem.setDefaultCommand(new ButterySmoothDriveCommand(() -> joystick.getRawAxis(1)*-1 * Drive.speedMultiplier, () -> joystick.getRawAxis(0)*-1,  () -> joystick.getRawAxis(2),driveSubsystem)); // default to driving from joystick input
+        driveSubsystem.setDefaultCommand(new ButterySmoothDriveCommand(() -> joystick.getRawAxis(1)*-1 * Drive.speedMultiplier, () -> joystick.getRawAxis(0)*-1,  () -> joystick.getRawAxis(2) * -1 ,driveSubsystem)); // default to driving from joystick input
         if (RobotBase.isReal()) {
             // configureCamera();
         }
@@ -68,16 +75,20 @@ public class RobotContainer {
         gripperSubsystem.stop();
     }
 
-    public void disabled() {
-        armSubsystem.disable();
-    }
-
     private void configureButtons() {
         // Joystick
-        mapButton(new ArmCommand(90, armSubsystem), 3);
-        mapButton(new ArmCommand(0, armSubsystem), 5);
-        mapButton(armSubsystem.getCalibrateSequence(), 8);
-        mapButton(wristSubsystem.getCalibrateSequence(), 10);
+        mapButton(new ArmCommand(90, 45, 45, armSubsystem), 3);
+        mapButton(new ArmCommand(0, 45, 45, armSubsystem), 5);
+        // mapButton(new WristCommand(30, 10, 10, wristSubsystem), 1);
+        // mapButton(new WristCommand(-30, 10, 10, wristSubsystem), 2);
+        mapButton(Commands.startEnd(() -> wristSubsystem.setPower(.1), wristSubsystem::stop, wristSubsystem), 1);
+        mapButton(Commands.startEnd(() -> wristSubsystem.setPower(-.1), wristSubsystem::stop, wristSubsystem), 2);
+        mapButton(new GripperCommand(Gripper.grabCube, 5, 5, gripperSubsystem), 6);
+        mapButton(new GripperCommand(0, 5, 5, gripperSubsystem), 4);
+        mapButton(new GripperCommand(Gripper.grabCone, 5, 5, gripperSubsystem), 7);
+        mapButton(new InstantCommand(() -> wristSubsystem.calibrate(0)), 9);
+        mapButton(armSubsystem.getCalibrateSequence(gripperSubsystem), 8);
+        mapButton(wristSubsystem.getCalibrateSequence(gripperSubsystem), 10);
         mapButton(gripperSubsystem.getCalibrateSequence(), 12);
         // mapButton(new ConeOnPoleCommand(() -> Height.MID, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), 9);
         // ? final AutoPickupCommand pickup = new AutoPickupCommand(visionSubsystem, driveSubsystem, pigeon, armSubsystem, wristSubsystem, gripperSubsystem);
@@ -155,26 +166,24 @@ public class RobotContainer {
         i++;
     }
 
-    private void configureCamera() {
-        UsbCamera camera = CameraServer.startAutomaticCapture("Camera", 0);
-        camera.setExposureManual(25);
-        camera.setFPS(12);
-        camera.setResolution(426, 240);
-        Shuffleboard.getTab("Vision")
-            .add(CameraServer.getVideo().getSource())
-            .withPosition(0, 4)
-            .withSize(4, 3)
-            .withWidget(BuiltInWidgets.kCameraStream);
-    }
+    // private void configureCamera() {
+    //     UsbCamera camera = CameraServer.startAutomaticCapture("Camera", 0);
+    //     camera.setExposureManual(25);
+    //     camera.setFPS(12);
+    //     camera.setResolution(426, 240);
+    //     Shuffleboard.getTab("Vision")
+    //         .add(CameraServer.getVideo().getSource())
+    //         .withPosition(0, 4)
+    //         .withSize(4, 3)
+    //         .withWidget(BuiltInWidgets.kCameraStream);
+    // }
 
     public Command getAutoCommand() {
-        return new InstantCommand();
-        // return new SequentialCommandGroup(
-            // new AutoTurnCommand(90, driveSubsystem, pigeon),
-            // new AutoDriveCommand(24, driveSubsystem),
-            // new AutoTurnCommand(-90, driveSubsystem, pigeon),
-            // new BalanceCommand(driveSubsystem, pigeon)
-        // );
+        return new SequentialCommandGroup(
+            new AutoDriveCommand(0.25, driveSubsystem),
+            new AprilTagCommand(() -> Position.RIGHT, driveSubsystem, visionSubsystem, pigeon),
+            new PlacePieceCommand(() -> Target.CONE, () -> Height.MID, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem)
+        );
     }
 
 }

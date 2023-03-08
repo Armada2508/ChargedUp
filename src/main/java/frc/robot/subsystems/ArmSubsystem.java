@@ -35,6 +35,7 @@ public class ArmSubsystem extends SubsystemBase {
         talon.configFactoryDefault();
         talon.selectProfileSlot(0, 0);
         talon.configSelectedFeedbackSensor(TalonFXFeedbackDevice.IntegratedSensor, 0, Constants.timeoutMs);
+        talon.setNeutralMode(NeutralMode.Brake);
         talon.config_kP(Arm.moveSlot, Arm.kPMove);
         talon.config_kI(Arm.moveSlot, Arm.kIMove);
         talon.config_kD(Arm.moveSlot, Arm.kDMove);
@@ -56,7 +57,7 @@ public class ArmSubsystem extends SubsystemBase {
         // System.out.println(pollLimitSwitch());
         double left = toAngle(talonFX.getSelectedSensorPosition());
         double right = toAngle(talonFXFollow.getSelectedSensorPosition());
-        System.out.println(Math.abs(right - left));
+        // System.out.println(Math.abs(right - left));
         // SlotConfiguration slot = new SlotConfiguration();
         // talonFX.getSlotConfigs(slot, Arm.holdSlot, 50);
         // System.out.println(slot.kP);
@@ -108,12 +109,6 @@ public class ArmSubsystem extends SubsystemBase {
 
     public void stop() {
         talonFX.neutralOutput();
-    }
-
-    public void disable() {
-        stop();
-        talonFX.setNeutralMode(NeutralMode.Coast);
-        talonFXFollow.setNeutralMode(NeutralMode.Coast);
     }
 
     /**
@@ -188,18 +183,19 @@ public class ArmSubsystem extends SubsystemBase {
         talonFX.setNeutralMode(NeutralMode.Brake);
         talonFXFollow.setNeutralMode(NeutralMode.Brake);
         calibrated = true;
+        System.out.println("Ended Arm Calibration.");
     }
 
-    public Command getCalibrateSequence() {
-        double waitTime = 1;
+    public Command getCalibrateSequence(GripperSubsystem gripperSubsystem) {
+        double waitTime = .5;
         return new SequentialCommandGroup(
             new InstantCommand(this::startCalibrate, this),
-            new InstantCommand(() -> talonFX.set(TalonFXControlMode.PercentOutput, 0.05)),
+            new InstantCommand(() -> talonFX.set(TalonFXControlMode.PercentOutput, 0.07)),
             new WaitCommand(waitTime), 
-            new CalibrateArmCommand(this, talonFX),
-            new InstantCommand(() -> talonFXFollow.set(TalonFXControlMode.PercentOutput, 0.04)),
+            new CalibrateArmCommand(this, talonFX, gripperSubsystem, true),
+            new InstantCommand(() -> talonFXFollow.set(TalonFXControlMode.PercentOutput, 0.07)),
             new WaitCommand(waitTime),
-            new CalibrateArmCommand(this, talonFXFollow),
+            new CalibrateArmCommand(this, talonFXFollow, gripperSubsystem, false),
             new InstantCommand(this::endCalibrate, this)
         );
     }

@@ -15,7 +15,7 @@ public class Constants {
         public static final int LFID = 3;
         public static final int turnAdjustment = 3;
         public static final double speedMultiplier = 1; // For Fredy
-        public static final double joystickDeadband = 0.08;
+        public static final double joystickDeadband = 0.05;
         public static final double slewRate = 1; // This is what helps you not stop abruptly, higher value = stop faster
 
         // Closed Loop Driving
@@ -127,7 +127,7 @@ public class Constants {
         public static final int gearboxRatio = 100;
 
         // Closed Loop
-        public static final double kP = 0;
+        public static final double kP = 0.05;
         public static final double kI = 0;
         public static final double kD = 0;
         public static final double kF = 0;
@@ -135,11 +135,15 @@ public class Constants {
         public static final double minOutput = 0;
 
         // Bad Engineering Constants
-        public static final double armSensorOffset = 0.5;
-        public static final double wristSensorOffset = 0.1;
+        public static final double armSensorMultiplier = .75;
+        public static final double wristSensorMultiplier = 0;
 
         public static final double min = 0;
         public static final double max = 1;
+
+        // Grab Constants
+        public static final double grabCone = max + 0.4;
+        public static final double grabCube = max + 0.1;
     }
 
     // ========================================

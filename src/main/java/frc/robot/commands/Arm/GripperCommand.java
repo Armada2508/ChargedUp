@@ -7,42 +7,44 @@ import frc.robot.subsystems.GripperSubsystem;
 
 public class GripperCommand extends CommandBase {
 
-    private final double percentDeadband = 0.05;
+    private final double positionDeadband = 0.005;
     private double velocity;
     private double acceleration;
-    private DoubleSupplier percentClosed;
+    private DoubleSupplier position;
     private GripperSubsystem gripperSubsystem;
 
-    public GripperCommand(double percentClosed, GripperSubsystem gripperSubsystem) {
-       this(() -> percentClosed, 0.1, 0.1, gripperSubsystem);
+    public GripperCommand(double position, double velocity, double acceleration, GripperSubsystem gripperSubsystem) {
+        this(() -> position, velocity, acceleration, gripperSubsystem);
     }
 
-    public GripperCommand(DoubleSupplier percentClosed, double velocity, double acceleration, GripperSubsystem gripperSubsystem) {
-        this.percentClosed = percentClosed;
+    public GripperCommand(DoubleSupplier position, double velocity, double acceleration, GripperSubsystem gripperSubsystem) {
+        this.position = position;
+        this.velocity = velocity;
+        this.acceleration = acceleration;
         this.gripperSubsystem = gripperSubsystem;
         addRequirements(gripperSubsystem);
     }
 
     @Override
     public void initialize() {
-        gripperSubsystem.configMotionMagic(velocity, acceleration);
-        gripperSubsystem.setPercentClosed(percentClosed.getAsDouble());  
+        gripperSubsystem.setPosition(position.getAsDouble());  
     }
 
     @Override
     public void execute() {
+        // System.out.println("Goin Gripper");
     }
    
     @Override
     public void end(boolean interrupted) {
+        System.out.println("FINISHED GRIPPER COMMAND");
         gripperSubsystem.stop();
-        gripperSubsystem.finishedMoving();
     }
 
     @Override
     public boolean isFinished() {
-        double currentPercent = gripperSubsystem.getPercentClosed();
-        return (currentPercent < gripperSubsystem.getTarget()+percentDeadband && currentPercent > gripperSubsystem.getTarget()-percentDeadband);
+        double currentPosition = gripperSubsystem.getPosition();
+        return (currentPosition < gripperSubsystem.getTarget()+positionDeadband && currentPosition > gripperSubsystem.getTarget()-positionDeadband);
     }
 
 }

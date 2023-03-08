@@ -7,15 +7,20 @@ import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants.Arm;
 import frc.robot.subsystems.ArmSubsystem;
+import frc.robot.subsystems.GripperSubsystem;
 
 public class CalibrateArmCommand extends CommandBase {
 
     private TalonFX talon;
     private ArmSubsystem armSubsystem;
+    private GripperSubsystem gripperSubsystem;
+    private boolean updateGripper;
 
-    public CalibrateArmCommand(ArmSubsystem armSubsystem, TalonFX talon) {
+    public CalibrateArmCommand(ArmSubsystem armSubsystem, TalonFX talon, GripperSubsystem gripperSubsystem, boolean updateGripper) {
         this.talon = talon;
         this.armSubsystem = armSubsystem;
+        this.gripperSubsystem = gripperSubsystem;
+        this.updateGripper = updateGripper;
         addRequirements(armSubsystem);
     }
 
@@ -33,6 +38,9 @@ public class CalibrateArmCommand extends CommandBase {
     public void end(boolean interrupted) {
         talon.setNeutralMode(NeutralMode.Coast);
         talon.neutralOutput();
+        if (updateGripper) {
+            gripperSubsystem.setArmOffset(talon.getSelectedSensorPosition() - armSubsystem.fromAngle(Arm.minDegrees));
+        }
         talon.setSelectedSensorPosition(armSubsystem.fromAngle(Arm.minDegrees));
     }
 

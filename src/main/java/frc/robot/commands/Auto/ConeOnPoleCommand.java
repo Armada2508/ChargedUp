@@ -34,12 +34,12 @@ public class ConeOnPoleCommand extends SequentialCommandGroup {
         addCommands(
             InverseKinematics.getIKPositionCommand(x, y, armSubsystem, wristSubsystem),
             new AutoDriveCommand(initialDistanceMeters, driveSubsystem),
-            new GripperCommand(0, gripperSubsystem),
+            new GripperCommand(0, .1, .1, gripperSubsystem),
             new WaitCommand(.5),
             // Reverse
-            new WristCommand(Wrist.maxDegrees, wristSubsystem),
+            new WristCommand(Wrist.maxDegrees, 10, 10, wristSubsystem),
             new AutoDriveCommand(-initialDistanceMeters, driveSubsystem),
-            new ArmCommand(Arm.minDegrees, armSubsystem)
+            new ArmCommand(Arm.minDegrees, 45, 45, armSubsystem)
         );
     }
 

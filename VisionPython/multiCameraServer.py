@@ -70,11 +70,11 @@ exposure: Final[int] = 40
 #     [0, 0, 1]
 # ])
 
-mtx = np.array([ # from calibrating on calibdb at 1920x1080
-    [1378.7537012386945, 0, 986.8907369291361], 
-    [0, 1375.0934365805474, 513.9387512470897], 
-    [0, 0, 1]
-])
+# mtx = np.array([ # from calibrating on calibdb at 1920x1080
+#     [1378.7537012386945, 0, 986.8907369291361], 
+#     [0, 1375.0934365805474, 513.9387512470897], 
+#     [0, 0, 1]
+# ])
 
 # dist = np.array([ # from calibrating on calibdb at 1280x720
 #     0.14143969201502096,
@@ -84,13 +84,13 @@ mtx = np.array([ # from calibrating on calibdb at 1920x1080
 #     1.849583138331747
 # ])
 
-dist = np.array([ # from calibrating on calibdb at 1920x1080
-    0.018146669363971513,
-    -0.09196321148476025,
-    -0.004476722886212248,
-    0.0047711062648038175,
-    -0.045514759364078325
-])
+# dist = np.array([ # from calibrating on calibdb at 1920x1080
+#     0.018146669363971513,
+#     -0.09196321148476025,
+#     -0.004476722886212248,
+#     0.0047711062648038175,
+#     -0.045514759364078325
+# ])
 
 
 
@@ -243,8 +243,9 @@ def startCameraDesktop() -> None:
     camNum: str = "1"
     print("Starting camera {}".format("USB Camera " + camNum))
     camera = CameraServer.startAutomaticCapture(int(camNum))
-    print("CS: USB Camera {}: Setting Video Mode to PixelFormat {}, Width {}, Height {} and FPS {}".format(camNum, VideoMode.PixelFormat.kMJPEG, resolutionWidth, resolutionHeight, fps))
-    print("CS: USB Camera {}: Set Video Mode Successfully ? ".format(camNum) + str(camera.setVideoMode(VideoMode.PixelFormat.kMJPEG, resolutionWidth, resolutionHeight, fps)))
+    # print("CS: USB Camera {}: Setting Video Mode to PixelFormat {}, Width {}, Height {} and FPS {}".format(camNum, VideoMode.PixelFormat.kMJPEG, resolutionWidth, resolutionHeight, fps))
+    print("CS: USB Camera {}: Setting Video Mode to PixelFormat {}, Width {}, Height {} and FPS {}".format(camNum, VideoMode.PixelFormat.kYUYV, resolutionWidth, resolutionHeight, fps))
+    print("CS: USB Camera {}: Set Video Mode Successfully ? ".format(camNum) + str(camera.setVideoMode(VideoMode.PixelFormat.kYUYV, resolutionWidth, resolutionHeight, fps)))
     camera.setExposureManual(exposure)
     print("CS: USB Camera {}: Setting exposure to {}".format(camNum, exposure))
     camera.setConnectionStrategy(VideoSource.ConnectionStrategy.kConnectionKeepOpen)
@@ -325,7 +326,7 @@ class ColorPipeline(Pipeline):
 conePipeline: ColorPipeline = ColorPipeline(0, "Cone", 15, 40, 150, 255, 180, 255, 1, 1, 150)
 cubePipeline: ColorPipeline = ColorPipeline(0, "Cube", 120, 150, 30, 255, 80, 255, 1, 4, 150)
 config: AprilTagDetector.Config = AprilTagDetector.Config()
-config.quadDecimate = 4
+config.quadDecimate = 0
 config.decodeSharpening = 0.25
 config.quadSigma = 0
 config.refineEdges = True
@@ -361,7 +362,7 @@ def getTagData(pipeline: AprilTagPipeline, result: AprilTagDetection) -> None:
     pipeline.X.setDouble(estimate.X())
     pipeline.Y.setDouble(estimate.Y())
     pipeline.Z.setDouble(estimate.Z())
-    pipeline.Yaw.setDouble(math.degrees(estimate.rotation().Z()))
+    pipeline.Yaw.setDouble(math.degrees(estimate.rotation().Y()))
 
 def drawDetection(drawnImg: Mat, result: AprilTagDetection) -> Mat:
     # Crosshair
@@ -487,12 +488,12 @@ def setupCameraConstants() -> None:
 def main() -> None: # Image proccessing user code
     CameraServer.enableLogging()
     cvSinkHigh = CameraServer.getVideo("Camera Color")
-    cvSinkLow = CameraServer.getVideo("Camera Tag")
+    cvSinkLow = CameraServer.getVideo()
     setupCameraConstants()
     proccessedStream = CameraServer.putVideo("Proccessed Video", resolutionWidth, resolutionHeight)
     originalStream = CameraServer.putVideo("Original Video", resolutionWidth, resolutionHeight)
     mat = np.zeros(shape=(resolutionWidth, resolutionHeight, 3), dtype=np.uint8)
-    mainTable.getEntry("Current Pipeline").setInteger(conePipeline.pipelineIndex.getInteger(0))
+    mainTable.getEntry("Current Pipeline").setInteger(tagPipeline.pipelineIndex.getInteger(0))
     global focalLengthPixels, poseEstimator
     focalLengthPixels = (resolutionWidth/2) / math.tan(horizontalFOVRad/2)
     poseEstimator = AprilTagPoseEstimator(AprilTagPoseEstimator.Config(aprilTagLengthMeters, focalLengthPixels, focalLengthPixels, resolutionWidth/2, resolutionHeight/2))
@@ -511,7 +512,8 @@ def main() -> None: # Image proccessing user code
         error, inputImg = cvSink.grabFrame(mat)
         inputImg: Mat
         if (resolutionWidth == 1280 or resolutionWidth == 1920):
-            inputImg = cv2.undistort(inputImg, mtx, dist)
+            pass
+            # inputImg = cv2.undistort(inputImg, mtx, dist)
         if error == 0: # There is an error
             print("CVSINK ERROR: " + cvSink.getError())
             continue

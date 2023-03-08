@@ -30,8 +30,8 @@ public class AutoPickupCommand extends SequentialCommandGroup {
 
     public AutoPickupCommand(VisionSubsystem visionSubsystem, DriveSubsystem driveSubsystem, PigeonIMU pigeon, ArmSubsystem ArmSubsystem, WristSubsystem WristSubsystem, GripperSubsystem GripperSubsystem) {
         addCommands(
-            new GripperCommand(0, GripperSubsystem),
-            new ArmCommand(Arm.minDegrees, ArmSubsystem),
+            new GripperCommand(0, .1, .1, GripperSubsystem),
+            new ArmCommand(Arm.minDegrees, 45, 45, ArmSubsystem),
             new InstantCommand(() -> visionSubsystem.setPipeline(Target.CONE),visionSubsystem),
             new WaitCommand(0.05),
             new ConditionalCommand(
@@ -46,7 +46,7 @@ public class AutoPickupCommand extends SequentialCommandGroup {
                         InverseKinematics.getIKPositionCommand(cube.getFirst(), cube.getSecond(), ArmSubsystem, WristSubsystem), /*On False | Target.Cube*/
                         () -> getPreviousTarget() == Target.CONE  /*Boolean Supplier*/
                     ),
-                    new ArmCommand(Arm.minDegrees, ArmSubsystem) /* On True for Conditional, Starts at InstantCommand*/
+                    new ArmCommand(Arm.minDegrees, 45, 45, ArmSubsystem) /* On True for Conditional, Starts at InstantCommand*/
                 ),
                 new InstantCommand(), /* On False for Conditional */ 
                 () -> getTarget(visionSubsystem) != Target.NONE /* Boolean Supplier for Conditional */

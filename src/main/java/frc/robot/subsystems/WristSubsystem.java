@@ -141,9 +141,10 @@ public class WristSubsystem extends SubsystemBase {
     private void endCalibrate() {
         configSoftwareLimits(true);
         calibrated = true;
+        System.out.println("Ended Wrist Calibration.");
     }
 
-    public Command getCalibrateSequence() {
+    public Command getCalibrateSequence(GripperSubsystem gripperSubsystem) {
         double waitTime = 1;
         return new SequentialCommandGroup(
             new InstantCommand(this::startCalibrate, this),
@@ -153,7 +154,7 @@ public class WristSubsystem extends SubsystemBase {
                     new WaitCommand(waitTime)), 
                 new InstantCommand(), this::pollLimitSwitch
             ),
-            new CalibrateWristCommand(this),
+            new CalibrateWristCommand(this, gripperSubsystem),
             new InstantCommand(this::endCalibrate, this)
         );
     }
