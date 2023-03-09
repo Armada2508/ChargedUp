@@ -28,10 +28,10 @@ public class AutoPickupCommand extends SequentialCommandGroup {
     private final BetterPair<Double, Double> cube = new BetterPair<>(12.0, 0.0);
     private Target lastTarget = Target.CONE;
 
-    public AutoPickupCommand(VisionSubsystem visionSubsystem, DriveSubsystem driveSubsystem, PigeonIMU pigeon, ArmSubsystem ArmSubsystem, WristSubsystem WristSubsystem, GripperSubsystem GripperSubsystem) {
+    public AutoPickupCommand(VisionSubsystem visionSubsystem, DriveSubsystem driveSubsystem, PigeonIMU pigeon, ArmSubsystem armSubsystem, WristSubsystem wristSubsystem, GripperSubsystem gripperSubsystem) {
         addCommands(
-            new GripperCommand(0, .1, .1, GripperSubsystem),
-            new ArmCommand(Arm.minDegrees, 45, 45, ArmSubsystem),
+            new GripperCommand(0, gripperSubsystem),
+            new ArmCommand(Arm.minDegrees, 45, 45, armSubsystem),
             new InstantCommand(() -> visionSubsystem.setPipeline(Target.CONE),visionSubsystem),
             new WaitCommand(0.05),
             new ConditionalCommand(
@@ -39,14 +39,14 @@ public class AutoPickupCommand extends SequentialCommandGroup {
                     new SeekCommand(this::getPreviousTarget, distanceFromTargetMeters, driveSubsystem, visionSubsystem, pigeon),
                     new ConditionalCommand(
                         new ConditionalCommand(
-                            InverseKinematics.getIKPositionCommand(coneDown.getFirst(), coneDown.getSecond(), ArmSubsystem, WristSubsystem), /*On True  | Landscape Orientation*/
-                            InverseKinematics.getIKPositionCommand(coneUp.getFirst(), coneUp.getSecond(), ArmSubsystem, WristSubsystem), /*On False | Portrait Orientation*/
+                            InverseKinematics.getIKPositionCommand(coneDown.getFirst(), coneDown.getSecond(), armSubsystem, wristSubsystem), /*On True  | Landscape Orientation*/
+                            InverseKinematics.getIKPositionCommand(coneUp.getFirst(), coneUp.getSecond(), armSubsystem, wristSubsystem), /*On False | Portrait Orientation*/
                             () -> visionSubsystem.getTargetOrientation(Target.CONE) == Orientation.LANDSCAPE  /*Boolean Supplier*/
                             ), /*On True  | Target.Cone*/
-                        InverseKinematics.getIKPositionCommand(cube.getFirst(), cube.getSecond(), ArmSubsystem, WristSubsystem), /*On False | Target.Cube*/
+                        InverseKinematics.getIKPositionCommand(cube.getFirst(), cube.getSecond(), armSubsystem, wristSubsystem), /*On False | Target.Cube*/
                         () -> getPreviousTarget() == Target.CONE  /*Boolean Supplier*/
                     ),
-                    new ArmCommand(Arm.minDegrees, 45, 45, ArmSubsystem) /* On True for Conditional, Starts at InstantCommand*/
+                    new ArmCommand(Arm.minDegrees, 45, 45, armSubsystem) /* On True for Conditional, Starts at InstantCommand*/
                 ),
                 new InstantCommand(), /* On False for Conditional */ 
                 () -> getTarget(visionSubsystem) != Target.NONE /* Boolean Supplier for Conditional */

@@ -91,7 +91,7 @@ public class Constants {
         public static final int minDegrees = -23; // Straight down is 0.
         public static final int maxDegrees = 90;
         public static final int limitMargin = 2;
-        public static final int allowedMotorDifference = 7;
+        // public static final int allowedMotorDifference = 7;
 
         // IK
         public static final double jointLengthInches = 35.75;
@@ -138,6 +138,7 @@ public class Constants {
         public static final double armSensorMultiplier = .75;
         public static final double wristSensorMultiplier = 0;
 
+        public static final double limitMargin = 0.5;
         public static final double min = 0;
         public static final double max = 1;
 

@@ -11,37 +11,35 @@ import frc.robot.subsystems.GripperSubsystem;
 
 public class CalibrateArmCommand extends CommandBase {
 
-    private TalonFX talon;
+    private TalonFX talonFX;
     private ArmSubsystem armSubsystem;
     private GripperSubsystem gripperSubsystem;
-    private boolean updateGripper;
 
-    public CalibrateArmCommand(ArmSubsystem armSubsystem, TalonFX talon, GripperSubsystem gripperSubsystem, boolean updateGripper) {
-        this.talon = talon;
+    public CalibrateArmCommand(TalonFX talonFX, ArmSubsystem armSubsystem, GripperSubsystem gripperSubsystem) {
+        this.talonFX = talonFX;
         this.armSubsystem = armSubsystem;
         this.gripperSubsystem = gripperSubsystem;
-        this.updateGripper = updateGripper;
         addRequirements(armSubsystem);
     }
 
     @Override
     public void initialize() {
-        talon.setNeutralMode(NeutralMode.Brake);
-        talon.set(TalonFXControlMode.PercentOutput, -0.04);
+        talonFX.setNeutralMode(NeutralMode.Brake);
+        talonFX.set(TalonFXControlMode.PercentOutput, -0.04);
     }
 
     @Override
     public void execute() {
+        
     }
    
     @Override
     public void end(boolean interrupted) {
-        talon.setNeutralMode(NeutralMode.Coast);
-        talon.neutralOutput();
-        if (updateGripper) {
-            gripperSubsystem.setArmOffset(talon.getSelectedSensorPosition() - armSubsystem.fromAngle(Arm.minDegrees));
-        }
-        talon.setSelectedSensorPosition(armSubsystem.fromAngle(Arm.minDegrees));
+        double calibrateAngle = Arm.minDegrees;
+        armSubsystem.stop();
+        gripperSubsystem.setArmOffset(talonFX.getSelectedSensorPosition() - armSubsystem.fromAngle(calibrateAngle));
+        talonFX.setSelectedSensorPosition(armSubsystem.fromAngle(calibrateAngle));
+        talonFX.setNeutralMode(NeutralMode.Coast);
     }
 
     @Override

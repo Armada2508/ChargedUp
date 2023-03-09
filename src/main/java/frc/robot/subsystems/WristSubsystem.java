@@ -9,6 +9,7 @@ import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
@@ -17,7 +18,6 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants;
 import frc.robot.Constants.Wrist;
 import frc.robot.Lib.Encoder;
-import frc.robot.commands.Arm.CalibrateWristCommand;
 
 public class WristSubsystem extends SubsystemBase {
 
@@ -123,7 +123,7 @@ public class WristSubsystem extends SubsystemBase {
         return talonFX.isRevLimitSwitchClosed() == 1;
     }
 
-    public void calibrate(double pos) {
+    private void setSensor(double pos) {
         talonFX.setSelectedSensorPosition(pos);
     }
 
@@ -150,12 +150,23 @@ public class WristSubsystem extends SubsystemBase {
             new InstantCommand(this::startCalibrate, this),
             new ConditionalCommand(
                 new SequentialCommandGroup(
-                    new InstantCommand(() -> talonFX.set(TalonFXControlMode.PercentOutput, 0.1)),
+                    new InstantCommand(() -> talonFX.set(TalonFXControlMode.PercentOutput, -0.05)),
                     new WaitCommand(waitTime)), 
                 new InstantCommand(), this::pollLimitSwitch
             ),
-            new CalibrateWristCommand(this, gripperSubsystem),
+            calibrateWrist(gripperSubsystem),
             new InstantCommand(this::endCalibrate, this)
+        );
+    }
+
+    private Command calibrateWrist(GripperSubsystem gripperSubsystem) {
+        return Commands.runOnce(() -> setPower(0.05), this).until(this::pollLimitSwitch).finallyDo(
+            (bool) -> {
+                stop();
+                double calibrateAngle = Wrist.maxDegrees;
+                gripperSubsystem.setWristOffset(getSensorPosition() - fromAngle(calibrateAngle));
+                setSensor(fromAngle(calibrateAngle));
+            }
         );
     }
 
