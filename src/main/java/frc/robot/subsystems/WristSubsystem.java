@@ -9,12 +9,11 @@ import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.Constants;
 import frc.robot.Constants.Wrist;
 import frc.robot.Lib.Encoder;
@@ -44,12 +43,16 @@ public class WristSubsystem extends SubsystemBase {
         talon.configForwardSoftLimitThreshold(fromAngle(Wrist.maxDegrees), Constants.timeoutMs);
         talon.configReverseSoftLimitThreshold(fromAngle(Wrist.minDegrees), Constants.timeoutMs);
     }
+    
+    @Override
+    public void periodic() {
+        // System.out.println(pollLimitSwitch());
+    }
 
     /**
      * @param power to set the motor between -1.0 and 1.0
      */
     public void setPower(double power) {
-        if (!calibrated) return;
         talonFX.set(TalonFXControlMode.PercentOutput, power);
     }
 
@@ -120,7 +123,7 @@ public class WristSubsystem extends SubsystemBase {
     }
 
     public boolean pollLimitSwitch() {
-        return talonFX.isRevLimitSwitchClosed() == 1;
+        return talonFX.isFwdLimitSwitchClosed() == 1;
     }
 
     private void setSensor(double pos) {
@@ -133,6 +136,7 @@ public class WristSubsystem extends SubsystemBase {
     }
 
     private void startCalibrate() {
+        System.out.println("Started Wrist Calibration.");
         calibrated = false;
         talonFX.neutralOutput();
         configSoftwareLimits(false);
@@ -145,13 +149,12 @@ public class WristSubsystem extends SubsystemBase {
     }
 
     public Command getCalibrateSequence(GripperSubsystem gripperSubsystem) {
-        double waitTime = 1;
         return new SequentialCommandGroup(
             new InstantCommand(this::startCalibrate, this),
             new ConditionalCommand(
                 new SequentialCommandGroup(
                     new InstantCommand(() -> talonFX.set(TalonFXControlMode.PercentOutput, -0.05)),
-                    new WaitCommand(waitTime)), 
+                    new WaitUntilCommand(() -> !pollLimitSwitch())), 
                 new InstantCommand(), this::pollLimitSwitch
             ),
             calibrateWrist(gripperSubsystem),
@@ -160,13 +163,16 @@ public class WristSubsystem extends SubsystemBase {
     }
 
     private Command calibrateWrist(GripperSubsystem gripperSubsystem) {
-        return Commands.runOnce(() -> setPower(0.05), this).until(this::pollLimitSwitch).finallyDo(
-            (bool) -> {
+        return new SequentialCommandGroup(
+            new InstantCommand(() -> setPower(0.10), this),
+            new WaitUntilCommand(this::pollLimitSwitch),
+            new InstantCommand(() -> {
                 stop();
                 double calibrateAngle = Wrist.maxDegrees;
+                // System.out.println(getSensorPosition() + " " + fromAngle(calibrateAngle) + " " + (getSensorPosition() - fromAngle(calibrateAngle)));
                 gripperSubsystem.setWristOffset(getSensorPosition() - fromAngle(calibrateAngle));
                 setSensor(fromAngle(calibrateAngle));
-            }
+            })
         );
     }
 

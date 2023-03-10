@@ -65,3 +65,5 @@ limit switches
 
 arm - blue and white are forward, white is gnd
 arm - red and black are reverse, red is gnd
+
+### keep arm in brake mode when done testing

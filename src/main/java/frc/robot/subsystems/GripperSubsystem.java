@@ -8,23 +8,23 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.Constants;
 import frc.robot.Constants.Gripper;
 
 public class GripperSubsystem extends SubsystemBase {
     
     private boolean calibrated = false;
+    private boolean wasOnLimit = false;
     private double desiredPosition = 1;
     private double armOffset = 0;
     private double wristOffset = 0;
-    private final SlewRateLimiter limiter = new SlewRateLimiter(1);
-    private final double revolutionsToClosed = 25;
+    private final SlewRateLimiter limiter = new SlewRateLimiter(3);
+    private final double revolutionsToClosed = 27;
     private final WPI_TalonFX talonFX = new WPI_TalonFX(Gripper.motorID);
     private final ArmSubsystem armSubsystem;
     private final WristSubsystem wristSubsystem;
@@ -39,17 +39,31 @@ public class GripperSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
+        if (this.getCurrentCommand() != null) {
+            // System.out.println(this.getCurrentCommand().getName());
+        }
+        if (pollLimitSwitch() && calibrated) {
+            setPower(-0.1);
+            desiredPosition = toPosition(talonFX.getSelectedSensorPosition());
+            limiter.reset(desiredPosition);
+            return;
+        } 
         // System.out.println(getPercentClosed());
         // System.out.println(pollLimitSwitch());
-        // System.out.println(talonFX.getSelectedSensorPosition());
+        // System.out.println(talonFX.getSelectedSensorPosition() + " " + toPosition(talonFX.getSelectedSensorPosition()));
         // System.out.println(fromPercent(1) + " " + fromVelocity(1) + " " + toPercent(fromPercent(1)));
         // System.out.println(talonFX.getClosedLoopError());
         // System.out.println(fromPosition(0.01));
-        double arm = armSubsystem.getSensorPosition();
-        double wrist = wristSubsystem.getSensorPosition();
-        double pos = limiter.calculate(desiredPosition);
-        System.out.println("Desired Position: " + desiredPosition + " Limited Position: " + pos + " Arm: " + arm + " Wrist: " + wrist + " ArmOffset: " + armOffset + " WristOffset: " + wristOffset);
-        talonFX.set(TalonFXControlMode.Position, fromPosition(pos) + ((arm + armOffset) * Gripper.armSensorMultiplier) + ((wrist + wristOffset) * Gripper.wristSensorMultiplier));    
+        if (calibrated) {
+            double arm = armSubsystem.getSensorPosition();
+            double wrist = wristSubsystem.getSensorPosition();
+            double pos = limiter.calculate(desiredPosition);
+            // System.out.println(wrist + " " + wristOffset + " " + (wrist + wristOffset));
+            // System.out.println(fromPosition(pos) + ((arm + armOffset) * Gripper.armSensorMultiplier) + ((wrist + wristOffset) * Gripper.wristSensorMultiplier));
+            // System.out.println("Desired Position: " + desiredPosition + " Limited Position: " + pos + " Arm: " + arm + " Wrist: " + wrist + " ArmOffset: " + armOffset + " WristOffset: " + wristOffset);
+            talonFX.set(TalonFXControlMode.Position, fromPosition(pos) + ((arm + armOffset) * Gripper.armSensorMultiplier) + ((wrist + wristOffset) * Gripper.wristSensorMultiplier));  
+        }
+        wasOnLimit = pollLimitSwitch();
     }
 
     public void setArmOffset(double offsetSensorUnits) {
@@ -58,6 +72,7 @@ public class GripperSubsystem extends SubsystemBase {
     }
 
     public void setWristOffset(double offsetSensorUnits) {
+        // System.out.println(offsetSensorUnits);
         wristOffset = offsetSensorUnits;
     }
 
@@ -74,8 +89,6 @@ public class GripperSubsystem extends SubsystemBase {
         talon.configClosedLoopPeakOutput(0, Gripper.maxOutput);
         talon.configNominalOutputForward(Gripper.minOutput);
         talon.configNominalOutputReverse(Gripper.minOutput);
-        talon.configForwardSoftLimitThreshold(fromPosition(Gripper.grabCone + Gripper.limitMargin), Constants.timeoutMs);
-        talon.configReverseSoftLimitThreshold(fromPosition(Gripper.min - Gripper.limitMargin), Constants.timeoutMs);
     }
 
     /**
@@ -132,21 +145,15 @@ public class GripperSubsystem extends SubsystemBase {
         talonFX.setSelectedSensorPosition(pos);
     }
 
-    private void configSoftwareLimits(boolean enable) {
-        talonFX.configForwardSoftLimitEnable(enable, Constants.timeoutMs);
-        talonFX.configReverseSoftLimitEnable(enable, Constants.timeoutMs);
-    }
-
     private void startCalibrate() {
-        desiredPosition = 1;
-        limiter.reset(1);
+        System.out.println("Started Gripper Calibration.");
+        desiredPosition = Gripper.max;
+        limiter.reset(Gripper.max);
         calibrated = false;
         talonFX.neutralOutput();
-        configSoftwareLimits(false);
     }
 
     private void endCalibrate() {
-        configSoftwareLimits(true);
         calibrated = true;
         System.out.println("Ended Gripper Calibration.");
     }
@@ -155,8 +162,8 @@ public class GripperSubsystem extends SubsystemBase {
         return new SequentialCommandGroup(
             new InstantCommand(this::startCalibrate, this),
             new ConditionalCommand(new SequentialCommandGroup(
-                new InstantCommand(() -> setPower(-0.05)),
-                new WaitCommand(1.5)
+                new InstantCommand(() -> setPower(-0.1)),
+                new WaitUntilCommand(() -> !pollLimitSwitch())
             ), new InstantCommand(), this::pollLimitSwitch),
             calibrateGripper(),
             new InstantCommand(this::endCalibrate, this)
@@ -164,11 +171,13 @@ public class GripperSubsystem extends SubsystemBase {
     }
 
     private Command calibrateGripper() {
-        return Commands.runOnce(() -> setPower(0.12), this).until(this::pollLimitSwitch).finallyDo(
-            (bool) -> {
+        return new SequentialCommandGroup(
+            new InstantCommand(() -> setPower(0.12), this),
+            new WaitUntilCommand(this::pollLimitSwitch),
+            new InstantCommand(() -> {
                 stop();
-                setSensor(fromPosition(Gripper.max));
-            }
+                setSensor(fromPosition(Gripper.max) + ((armSubsystem.getSensorPosition() + armOffset) * Gripper.armSensorMultiplier) + ((wristSubsystem.getSensorPosition() + wristOffset) * Gripper.wristSensorMultiplier));
+            })
         );
     }
 

@@ -21,17 +21,12 @@ import frc.robot.Constants.Wrist;
 import frc.robot.Lib.motion.FollowTrajectory;
 import frc.robot.commands.Arm.ArmCommand;
 import frc.robot.commands.Arm.GripperCommand;
-import frc.robot.commands.Auto.AprilTagCommand;
-import frc.robot.commands.Auto.AprilTagCommand.Position;
-import frc.robot.commands.Auto.PlacePieceCommand;
-import frc.robot.commands.Auto.PlacePieceCommand.Height;
 import frc.robot.commands.Driving.AutoDriveCommand;
 import frc.robot.commands.Driving.ButterySmoothDriveCommand;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.GripperSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
-import frc.robot.subsystems.VisionSubsystem.Target;
 import frc.robot.subsystems.WristSubsystem;
 
 public class RobotContainer {
@@ -76,23 +71,32 @@ public class RobotContainer {
 
     private void configureButtons() {
         // Joystick
-        mapButton(new ArmCommand(90, 45, 45, armSubsystem), 3);
+        mapButton(new ArmCommand(60, 45, 45, armSubsystem), 3);
         mapButton(new ArmCommand(0, 45, 45, armSubsystem), 5);
-        // mapButton(new WristCommand(30, 10, 10, wristSubsystem), 1);
-        // mapButton(new WristCommand(-30, 10, 10, wristSubsystem), 2);
-        mapButton(Commands.startEnd(() -> wristSubsystem.setPower(.1), wristSubsystem::stop, wristSubsystem), 1);
-        mapButton(Commands.startEnd(() -> wristSubsystem.setPower(-.1), wristSubsystem::stop, wristSubsystem), 2);
-        mapButton(new GripperCommand(Gripper.grabCube, gripperSubsystem), 6);
-        mapButton(new GripperCommand(0, gripperSubsystem), 4);
-        mapButton(new GripperCommand(Gripper.grabCone, gripperSubsystem), 7);
-        mapButton(armSubsystem.getCalibrateSequence(gripperSubsystem), 8);
-        mapButton(wristSubsystem.getCalibrateSequence(gripperSubsystem), 10);
-        mapButton(gripperSubsystem.getCalibrateSequence(), 12);
+        // // mapButton(new WristCommand(30, 10, 10, wristSubsystem), 1);
+        // // mapButton(new WristCommand(-30, 10, 10, wristSubsystem), 2);
+        new JoystickButton(joystick, 6).whileTrue(Commands.startEnd(() -> wristSubsystem.setPower(.1), wristSubsystem::stop, wristSubsystem));
+        new JoystickButton(joystick, 4).whileTrue(Commands.startEnd(() -> wristSubsystem.setPower(-.1), wristSubsystem::stop, wristSubsystem));
+        // new JoystickButton(joystick, 3).whileTrue(Commands.startEnd(() -> armSubsystem.setPower(-.1), armSubsystem::stop, armSubsystem));
+        // new JoystickButton(joystick, 5).whileTrue(Commands.startEnd(() -> armSubsystem.setPower(.1), armSubsystem::stop, armSubsystem));
+        // mapButton(new GripperCommand(Gripper.grabCube, gripperSubsystem), 6);
+        mapButton(new GripperCommand(0, gripperSubsystem), 2);
+        mapButton(new GripperCommand(Gripper.grabCone, gripperSubsystem), 1);
+        mapButton(armSubsystem.getCalibrateSequence(wristSubsystem, gripperSubsystem), 8);
+        mapButton(gripperSubsystem.getCalibrateSequence(), 10);
+        mapButton(new SequentialCommandGroup(
+            gripperSubsystem.getCalibrateSequence(),
+            wristSubsystem.getCalibrateSequence(gripperSubsystem),
+            armSubsystem.getCalibrateSequence(wristSubsystem, gripperSubsystem)
+        ), 12);
+        // mapButton(armSubsystem.getCalibrateSequence(wristSubsystem, gripperSubsystem), 10);
+        // mapButton(wristSubsystem.getCalibrateSequence(gripperSubsystem), 10);
+        // mapButton(gripperSubsystem.getCalibrateSequence(), 12);
         // mapButton(new ConeOnPoleCommand(() -> Height.MID, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), 9);
         // ? final AutoPickupCommand pickup = new AutoPickupCommand(visionSubsystem, driveSubsystem, pigeon, armSubsystem, wristSubsystem, gripperSubsystem);
         new JoystickButton(joystick, 11).onTrue(Commands.runOnce(this::panicButton)); // AutoStop
         // new JoystickButton(joystick, 11).onTrue(new PrintCommand("stop")); // AutoStop 
-        // new JoystickButton(joystick, 11).onTrue(new BalanceCommand(driveSubsystem, pigeon));
+        // new JoystickButton(joystick, 12).onTrue(new BalanceCommand(driveSubsystem, pigeon));
         // new JoystickButton(buttonBoard, 12).onTrue(new PieceOnTopCommand(pickup::getPreviousTarget, Height.HIGH, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem)); 
         // new JoystickButton(buttonBoard, 11).onTrue(new PieceOnTopCommand(pickup::getPreviousTarget, Height.MID, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem)); 
         // new JoystickButton(buttonBoard, 10).onTrue(new PieceOnFloorCommand(driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem));
@@ -178,9 +182,9 @@ public class RobotContainer {
 
     public Command getAutoCommand() {
         return new SequentialCommandGroup(
-            new AutoDriveCommand(0.25, driveSubsystem),
-            new AprilTagCommand(() -> Position.RIGHT, driveSubsystem, visionSubsystem, pigeon),
-            new PlacePieceCommand(() -> Target.CONE, () -> Height.MID, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem)
+            new AutoDriveCommand(.5, driveSubsystem)
+            // new AprilTagCommand(() -> Position.RIGHT, driveSubsystem, visionSubsystem, pigeon),
+            // new PlacePieceCommand(() -> Target.CONE, () -> Height.MID, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem)
         );
     }
 
