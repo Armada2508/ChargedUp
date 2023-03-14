@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Constants.Arm;
@@ -34,9 +35,10 @@ public class RobotContainer {
     private final WristSubsystem wristSubsystem = new WristSubsystem();
     private final GripperSubsystem gripperSubsystem = new GripperSubsystem(armSubsystem, wristSubsystem);
     private final DriveSubsystem driveSubsystem;
-    private final PigeonIMU pigeon = new PigeonIMU(Constants.pigeonID);
+    private final PigeonIMU pigeon;
 
-    public RobotContainer() {
+    public RobotContainer(PigeonIMU pigeon) {
+        this.pigeon = pigeon;
         pigeon.setYaw(0);
         FollowTrajectory.config(0.31, 1.95, 0.35, 2.0, 0.7, Drive.trackWidthMeters, new PIDController(0.25, 0, 0), 0.875);
         InverseKinematics.config(Arm.jointLengthInches, Wrist.jointLengthInches);
@@ -53,8 +55,8 @@ public class RobotContainer {
     //     return new MoveRelativeCommand(Units.inchesToMeters(12), Units.inchesToMeters(12), 0, driveSubsystem, pigeon);
     // }
 
-    public void mapButton(Command c, int button) {
-        new JoystickButton(joystick, button).onTrue(c);
+    public void mapButton(Command c, int b) {
+        new JoystickButton(joystick, b).onTrue(c);
     }
 
     public void stopEverything() {
@@ -66,6 +68,7 @@ public class RobotContainer {
     }
 
     private void configureButtons() {
+        mapButton(Commands.runOnce(this::stopEverything), 11); // Joystick Stop
         /*
         mapButton(new GripperCommand(Gripper.grabCone, gripperSubsystem), 1); // gripper close
         mapButton(new GripperCommand(0, gripperSubsystem), 2); // gripper open
@@ -85,15 +88,13 @@ public class RobotContainer {
             new ArmCommand(5, 45, 45, armSubsystem)
         ), 9);
 
-        new JoystickButton(joystick, 11).onTrue(Commands.runOnce(this::stopEverything)); // AutoStop
-
         mapButton(new SequentialCommandGroup(
             gripperSubsystem.getCalibrateSequence(),
             wristSubsystem.getCalibrateSequence(gripperSubsystem),
             armSubsystem.getCalibrateSequence(wristSubsystem, gripperSubsystem)
         ), 12);
         */
-        
+        // mapButton(new AltSeekCommand(() -> Target.CONE, 1.5, driveSubsystem, visionSubsystem, pigeon), 10);
         // mapButton(new ArmCommand(60, 45, 45, armSubsystem), 7);
         // mapButton(new ArmCommand(102, 45, 45, armSubsystem), 8);
         // mapButton(new ArmCommand(0, 45, 45, armSubsystem), 5);

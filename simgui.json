@@ -1,8 +1,10 @@
 {
   "HALProvider": {
     "Other Devices": {
-      "window": {
-        "visible": false
+      "Pigeon IMU[8]": {
+        "header": {
+          "open": true
+        }
       }
     },
     "Timing": {
@@ -17,6 +19,24 @@
       "/Shuffleboard/PID Tuning/Balance Pitch PID Controller": "PIDController",
       "/Shuffleboard/PID Tuning/Balance Roll PID Controller": "PIDController",
       "/Shuffleboard/PID Tuning/Turning PID Controller": "PIDController"
+    }
+  },
+  "NetworkTables": {
+    "Transitory Values": {
+      "open": false
+    },
+    "transitory": {
+      "Shuffleboard": {
+        "open": true
+      }
+    }
+  },
+  "NetworkTables Info": {
+    "Connections": {
+      "open": true
+    },
+    "Server": {
+      "open": true
     }
   },
   "Plot": {

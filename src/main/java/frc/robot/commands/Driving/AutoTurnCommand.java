@@ -18,6 +18,7 @@ public class AutoTurnCommand extends CommandBase {
         RobotContainer.addPIDToShuffleBoard(pid, "Turning");
     }
     private final DoubleSupplier relativeDegrees;
+    private final double deadbandDegrees = 0.5;
     private double absoluteTarget;
     private DriveSubsystem driveSubsystem;
     private PigeonIMU pigeon;
@@ -50,7 +51,7 @@ public class AutoTurnCommand extends CommandBase {
         absoluteTarget = pigeon.getYaw() + relativeDegrees.getAsDouble();
         pid.reset();
         pid.setSetpoint(absoluteTarget);
-        pid.setTolerance(0.5);
+        pid.setTolerance(deadbandDegrees);
     }
 
     @Override

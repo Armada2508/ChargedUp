@@ -5,6 +5,7 @@
 package frc.robot;
 
 import com.ctre.phoenix.sensors.PigeonIMU;
+import com.ctre.phoenix.sensors.WPI_PigeonIMU;
 
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -18,7 +19,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 public class Robot extends TimedRobot {
 
   private RobotContainer container;
-  private final PigeonIMU pigeon = new PigeonIMU(Constants.pigeonID);
+  private final PigeonIMU pigeon = new WPI_PigeonIMU(Constants.pigeonID);
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -26,7 +27,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
-    container = new RobotContainer();
+    container = new RobotContainer(pigeon);
   }
 
   /**

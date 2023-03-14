@@ -62,7 +62,7 @@ verticalFOVRad: float
 horizontalFOVRad: float 
 focalLengthPixels: float
 fps: Final[int] = 30
-exposure: Final[int] = 40
+exposure: Final[int] = 35
 
 # mtx = np.array([ # from calibrating on calibdb at 1280x720
 #     [1105.680719099305, 0, 649.8955569954927], 
@@ -487,13 +487,17 @@ def setupCameraConstants() -> None:
     
 def main() -> None: # Image proccessing user code
     CameraServer.enableLogging()
-    cvSinkHigh = CameraServer.getVideo("Camera Color")
-    cvSinkLow = CameraServer.getVideo()
+    if onRPI():
+        cvSinkHigh = CameraServer.getVideo("Camera Color") 
+        cvSinkLow = CameraServer.getVideo("Camera Tag") 
+    else:
+        cvSinkHigh = CameraServer.getVideo()
+        cvSinkLow = CameraServer.getVideo()
     setupCameraConstants()
     proccessedStream = CameraServer.putVideo("Proccessed Video", resolutionWidth, resolutionHeight)
     originalStream = CameraServer.putVideo("Original Video", resolutionWidth, resolutionHeight)
     mat = np.zeros(shape=(resolutionWidth, resolutionHeight, 3), dtype=np.uint8)
-    mainTable.getEntry("Current Pipeline").setInteger(tagPipeline.pipelineIndex.getInteger(0))
+    mainTable.getEntry("Current Pipeline").setInteger(conePipeline.pipelineIndex.getInteger(0))
     global focalLengthPixels, poseEstimator
     focalLengthPixels = (resolutionWidth/2) / math.tan(horizontalFOVRad/2)
     poseEstimator = AprilTagPoseEstimator(AprilTagPoseEstimator.Config(aprilTagLengthMeters, focalLengthPixels, focalLengthPixels, resolutionWidth/2, resolutionHeight/2))
