@@ -37,7 +37,7 @@ public class CalibrateArmCommand extends CommandBase {
     public void end(boolean interrupted) {
         double calibrateAngle = Arm.minDegrees;
         armSubsystem.stop();
-        gripperSubsystem.setArmOffset(talonFX.getSelectedSensorPosition() - armSubsystem.fromAngle(calibrateAngle));
+        gripperSubsystem.updateArmOffset(talonFX.getSelectedSensorPosition() - armSubsystem.fromAngle(calibrateAngle));
         talonFX.setSelectedSensorPosition(armSubsystem.fromAngle(calibrateAngle));
         talonFX.setNeutralMode(NeutralMode.Coast);
     }

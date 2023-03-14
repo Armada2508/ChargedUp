@@ -14,16 +14,16 @@ public class Constants {
         public static final int LID = 2;
         public static final int LFID = 3;
         public static final int turnAdjustment = 3;
-        public static final double speedMultiplier = .25; // For Fredy
-        public static final double joystickDeadband = 0.05;
-        public static final double slewRate = 1; // This is what helps you not stop abruptly, higher value = stop faster
+        public static final double speedMultiplier = .65; // For Fredy
+        public static final double joystickDeadband = 0.07;
+        public static final double slewRate = 1.5; // This is what helps you not stop abruptly, higher value = stop faster
 
         // Closed Loop Driving
-        public static final double kP = 0.1; 
+        public static final double kP = 0.3; 
         public static final double kI = 0;
         public static final double kD = 0;
         public static final double kF = 0; // Probably keep this at 0
-        public static final double maxDriveSpeed = 1;
+        public static final double maxOutput = 1;
 
         // Closed Loop Turning (WPILib not on Falcons)
         public static final double turnkP = 0.01;
@@ -34,23 +34,18 @@ public class Constants {
         // DriveBase
         public static final double wheelDiameterMeters = Units.inchesToMeters(6);
         public static final int encoderUnitsPerRev = 2048;
-        public static final double gearboxRatio = 10.7;
+        public static final double gearboxRatio = 10.71;
         public static final double trackWidthMeters = Util.inchesToMeters(24.5);
     }
 
     public static final class Balance {
-        // Roll PID
-        public static final double rollkP = 0.05;
-        public static final double rollkI = 0;
-        public static final double rollkD = 0;
         // Offsets, gathered at start of match.
         public static double pitchOffset = 0;
-        public static double rollOffset = -2;
         // Speeds
-        public static final double maxSpeed = 0.15;
-        public static final double pitchSpeed = 0.12;
+        public static final double pitchSpeed = 0.15;
         // Pitch angle to start driving at
-        public static final double balanceAngle = 10;
+        public static final double stationAngle = 13;
+        public static final double angleToStop = 10;
     }
 
     public static final class Vision {
@@ -90,7 +85,7 @@ public class Constants {
         public static final int maxAngleDiff = 2; // degrees
 
         public static final int minDegrees = -23; // Straight down is 0.
-        public static final int maxDegrees = 90;
+        public static final int maxDegrees = 105;
         public static final int limitMargin = 2;
         // public static final int allowedMotorDifference = 7;
 
@@ -107,11 +102,10 @@ public class Constants {
         public static final double movementRatio = (drivenPulley/driverPully) * gearboxRatio;
 
         // Closed Loop
-        public static final double kP = 0;
+        public static final double kP = 0.15;
         public static final double kI = 0;
         public static final double kD = 0;
         public static final double kF = 0;
-        public static final double gravityFeedForward = 0; // 0.07
         public static final double maxOutput = 1;
         public static final double minOutput = 0;
 
@@ -144,7 +138,7 @@ public class Constants {
         public static final double max = 1;
 
         // Grab Constants
-        public static final double grabCone = max + 0.7;
+        public static final double grabCone = max + 0.8;
         public static final double grabCube = max;
     }
 

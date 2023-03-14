@@ -33,12 +33,12 @@ public class CubeOnStationCommand extends SequentialCommandGroup {
         }
         addCommands(
             InverseKinematics.getIKPositionCommand(x, y, armSubsystem, wristSubsystem),
-            new AutoDriveCommand(initialDistanceMeters, driveSubsystem),
+            new AutoDriveCommand(initialDistanceMeters, 1, 1, driveSubsystem),
             new GripperCommand(0, gripperSubsystem),
             new WaitCommand(.5),
             // Reverse
             new WristCommand(Wrist.maxDegrees, 10, 10, wristSubsystem),
-            new AutoDriveCommand(-initialDistanceMeters, driveSubsystem),
+            new AutoDriveCommand(-initialDistanceMeters, 1, 1, driveSubsystem),
             new ArmCommand(Arm.minDegrees, 45, 45, armSubsystem)
         );
     }

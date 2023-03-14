@@ -1,6 +1,5 @@
 package frc.robot.subsystems;
 
-import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.DemandType;
 import com.ctre.phoenix.motorcontrol.LimitSwitchNormal;
 import com.ctre.phoenix.motorcontrol.LimitSwitchSource;
@@ -57,13 +56,10 @@ public class ArmSubsystem extends SubsystemBase {
     }
 
     public void periodic() {
-        if (talonFX.getControlMode() == ControlMode.Position && Math.abs(toAngle(talonFX.getSelectedSensorPosition() - talonFX.getClosedLoopTarget())) > Arm.maxAngleDiff) {
-            System.out.println("Cancel Position Mode AHHHHH");
-            talonFX.neutralOutput();
-        }
-        if (this.getCurrentCommand() != null) {
+        // System.out.println(toAngle(talonFX.getSelectedSensorPosition()));
+        // if (this.getCurrentCommand() != null) {
             // System.out.println(this.getCurrentCommand().getName());
-        }
+        // }
         // System.out.println(pollLimitSwitch());
         // double left = toAngle(talonFX.getSelectedSensorPosition());
         // double right = toAngle(talonFXFollow.getSelectedSensorPosition());
@@ -109,12 +105,6 @@ public class ArmSubsystem extends SubsystemBase {
         talonFX.selectProfileSlot(Arm.moveSlot, 0);
         double targetPosition = fromAngle(theta);
         talonFX.set(TalonFXControlMode.MotionMagic, targetPosition, DemandType.ArbitraryFeedForward, getFeedForward(theta));
-    }
-
-    public void holdPosition() {
-        if (!calibrated) return;
-        talonFX.selectProfileSlot(Arm.holdSlot, 0);
-        talonFX.set(TalonFXControlMode.Position, talonFX.getSelectedSensorPosition(), DemandType.ArbitraryFeedForward, getFeedForward(getPosition()));
     }
 
     public void stop() {
@@ -198,17 +188,17 @@ public class ArmSubsystem extends SubsystemBase {
     }
 
     public Command getCalibrateSequence(WristSubsystem wristSubsystem, GripperSubsystem gripperSubsystem) {
-        double waitTime = .5;
+        double waitTime = .25;
         return new ConditionalCommand(
             new SequentialCommandGroup(
                 new InstantCommand(this::startCalibrate, this),
                 new ConditionalCommand(new SequentialCommandGroup(
-                    new InstantCommand(() -> talonFX.set(TalonFXControlMode.PercentOutput, 0.02)),
+                    new InstantCommand(() -> talonFX.set(TalonFXControlMode.PercentOutput, 0.20)),
                     new WaitCommand(waitTime)
-                ), new InstantCommand(), this::pollLimitSwitch),
+                ), new InstantCommand(), () -> true),
                 new CalibrateArmCommand(talonFX, this, gripperSubsystem),
                 new InstantCommand(() -> talonFXFollow.set(TalonFXControlMode.PercentOutput, 0.02)),
-                new WaitCommand(waitTime),
+                new WaitCommand(.5),
                 fixFollower(),
                 new InstantCommand(this::endCalibrate, this)
         ), new InstantCommand(), wristSubsystem::pollLimitSwitch);

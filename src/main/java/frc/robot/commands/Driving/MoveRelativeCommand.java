@@ -34,9 +34,9 @@ public class MoveRelativeCommand extends SequentialCommandGroup {
         this.targetX = targetX;
         addCommands(
             new InstantCommand(this::getDegreeOffset),
-            new AutoDriveCommand(targetY.getAsDouble(), driveSubsystem),
+            new AutoDriveCommand(targetY.getAsDouble(), 1, 1, driveSubsystem),
             new AutoTurnCommand(degreeOffset, driveSubsystem, pigeon),
-            new AutoDriveCommand(targetX.getAsDouble(), driveSubsystem),
+            new AutoDriveCommand(targetX.getAsDouble(), 1, 1, driveSubsystem),
             new AutoTurnCommand(targetDegrees.getAsDouble() - degreeOffset, driveSubsystem, pigeon)
         );
     }

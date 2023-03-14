@@ -40,7 +40,7 @@ public class GripperCommand extends CommandBase {
     @Override
     public boolean isFinished() {
         double currentPosition = gripperSubsystem.getPosition();
-        return (currentPosition < gripperSubsystem.getTarget()+positionDeadband && currentPosition > gripperSubsystem.getTarget()-positionDeadband);
+        return (currentPosition < gripperSubsystem.getTarget()+positionDeadband && currentPosition > gripperSubsystem.getTarget()-positionDeadband) || (gripperSubsystem.pollLimitSwitch());
     }
 
 }

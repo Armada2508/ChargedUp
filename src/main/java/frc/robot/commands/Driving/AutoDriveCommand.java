@@ -10,23 +10,25 @@ public class AutoDriveCommand extends CommandBase {
 
     private final double distanceDeadbandMeters = Units.inchesToMeters(1.1);
     private final DoubleSupplier targetDistance;
-    private double absoluteTarget;
+    private double velocity;
+    private double acceleration;
     private DriveSubsystem driveSubsystem;
 
-    public AutoDriveCommand(double distanceMeters, DriveSubsystem driveSubsystem) {
-        this(() -> distanceMeters, driveSubsystem);
+    public AutoDriveCommand(double distanceMeters, double velocity, double acceleration, DriveSubsystem driveSubsystem) {
+        this(() -> distanceMeters, velocity, acceleration, driveSubsystem);
     }
     
-    public AutoDriveCommand(DoubleSupplier distanceMeters, DriveSubsystem driveSubsystem) {
+    public AutoDriveCommand(DoubleSupplier distanceMeters, double velocity, double acceleration, DriveSubsystem driveSubsystem) {
         targetDistance = distanceMeters;
         this.driveSubsystem = driveSubsystem;
+        this.velocity = velocity;
+        this.acceleration = acceleration;
         addRequirements(driveSubsystem);
     }
 
     @Override
     public void initialize() {
-        absoluteTarget = driveSubsystem.getleftPostition() + targetDistance.getAsDouble();
-        driveSubsystem.configMotionMagic(3, 1);
+        driveSubsystem.configMotionMagic(velocity, acceleration);
         driveSubsystem.driveDistance(targetDistance.getAsDouble());
     }
 
@@ -41,8 +43,8 @@ public class AutoDriveCommand extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        double currentPos = driveSubsystem.getMotionMagicPosition();
-        return (currentPos < absoluteTarget+distanceDeadbandMeters && currentPos > absoluteTarget-distanceDeadbandMeters);
+        double currentPos = driveSubsystem.getleftPostition();
+        return (currentPos < driveSubsystem.getTarget()+distanceDeadbandMeters && currentPos > driveSubsystem.getTarget()-distanceDeadbandMeters);
     }
 
 }

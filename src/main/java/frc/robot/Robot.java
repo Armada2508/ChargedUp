@@ -55,7 +55,6 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     Constants.Balance.pitchOffset = pigeon.getPitch();
-    Constants.Balance.rollOffset = pigeon.getRoll();
     container.getAutoCommand().schedule();
   }
 
@@ -78,7 +77,7 @@ public class Robot extends TimedRobot {
   /** This function is called once when the robot is disabled. */
   @Override
   public void disabledInit() {
-    CommandScheduler.getInstance().cancelAll();
+    container.stopEverything();
   }
 
   /** This function is called periodically when disabled. */

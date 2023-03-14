@@ -48,22 +48,5 @@
 ! = test <br>
 ? = review
 
-## poo poo
 
-
-~~slew rate limiter~~
-~~constant curvature~~ ?
-velocity closed loop driving - ima put this on back burner for a while
-
-Layers of protection against slamming into things
-
-~~Software limits,~~
-~~Clamping position in setPosition methods~~
-set max velocity or max acceleration in talon firmware - peak output is velocity, acceleration is bad ig
-
-limit switches
-
-arm - blue and white are forward, white is gnd
-arm - red and black are reverse, red is gnd
-
-### keep arm in brake mode when done testing
+# Reminders

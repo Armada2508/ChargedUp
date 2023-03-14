@@ -43,20 +43,18 @@ public class ArmCommand extends CommandBase {
 
     @Override
     public void execute() {
-        // System.out.println("Goin !");
+
     }
    
     @Override
     public void end(boolean interrupted) {
-        armSubsystem.stop();
-        armSubsystem.holdPosition();
+
     }
 
     @Override
     public boolean isFinished() {
-        // System.out.println("FINISHED MOTION MAGIC");
         double currentDegrees = armSubsystem.getPosition();
-        // System.out.println(currentDegrees + " " + armSubsystem.getTarget());
+        // System.out.println("ARM: " + currentDegrees + " " + armSubsystem.getTarget());
         return (currentDegrees < armSubsystem.getTarget()+degreesDeadband && currentDegrees > armSubsystem.getTarget()-degreesDeadband);
     }
     

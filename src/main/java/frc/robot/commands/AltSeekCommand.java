@@ -30,7 +30,7 @@ public class AltSeekCommand extends ParallelRaceGroup {
     public AltSeekCommand(Supplier<Target> target, double distanceFromTargetMeters, DriveSubsystem driveSubsystem, VisionSubsystem visionSubsystem, PigeonIMU pigeon) {
         this.target = target;
         this.visionSubsystem = visionSubsystem;
-        Command drive = new AutoDriveCommand(() -> visionSubsystem.distanceFromTargetMeters(target.get()) - distanceFromTargetMeters, driveSubsystem);
+        Command drive = new AutoDriveCommand(() -> visionSubsystem.distanceFromTargetMeters(target.get()) - distanceFromTargetMeters, 1, 1, driveSubsystem);
         SequentialCommandGroup group = new SequentialCommandGroup(
             new ConditionalCommand(new AutoTurnCommand(() -> visionSubsystem.getTargetYaw(target.get()), driveSubsystem, pigeon), new InstantCommand(), this::doTurn),
             // drive

@@ -38,7 +38,6 @@ public class DriveSubsystem extends SubsystemBase {
         talonFXRfollow.setInverted(true);
         talonFXLfollow.follow(talonFXL);
         talonFXRfollow.follow(talonFXR);
-        calibrate(0);
         odometry = new DifferentialDriveOdometry(Rotation2d.fromDegrees(getHeading()), getleftPostition(), getRightPostition());
     }
 
@@ -52,7 +51,7 @@ public class DriveSubsystem extends SubsystemBase {
         talon.config_kD(0, Drive.kD);
         talon.config_kF(0, Drive.kF);
         talon.configNeutralDeadband(0.001);
-        talon.configClosedLoopPeakOutput(0, Drive.maxDriveSpeed);
+        talon.configClosedLoopPeakOutput(0, Drive.maxOutput);
         
     }
 
@@ -74,8 +73,8 @@ public class DriveSubsystem extends SubsystemBase {
         talonFXL.setIntegralAccumulator(0);
         talonFXR.setIntegralAccumulator(0);
         double sensorUnits = Encoder.fromDistance(distanceMeters, Drive.encoderUnitsPerRev, Drive.gearboxRatio, Drive.wheelDiameterMeters);
-        talonFXL.set(TalonFXControlMode.MotionMagic, talonFXL.getSelectedSensorPosition()+sensorUnits);
-        talonFXR.set(TalonFXControlMode.MotionMagic, talonFXR.getSelectedSensorPosition()+sensorUnits);
+        talonFXL.set(TalonFXControlMode.MotionMagic, (talonFXL.getSelectedSensorPosition()+sensorUnits));
+        talonFXR.set(TalonFXControlMode.MotionMagic, (talonFXR.getSelectedSensorPosition()+sensorUnits));
     }
 
     public void stop() {
@@ -116,10 +115,10 @@ public class DriveSubsystem extends SubsystemBase {
         return Encoder.toDistance(talonFXR.getSelectedSensorPosition(), Drive.encoderUnitsPerRev, Drive.gearboxRatio, Drive.wheelDiameterMeters); 
     }
 
-    public double getMotionMagicPosition() {
-        return Encoder.toDistance(talonFXL.getActiveTrajectoryPosition(), Drive.encoderUnitsPerRev, Drive.gearboxRatio, Drive.wheelDiameterMeters);
+    public double getTarget() {
+        return Encoder.toDistance(talonFXL.getClosedLoopTarget(), Drive.encoderUnitsPerRev, Drive.gearboxRatio, Drive.wheelDiameterMeters);
     }
-    
+
     /**
      * Put motors in brake mode
      */

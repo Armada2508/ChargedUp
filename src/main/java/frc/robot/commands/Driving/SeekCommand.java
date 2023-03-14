@@ -21,7 +21,7 @@ public class SeekCommand extends SequentialCommandGroup {
         addCommands(
             new AutoTurnCommand(() -> visionSubsystem.getTargetYaw(target.get()), driveSubsystem, pigeon),
             new DriveUntilCommand(driveSubsystem, visionSubsystem, target.get()),
-            new AutoDriveCommand(() -> visionSubsystem.distanceFromTargetMeters(target.get()) - distanceFromTargetMeters, driveSubsystem)
+            new AutoDriveCommand(() -> visionSubsystem.distanceFromTargetMeters(target.get()) - distanceFromTargetMeters, 1, 1, driveSubsystem)
         );
     }
 

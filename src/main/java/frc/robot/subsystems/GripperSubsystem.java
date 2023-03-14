@@ -19,7 +19,6 @@ import frc.robot.Constants.Gripper;
 public class GripperSubsystem extends SubsystemBase {
     
     private boolean calibrated = false;
-    private boolean wasOnLimit = false;
     private double desiredPosition = 1;
     private double armOffset = 0;
     private double wristOffset = 0;
@@ -33,8 +32,8 @@ public class GripperSubsystem extends SubsystemBase {
         this.armSubsystem = armSubsystem;
         this.wristSubsystem = wristSubsystem;
         configureMotor(talonFX);
-        setArmOffset(-armSubsystem.getSensorPosition());
-        setWristOffset(-wristSubsystem.getSensorPosition());
+        updateArmOffset(-armSubsystem.getSensorPosition());
+        updateWristOffset(-wristSubsystem.getSensorPosition());
     }
 
     @Override
@@ -42,12 +41,13 @@ public class GripperSubsystem extends SubsystemBase {
         if (this.getCurrentCommand() != null) {
             // System.out.println(this.getCurrentCommand().getName());
         }
-        if (pollLimitSwitch() && calibrated) {
-            setPower(-0.1);
-            desiredPosition = toPosition(talonFX.getSelectedSensorPosition());
-            limiter.reset(desiredPosition);
-            return;
-        } 
+        // if (pollLimitSwitch() && calibrated) {
+        //     setPower(-0.05);
+        //     desiredPosition = toPosition(talonFX.getSelectedSensorPosition());
+        //     System.out.println(talonFX.getSelectedSensorPosition() + ", " + desiredPosition);
+        //     limiter.reset(desiredPosition);
+        //     return;
+        // } 
         // System.out.println(getPercentClosed());
         // System.out.println(pollLimitSwitch());
         // System.out.println(talonFX.getSelectedSensorPosition() + " " + toPosition(talonFX.getSelectedSensorPosition()));
@@ -63,17 +63,16 @@ public class GripperSubsystem extends SubsystemBase {
             // System.out.println("Desired Position: " + desiredPosition + " Limited Position: " + pos + " Arm: " + arm + " Wrist: " + wrist + " ArmOffset: " + armOffset + " WristOffset: " + wristOffset);
             talonFX.set(TalonFXControlMode.Position, fromPosition(pos) + ((arm + armOffset) * Gripper.armSensorMultiplier) + ((wrist + wristOffset) * Gripper.wristSensorMultiplier));  
         }
-        wasOnLimit = pollLimitSwitch();
     }
 
-    public void setArmOffset(double offsetSensorUnits) {
+    public void updateArmOffset(double offsetSensorUnits) {
         // System.out.println("Arm Offset: " + offset);
-        armOffset = offsetSensorUnits;
+        armOffset += offsetSensorUnits;
     }
 
-    public void setWristOffset(double offsetSensorUnits) {
+    public void updateWristOffset(double offsetSensorUnits) {
         // System.out.println(offsetSensorUnits);
-        wristOffset = offsetSensorUnits;
+        wristOffset += offsetSensorUnits;
     }
 
     private void configureMotor(TalonFX talon) {
