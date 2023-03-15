@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Constants.Arm;
 import frc.robot.Constants.Drive;
@@ -29,31 +30,46 @@ import frc.robot.subsystems.WristSubsystem;
 public class RobotContainer {
 
     private final Joystick joystick = new Joystick(0);
-    private final Joystick buttonBoard = new Joystick(1);
+    // private final Joystick buttonBoard = new Joystick(1);
+    private final DriveSubsystem driveSubsystem;
     private final VisionSubsystem visionSubsystem = new VisionSubsystem();
     private final ArmSubsystem armSubsystem = new ArmSubsystem();
     private final WristSubsystem wristSubsystem = new WristSubsystem();
     private final GripperSubsystem gripperSubsystem = new GripperSubsystem(armSubsystem, wristSubsystem);
-    private final DriveSubsystem driveSubsystem;
+    private final SubsystemBase loggerSubsystem = new SubsystemBase() {};
+    private SubsystemBase[] subsystems;
     private final PigeonIMU pigeon;
 
     public RobotContainer(PigeonIMU pigeon) {
         this.pigeon = pigeon;
+        this.driveSubsystem = new DriveSubsystem(pigeon);
+        subsystems = new SubsystemBase[]{driveSubsystem, visionSubsystem, armSubsystem, wristSubsystem, gripperSubsystem};
         pigeon.setYaw(0);
         FollowTrajectory.config(0.31, 1.95, 0.35, 2.0, 0.7, Drive.trackWidthMeters, new PIDController(0.25, 0, 0), 0.875);
         InverseKinematics.config(Arm.jointLengthInches, Wrist.jointLengthInches);
-        this.driveSubsystem = new DriveSubsystem(pigeon);
-        driveSubsystem.setDefaultCommand(new ButterySmoothDriveCommand(() -> joystick.getRawAxis(1)*-1 * Drive.speedMultiplier, () -> joystick.getRawAxis(0)*-1,  () -> joystick.getRawAxis(2) * -1, true, driveSubsystem)); // default to driving from joystick input
+        driveSubsystem.setDefaultCommand(new ButterySmoothDriveCommand(() -> joystick.getRawAxis(1)*-1 * Drive.speedMultiplier, () -> joystick.getRawAxis(0)*-1,  () -> joystick.getRawAxis(2) * -1, () -> joystick.getRawButton(4), true, driveSubsystem)); // default to driving from joystick input
         if (RobotBase.isReal()) {
             // configureCamera();
         }
         configureShuffleboard();
         configureButtons();
+        // logSubsystems();
     }
 
-    // private Command testTrajectory() {
-    //     return new MoveRelativeCommand(Units.inchesToMeters(12), Units.inchesToMeters(12), 0, driveSubsystem, pigeon);
-    // }
+    @SuppressWarnings("unused")
+    private void logSubsystems() {
+        loggerSubsystem.setDefaultCommand(Commands.run(() -> {
+            System.out.println("\n");
+            System.out.println("DEBUG: Subsystem Logger");
+            for (int i = 0; i < subsystems.length; i++) {
+                String name = "None";
+                if (subsystems[i].getCurrentCommand() != null) {
+                    name = subsystems[i].getCurrentCommand().getName();
+                }
+                System.out.println(subsystems[i].getName() + ": " + name);
+            }
+        }, loggerSubsystem));
+    }
 
     public void mapButton(Command c, int b) {
         new JoystickButton(joystick, b).onTrue(c);
@@ -68,6 +84,7 @@ public class RobotContainer {
     }
 
     private void configureButtons() {
+        //! Button 4 is used for slow speed.
         mapButton(Commands.runOnce(this::stopEverything), 11); // Joystick Stop
         /*
         mapButton(new GripperCommand(Gripper.grabCone, gripperSubsystem), 1); // gripper close
@@ -101,7 +118,6 @@ public class RobotContainer {
         // // mapButton(new WristCommand(30, 10, 10, wristSubsystem), 1);
         // // mapButton(new WristCommand(-30, 10, 10, wristSubsystem), 2);
         // new JoystickButton(joystick, 6).whileTrue(Commands.startEnd(() -> wristSubsystem.setPower(.1), wristSubsystem::stop, wristSubsystem));
-        // new JoystickButton(joystick, 4).whileTrue(Commands.startEnd(() -> wristSubsystem.setPower(-.1), wristSubsystem::stop, wristSubsystem));
         // mapButton(new WristCommand(0, 180, 180, wristSubsystem), 10);
         // mapButton(new WristCommand(-45, 180, 180, wristSubsystem), 9);
         // new JoystickButton(joystick, 3).whileTrue(Commands.startEnd(() -> armSubsystem.setPower(-.1), armSubsystem::stop, armSubsystem));
@@ -129,7 +145,6 @@ public class RobotContainer {
         // new JoystickButton(joystick, 7).onTrue(new AprilTagCommand(new Pose2d(Units.inchesToMeters(24), 0, new Rotation2d()), driveSubsystem, visionSubsystem, pigeon));
         // new JoystickButton(joystick, 6).onTrue(new AutoDriveCommand(Units.inchesToMeters(36), driveSubsystem));
         // new JoystickButton(joystick, 5).onTrue(new AutoTurnCommand(45, driveSubsystem, pigeon));
-        // new JoystickButton(joystick, 4).onTrue(new AutoDriveCommand(Units.inchesToMeters(-36), driveSubsystem));
         // new JoystickButton(joystick, 3).onTrue(new AutoTurnCommand(-45, driveSubsystem, pigeon));
         // new JoystickButton(joystick, 3).onTrue(Commands.startEnd(() -> driveSubsystem.setPower(0.15, 0.15), () -> driveSubsystem.setPower(0, 0), driveSubsystem));
         // new JoystickButton(joystick, 5).onTrue(runOnce(() -> new AutoTurnCommand(visionSubsystem::getTargetYaw, driveSubsystem, pigeon)));
@@ -211,7 +226,5 @@ public class RobotContainer {
     //         .withSize(4, 3)
     //         .withWidget(BuiltInWidgets.kCameraStream);
     // }
-
-    
 
 }

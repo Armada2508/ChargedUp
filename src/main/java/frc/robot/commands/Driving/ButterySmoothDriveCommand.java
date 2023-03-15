@@ -1,5 +1,6 @@
 package frc.robot.commands.Driving;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
@@ -12,14 +13,16 @@ public class ButterySmoothDriveCommand extends CommandBase {
     private DoubleSupplier joystickSpeed;
     private DoubleSupplier joystickTurn;
     private DoubleSupplier joystickTrim;
+    private BooleanSupplier joystickSlow;
     private boolean squareInputs;
     private DriveSubsystem driveSubsystem;
     private SlewRateLimiter limiterNormal = new SlewRateLimiter(Drive.slewRate);
 
-    public ButterySmoothDriveCommand(DoubleSupplier joystickSpeed, DoubleSupplier joystickTurn, DoubleSupplier joystickTrim,  boolean squareInputs, DriveSubsystem driveSubsystem) {
+    public ButterySmoothDriveCommand(DoubleSupplier joystickSpeed, DoubleSupplier joystickTurn, DoubleSupplier joystickTrim,  BooleanSupplier joystickSlow, boolean squareInputs, DriveSubsystem driveSubsystem) {
         this.joystickSpeed = joystickSpeed;
         this.joystickTurn = joystickTurn;
         this.joystickTrim = joystickTrim;
+        this.joystickSlow = joystickSlow;
         this.squareInputs = squareInputs;
         this.driveSubsystem = driveSubsystem;
         addRequirements(driveSubsystem);
@@ -36,7 +39,12 @@ public class ButterySmoothDriveCommand extends CommandBase {
         turn = processDeadband(turn); 
         trim = processDeadband(trim); 
         // Square the inputs
-        if (squareInputs) {
+        if (joystickSlow.getAsBoolean()) {
+            speed = Drive.slowSpeed * speed;
+            turn = Drive.slowSpeed * turn;
+            trim = Drive.slowSpeed * trim;
+        }
+        else if (squareInputs) {
             speed = Math.signum(speed) * (speed * speed);
             turn = Math.signum(turn) * (turn * turn);        
             trim = Math.signum(trim) * (trim * trim);   

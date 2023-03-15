@@ -33,19 +33,27 @@ public class ArmSubsystem extends SubsystemBase {
         talonFXFollow.setInverted(true);
     }
 
+    @Override
+    public void periodic() {
+        // Velocity Check
+        if (Math.abs(toAngle(talonFX.getSelectedSensorVelocity())) * 10 > Arm.maxVelocity) {
+            System.out.println("Arm: HOLY POOP SLOW DOWN");
+            if (this.getCurrentCommand() != null) {
+                this.getCurrentCommand().cancel();
+            }
+            talonFX.neutralOutput(); 
+        } 
+    } 
+
     private void configureMotor(TalonFX talon) {
         talon.configFactoryDefault();
         talon.selectProfileSlot(0, 0);
         talon.configSelectedFeedbackSensor(TalonFXFeedbackDevice.IntegratedSensor, 0, Constants.timeoutMs);
         talon.setNeutralMode(NeutralMode.Brake);
-        talon.config_kP(Arm.moveSlot, Arm.kPMove);
-        talon.config_kI(Arm.moveSlot, Arm.kIMove);
-        talon.config_kD(Arm.moveSlot, Arm.kDMove);
-        talon.config_kF(Arm.moveSlot, Arm.kFMove);
-        talon.config_kP(Arm.holdSlot, Arm.kPHold);
-        talon.config_kI(Arm.holdSlot, Arm.kIHold);
-        talon.config_kD(Arm.holdSlot, Arm.kDHold);
-        talon.config_kF(Arm.holdSlot, Arm.kFHold);
+        talon.config_kP(0, Arm.kP);
+        talon.config_kI(0, Arm.kI);
+        talon.config_kD(0, Arm.kD);
+        talon.config_kF(0, Arm.kF);
         talon.configNeutralDeadband(0.001);
         talon.configClosedLoopPeakOutput(0, Arm.maxOutput);
         talon.configNominalOutputForward(Arm.minOutput);
@@ -54,36 +62,6 @@ public class ArmSubsystem extends SubsystemBase {
         talon.configReverseSoftLimitThreshold(fromAngle(Arm.minDegrees + Arm.limitMargin), Constants.timeoutMs);
         talon.configReverseLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyClosed);
     }
-
-    public void periodic() {
-        // System.out.println(toAngle(talonFX.getSelectedSensorPosition()));
-        // if (this.getCurrentCommand() != null) {
-            // System.out.println(this.getCurrentCommand().getName());
-        // }
-        // System.out.println(pollLimitSwitch());
-        // double left = toAngle(talonFX.getSelectedSensorPosition());
-        // double right = toAngle(talonFXFollow.getSelectedSensorPosition());
-        // System.out.println(Math.abs(right - left));
-        // SlotConfiguration slot = new SlotConfiguration();
-        // talonFX.getSlotConfigs(slot, Arm.holdSlot, 50);
-        // System.out.println(slot.kP);
-        // System.out.println(toAngle(talonFX.getClosedLoopTarget()) + " " + getPosition());
-        // if ((Math.abs(right - left) > Arm.allowedMotorDifference) && calibrated) {
-            // if (this.getCurrentCommand() != null) {
-            //     this.getCurrentCommand().cancel();
-            // }
-            // talonFX.neutralOutput(); 
-        // }
-    //    System.out.println(Math.abs(toAngle(talonFX.getSelectedSensorVelocity() * 10)) + " " + Arm.maxVelocity);
-    //    System.out.println(getPosition());
-        if (Math.abs(toAngle(talonFX.getSelectedSensorVelocity())) * 10 > Arm.maxVelocity) {
-            System.out.println("HOLY POOP SLOW DOWN");
-            if (this.getCurrentCommand() != null) {
-                this.getCurrentCommand().cancel();
-            }
-            talonFX.neutralOutput(); 
-        } 
-    } 
 
     /**
      * @param power to set the motor between -1.0 and 1.0
@@ -98,11 +76,9 @@ public class ArmSubsystem extends SubsystemBase {
      * @param theta degrees to go to
      */
     public void setPosition(double theta) {
-        // System.out.println("Setting " + calibrated);
         if (!calibrated) return;
         if (theta > Arm.maxDegrees - Arm.limitMargin) theta = Arm.maxDegrees - Arm.limitMargin;
         if (theta < Arm.minDegrees + Arm.limitMargin) theta = Arm.minDegrees + Arm.limitMargin;
-        talonFX.selectProfileSlot(Arm.moveSlot, 0);
         double targetPosition = fromAngle(theta);
         talonFX.set(TalonFXControlMode.MotionMagic, targetPosition, DemandType.ArbitraryFeedForward, getFeedForward(theta));
     }
@@ -153,7 +129,6 @@ public class ArmSubsystem extends SubsystemBase {
 
     private double getFeedForward(double degrees) {
         double scalar = Math.sin(Math.toRadians(degrees));
-        // System.out.println(Arm.gravityFeedForward * scalar);
         return Arm.gravityFeedForward * scalar;
     }
 

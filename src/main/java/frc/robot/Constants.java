@@ -17,6 +17,7 @@ public class Constants {
         public static final double speedMultiplier = .65; // For Fredy
         public static final double joystickDeadband = 0.07;
         public static final double slewRate = 1.5; // This is what helps you not stop abruptly, higher value = stop faster
+        public static final double slowSpeed = 0.1;
 
         // Closed Loop Driving
         public static final double kP = 0.3; 
@@ -67,27 +68,19 @@ public class Constants {
         public static final int gearboxRatio = 100;
 
         // Closed Loop
-        public static final int moveSlot = 0;
-        public static final int holdSlot = 1;
         // no kF, kF bad, is a circle, L kF
-        public static final double kPMove = 0.2;
-        public static final double kIMove = 0;
-        public static final double kDMove = 0;
-        public static final double kFMove = 0;
-        public static final double kPHold = 0.05;
-        public static final double kIHold = 0;
-        public static final double kDHold = 0;
-        public static final double kFHold = 0;
+        public static final double kP = 0.2;
+        public static final double kI = 0;
+        public static final double kD = 0;
+        public static final double kF = 0;
         public static final double gravityFeedForward = 0.035; 
         public static final double maxOutput = 1;
         public static final double minOutput = 0;
         public static final double maxVelocity = 90; // deg/sec
-        public static final int maxAngleDiff = 2; // degrees
 
         public static final int minDegrees = -23; // Straight down is 0.
         public static final int maxDegrees = 105;
         public static final int limitMargin = 2;
-        // public static final int allowedMotorDifference = 7;
 
         // IK
         public static final double jointLengthInches = 35.75;
@@ -108,6 +101,7 @@ public class Constants {
         public static final double kF = 0;
         public static final double maxOutput = 1;
         public static final double minOutput = 0;
+        public static final double maxVelocity = 90; // deg/sec
 
         public static final int minDegrees = -90; // Straight out is 0.
         public static final int maxDegrees = 90;
@@ -128,12 +122,12 @@ public class Constants {
         public static final double kF = 0;
         public static final double maxOutput = 1;
         public static final double minOutput = 0;
+        public static final double maxVelocity = 1;
 
         // Bad Engineering Constants
         public static final double armSensorMultiplier = .75;
         public static final double wristSensorMultiplier = -.52;
 
-        public static final double limitMargin = 0.5;
         public static final double min = 0;
         public static final double max = 1;
 
