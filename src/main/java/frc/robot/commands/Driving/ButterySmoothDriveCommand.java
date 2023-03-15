@@ -12,14 +12,15 @@ public class ButterySmoothDriveCommand extends CommandBase {
     private DoubleSupplier joystickSpeed;
     private DoubleSupplier joystickTurn;
     private DoubleSupplier joystickTrim;
+    private boolean squareInputs;
     private DriveSubsystem driveSubsystem;
     private SlewRateLimiter limiterNormal = new SlewRateLimiter(Drive.slewRate);
-    // private final double maxEncoderVelocity = 14000;
 
-    public ButterySmoothDriveCommand(DoubleSupplier joystickSpeed, DoubleSupplier joystickTurn, DoubleSupplier joystickTrim,  DriveSubsystem driveSubsystem) {
+    public ButterySmoothDriveCommand(DoubleSupplier joystickSpeed, DoubleSupplier joystickTurn, DoubleSupplier joystickTrim,  boolean squareInputs, DriveSubsystem driveSubsystem) {
         this.joystickSpeed = joystickSpeed;
         this.joystickTurn = joystickTurn;
         this.joystickTrim = joystickTrim;
+        this.squareInputs = squareInputs;
         this.driveSubsystem = driveSubsystem;
         addRequirements(driveSubsystem);
     }
@@ -29,21 +30,42 @@ public class ButterySmoothDriveCommand extends CommandBase {
         double speed = joystickSpeed.getAsDouble();
         double turn = joystickTurn.getAsDouble()/Drive.turnAdjustment;
         double trim = joystickTrim.getAsDouble()/Drive.turnAdjustment;
-        // Deadband
-        if (Math.abs(speed) < Drive.joystickDeadband) speed = 0;
-        if (Math.abs(turn) < Drive.joystickDeadband) turn = 0; 
-        if (Math.abs(trim) < Drive.joystickDeadband) trim = 0; 
 
+        // Deadband
+        speed = processDeadband(speed);
+        turn = processDeadband(turn); 
+        trim = processDeadband(trim); 
+        // Square the inputs
+        if (squareInputs) {
+            speed = Math.signum(speed) * (speed * speed);
+            turn = Math.signum(turn) * (turn * turn);        
+            trim = Math.signum(trim) * (trim * trim);   
+        }
+        // Slew Rate Limiting
         speed = limiterNormal.calculate(speed);
-        // System.out.println(speed + " " + turn + " " + trim);
-        // turn = turn * Math.abs(speed) + trim; // Constant Curvature
+        // Constant Curvature, WPILib DifferentialDrive#curvatureDriveIK
+        turn = turn * Math.abs(speed) + trim; 
+
         double powerFactor = findSpeed((speed - turn), (speed + turn));
 
         double leftSpeed = (speed - turn) * powerFactor;
         double rightSpeed = (speed + turn) * powerFactor;
         driveSubsystem.setPower(leftSpeed, rightSpeed);
-        // System.out.println(leftSpeed + " " + powerToVelocity(leftSpeed));
-        // driveSubsystem.setEncoderVelocity(powerToVelocity(leftSpeed), powerToVelocity(rightSpeed));
+    }
+
+    /**
+     * {@link} https://www.chiefdelphi.com/uploads/default/original/3X/b/a/ba7ccfd90bac0934e374dd4459d813cee2903942.pdf
+     */
+    private double processDeadband(double val) {
+        double newVal = val;
+        if(Math.abs(val) < Drive.joystickDeadband) {
+            newVal = 0;
+        }
+        else {
+            // Point slope form Y = M(X-X0)+Y0.
+            newVal = /*M*/ (1 / (1 - Drive.joystickDeadband)) * /*X-X0*/(val + (-Math.signum(val) * Drive.joystickDeadband));
+        }
+        return newVal;
     }
 
     private double findSpeed(double left, double right){
@@ -57,10 +79,6 @@ public class ButterySmoothDriveCommand extends CommandBase {
         }
         return p;
     }
-
-    // private double powerToVelocity(double power) {
-    //     return power * maxEncoderVelocity;
-    // }
 
     @Override
     public void end(boolean interrupted) {
