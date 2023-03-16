@@ -42,7 +42,6 @@ public class GripperSubsystem extends SubsystemBase {
         //     setPower(-0.05);
         //     desiredPosition = toPosition(talonFX.getSelectedSensorPosition());
         //     System.out.println(talonFX.getSelectedSensorPosition() + ", " + desiredPosition);
-        //     limiter.reset(desiredPosition);
         //     return;
         // } 
         // Gripper Compensation
