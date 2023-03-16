@@ -398,7 +398,6 @@ def aprilTagPipeline(input_img: Mat, drawnImg: Mat, pipeline: AprilTagPipeline) 
             pipeline.Z.setDouble(0)
             pipeline.Yaw.setDouble(0)
             return drawnImg
-        # print(poseEstimator.estimate(result))
         drawDetection(drawnImg, result)
         getTagData(pipeline, result)
         pipeline.hasTarget.setBoolean(True)
@@ -520,10 +519,10 @@ def main() -> None: # Image proccessing user code
                     cvSink = cvSinkLow
         error, inputImg = cvSink.grabFrame(mat)
         inputImg: Mat
-        # * Undistort the camera's image
-        if (mtx is not None and dist is not None):
-            # inputImg = cv2.undistort(inputImg, mtx, dist)
-            pass
+        # # * Undistort the camera's image
+        # if (mtx is not None and dist is not None):
+        #     # inputImg = cv2.undistort(inputImg, mtx, dist)
+        #     pass
         if error == 0: # There is an error
             print("CVSINK ERROR: " + cvSink.getError())
             continue
