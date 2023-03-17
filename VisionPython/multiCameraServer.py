@@ -25,6 +25,17 @@ cv2.setUseOptimized(True)
 
 class CameraConfig: pass
 
+class Camera:
+    
+    def __init__(self, resolutionWidth: int,  resolutionHeight: int, diagonalFOV: float, fx: float, fy: float, cx: float, cy: float):
+        self.resolutionWidth: Final[float] = resolutionWidth
+        self.resolutionHeight: Final[float] = resolutionHeight
+        self.diagonalFOV: Final[float] = diagonalFOV
+        self.fx: Final[float] = fx
+        self.fy: Final[float] = fy
+        self.cx: Final[float] = cx
+        self.cy: Final[float] = cy
+
 def getHorizontalFOVRad(resolutionWidth: int, resolutionHeight: int, diagonalFOVDeg: float) -> float:
     DfRad: float = math.radians(diagonalFOVDeg)
     Da: float = math.sqrt((resolutionWidth * resolutionWidth) + (resolutionHeight * resolutionHeight))
@@ -47,52 +58,22 @@ cameras = []
 # AprilTags
 detector: Final[AprilTagDetector] = AprilTagDetector()
 detector.addFamily("tag16h5")
+aprilTagLengthMeters: Final[float] = 0.1524
 
 # NetworkTables
 networkTableName: Final[str] = "VisionRPI"
 mainTable: NetworkTable = NetworkTableInstance.getDefault().getTable(networkTableName)
 
-resolutionWidth: int = 1280
-resolutionHeight: int = 720
-# Microsoft Lifecam HD 3000 Camera
-diagonalFOV: Final[float] = 68.5
-# Logitech C920 HD Pro Webcam
-# diagonalFOV: Final[float] = 170
+lifecam: Camera = Camera(1280, 720, 68.5, 1136.5690362861997, 1141.4736688529676, 641.2131167961169, 367.60929575540644) # calibdb
+logitechCam: Camera = Camera(1920, 1080, 170, 1378.7537012386945, 1375.0934365805474, 986.8907369291361, 513.9387512470897) # calibdb
 
+resolutionWidth: int = 640
+resolutionHeight: int = 360
 verticalFOVRad: float 
 horizontalFOVRad: float 
 focalLengthPixels: float
 fps: Final[int] = 30
 exposure: Final[int] = 35
-
-mtx = np.array([ # from calibrating on calibdb at 1280x720
-    [1136.5690362861997, 0, 641.2131167961169], 
-    [0, 1141.4736688529676, 367.60929575540644], 
-    [0, 0, 1]
-])
-
-dist = np.array([ # from calibrating on calibdb at 1280x720
-    0.12308428809814226,
-    -0.8911552442414836,
-    0.0036990419967787612,
-    0.0009950580085113828,
-    1.8819261759956036
-])
-
-# mtx = np.array([ # from calibrating on calibdb at 1920x1080
-#     [1378.7537012386945, 0, 986.8907369291361], 
-#     [0, 1375.0934365805474, 513.9387512470897], 
-#     [0, 0, 1]
-# ])
-
-# dist = np.array([ # from calibrating on calibdb at 1920x1080
-#     0.018146669363971513,
-#     -0.09196321148476025,
-#     -0.004476722886212248,
-#     0.0047711062648038175,
-#     -0.045514759364078325
-# ])
-
 
 
 def onRPI() -> bool:
@@ -338,7 +319,6 @@ config.debug = False
 quadThreshold: AprilTagDetector.QuadThresholdParameters = AprilTagDetector.QuadThresholdParameters()
 tagPipeline: AprilTagPipeline = AprilTagPipeline(2, "AprilTag", config, quadThreshold, 100, 25, 35)
 pipelines: tuple[Pipeline, ...] = (conePipeline, cubePipeline, tagPipeline)
-aprilTagLengthMeters: Final[float] = 0.1524
 poseEstimator: AprilTagPoseEstimator # defined in main() so the parameters are correct
 
 def getAreaAprilTag(tag: AprilTagDetection) -> float:
@@ -481,8 +461,8 @@ def proccessContours(binaryImg: Mat, drawnImg: Mat, pipeline: ColorPipeline) -> 
        
 def setupCameraConstants() -> None:
     global horizontalFOVRad, verticalFOVRad  
-    horizontalFOVRad = getHorizontalFOVRad(resolutionWidth, resolutionHeight, diagonalFOV)
-    verticalFOVRad = getVerticalFOVRad(resolutionWidth, resolutionHeight, diagonalFOV)
+    horizontalFOVRad = getHorizontalFOVRad(resolutionWidth, resolutionHeight, lifecam.diagonalFOV)
+    verticalFOVRad = getVerticalFOVRad(resolutionWidth, resolutionHeight, lifecam.diagonalFOV)
     
 def main() -> None: # Image proccessing user code
     CameraServer.enableLogging()
@@ -492,16 +472,15 @@ def main() -> None: # Image proccessing user code
     else:
         cvSinkHigh = CameraServer.getVideo()
         cvSinkLow = CameraServer.getVideo()
-    setupCameraConstants()
     proccessedStream = CameraServer.putVideo("Proccessed Video", resolutionWidth, resolutionHeight)
     originalStream = CameraServer.putVideo("Original Video", resolutionWidth, resolutionHeight)
     mat = np.zeros(shape=(resolutionWidth, resolutionHeight, 3), dtype=np.uint8)
     mainTable.getEntry("Current Pipeline").setInteger(tagPipeline.pipelineIndex.getInteger(0))
-    global focalLengthPixels, poseEstimator
-    focalLengthPixels = (resolutionWidth/2) / math.tan(horizontalFOVRad/2)
-    # poseEstimator = AprilTagPoseEstimator(AprilTagPoseEstimator.Config(aprilTagLengthMeters, focalLengthPixels, focalLengthPixels, resolutionWidth/2, resolutionHeight/2))
-    poseEstimator = AprilTagPoseEstimator(AprilTagPoseEstimator.Config(aprilTagLengthMeters, 1136.5690362861997, 1141.4736688529676, 641.2131167961169, 367.60929575540644))
-    print("{}, {}, {}, {}, {}".format(resolutionWidth, resolutionHeight, math.degrees(horizontalFOVRad), math.degrees(verticalFOVRad), focalLengthPixels))
+    global poseEstimator
+    scalingFactor: float = (resolutionWidth / lifecam.resolutionWidth)
+    poseEstimator = AprilTagPoseEstimator(AprilTagPoseEstimator.Config(
+        aprilTagLengthMeters, lifecam.fx * scalingFactor, lifecam.fy * scalingFactor, lifecam.cx * scalingFactor, lifecam.cy * scalingFactor
+    ))
     config = poseEstimator.getConfig()
     print("Pose Estimator Config -> tagSize: {} meters, fx: {} pixels, fy: {} pixels, cx: {} pixels, cy: {} pixels".format(
         config.tagSize, config.fx, config.fy, config.cx, config.cy
