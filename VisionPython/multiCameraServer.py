@@ -262,17 +262,21 @@ class AprilTagPipeline(Pipeline):
         self.poseIterations = self.subTable.getEntry("DEBUG: Pose Iterations")
         self.minArea = self.subTable.getEntry("DEBUG: Min Area")
         self.minDecisionMargin = self.subTable.getEntry("DEBUG: Min Decision Margin")
-        self.X = self.subTable.getEntry("X") 
-        self.Y = self.subTable.getEntry("Y")
-        self.Z = self.subTable.getEntry("Z")
-        self.Yaw = self.subTable.getEntry("Yaw")
+        self.tX = self.subTable.getEntry("tX") 
+        self.tY = self.subTable.getEntry("tY")
+        self.tZ = self.subTable.getEntry("tZ")
+        self.rX = self.subTable.getEntry("rX")
+        self.rY = self.subTable.getEntry("rY")
+        self.rZ = self.subTable.getEntry("rZ")
         self.poseIterations.setInteger(poseIterations)
         self.minArea.setDouble(minArea)
         self.minDecisionMargin.setDouble(minDecisionMargin)
-        self.X.setDouble(0)
-        self.Y.setDouble(0)
-        self.Z.setDouble(0)
-        self.Yaw.setDouble(0)
+        self.tX.setDouble(0)
+        self.tY.setDouble(0)
+        self.tZ.setDouble(0)
+        self.rX.setDouble(0)
+        self.rY.setDouble(0)
+        self.rZ.setDouble(0)
 
 class ColorPipeline(Pipeline):
     
@@ -338,10 +342,12 @@ def getTagData(pipeline: AprilTagPipeline, result: AprilTagDetection) -> None:
         bestResult = estimate.pose1
     else:
         bestResult = estimate.pose2
-    pipeline.X.setDouble(bestResult.X())
-    pipeline.Y.setDouble(bestResult.Y())
-    pipeline.Z.setDouble(bestResult.Z())
-    pipeline.Yaw.setDouble(math.degrees(bestResult.rotation().Y()))
+    pipeline.tX.setDouble(bestResult.X())
+    pipeline.tY.setDouble(bestResult.Y())
+    pipeline.tZ.setDouble(bestResult.Z())
+    pipeline.rX.setDouble(math.degrees(bestResult.rotation().X()))
+    pipeline.rY.setDouble(math.degrees(bestResult.rotation().Y()))
+    pipeline.rZ.setDouble(math.degrees(bestResult.rotation().Z()))
 
 def drawDetection(drawnImg: Mat, result: AprilTagDetection) -> Mat:
     # Crosshair
@@ -373,20 +379,24 @@ def aprilTagPipeline(input_img: Mat, drawnImg: Mat, pipeline: AprilTagPipeline) 
                 result = detection
         if (getAreaAprilTag(result) < pipeline.minArea.getDouble(0) or result.getDecisionMargin() < pipeline.minDecisionMargin.getDouble(0)):
             pipeline.hasTarget.setBoolean(False)
-            pipeline.X.setDouble(0)
-            pipeline.Y.setDouble(0)
-            pipeline.Z.setDouble(0)
-            pipeline.Yaw.setDouble(0)
+            pipeline.tX.setDouble(0)
+            pipeline.tY.setDouble(0)
+            pipeline.tZ.setDouble(0)
+            pipeline.rX.setDouble(0)
+            pipeline.rY.setDouble(0)
+            pipeline.rZ.setDouble(0)
             return drawnImg
         drawDetection(drawnImg, result)
         getTagData(pipeline, result)
         pipeline.hasTarget.setBoolean(True)
         return drawnImg
     pipeline.hasTarget.setBoolean(False)
-    pipeline.X.setDouble(0)
-    pipeline.Y.setDouble(0)
-    pipeline.Z.setDouble(0)
-    pipeline.Yaw.setDouble(0)
+    pipeline.tX.setDouble(0)
+    pipeline.tY.setDouble(0)
+    pipeline.tZ.setDouble(0)
+    pipeline.rX.setDouble(0)
+    pipeline.rY.setDouble(0)
+    pipeline.rZ.setDouble(0)
     return drawnImg
 
 def pointToYawAndPitch(px: int, py: int) -> tuple[float, float]: # Converts a point in pixel system to a pitch and a yaw and returns that.
