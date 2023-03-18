@@ -3,6 +3,7 @@ package frc.robot;
 import java.util.Map;
 
 import com.ctre.phoenix.sensors.PigeonIMU;
+import com.playingwithfusion.TimeOfFlight;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.Joystick;
@@ -27,6 +28,7 @@ import frc.robot.subsystems.GripperSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.WristSubsystem;
 
+@SuppressWarnings("unused")
 public class RobotContainer {
 
     private final Joystick joystick = new Joystick(0);
@@ -39,9 +41,11 @@ public class RobotContainer {
     private final SubsystemBase loggerSubsystem = new SubsystemBase() {};
     private SubsystemBase[] subsystems;
     private final PigeonIMU pigeon;
+    private final TimeOfFlight tof;
 
-    public RobotContainer(PigeonIMU pigeon) {
+    public RobotContainer(PigeonIMU pigeon, TimeOfFlight tof) {
         this.pigeon = pigeon;
+        this.tof = tof;
         this.driveSubsystem = new DriveSubsystem(pigeon);
         subsystems = new SubsystemBase[]{driveSubsystem, visionSubsystem, armSubsystem, wristSubsystem, gripperSubsystem};
         pigeon.setYaw(0);
@@ -56,7 +60,6 @@ public class RobotContainer {
         // logSubsystems();
     }
 
-    @SuppressWarnings("unused")
     private void logSubsystems() {
         loggerSubsystem.setDefaultCommand(Commands.run(() -> {
             System.out.println("\n");
