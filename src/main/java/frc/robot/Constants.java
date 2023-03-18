@@ -52,6 +52,7 @@ public class Constants {
     public static final class Vision {
         // Distances
         public static final double distanceToBumperMeters = Units.inchesToMeters(5.25);
+        public static final double heightDiffToTag = Units.inchesToMeters(4);
         // Target Heights
         public static final double coneHeightMeters = 0;
         public static final double cubeHeightMeters = 0;

@@ -358,7 +358,7 @@ def drawDetection(drawnImg: Mat, result: AprilTagDetection) -> Mat:
     centerY: int = int(result.getCenter().y)
     crosshair = int(centerX), int(centerY + (height/2))
     # Draw Stuff
-    drawnImg = cv2.circle(drawnImg, center = crosshair, radius = 10, color = (0, 255, 0), thickness = -1)
+    drawnImg = cv2.circle(drawnImg, center = crosshair, radius = 5, color = (0, 255, 0), thickness = -1)
     drawnImg = cv2.rectangle(drawnImg, 
         (int(result.getCorner(0).x), int(result.getCorner(0).y)), 
         (int(result.getCorner(2).x), int(result.getCorner(2).y)), 

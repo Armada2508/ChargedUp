@@ -45,9 +45,12 @@ public class VisionSubsystem extends SubsystemBase {
                 table.getEntry("Has Target").getBoolean(false), 
                 table.getEntry("Pitch").getDouble(0), 
                 table.getEntry("Yaw").getDouble(0),
-                table.getEntry("X").getDouble(0),
-                table.getEntry("Y").getDouble(0),
-                table.getEntry("Z").getDouble(0),
+                table.getEntry("tX").getDouble(0),
+                table.getEntry("tY").getDouble(0),
+                table.getEntry("tZ").getDouble(0),
+                table.getEntry("rX").getDouble(0),
+                table.getEntry("rY").getDouble(0),
+                table.getEntry("rZ").getDouble(0),
                 (int) table.getEntry("Pipeline").getInteger(0), 
                 (int) table.getEntry("Orientation").getInteger(0)
             ));
@@ -88,8 +91,8 @@ public class VisionSubsystem extends SubsystemBase {
     public Pose2d getPoseToTarget(Target pipeline) {
         if (!hasTarget(pipeline)) return new Pose2d();
         PipelineResult result = getResult(pipeline);
-        double yaw = result.yaw();
-        double distance = Math.sqrt((result.z() * result.z()) - (result.y() * result.y()));
+        double yaw = result.rY();
+        double distance = Math.sqrt((result.tZ() * result.tZ()) - (Vision.heightDiffToTag * Vision.heightDiffToTag));
         double x = distance * Math.sin(Math.toRadians(yaw));
         double y = distance * Math.cos(Math.toRadians(yaw));
         return new Pose2d(x, y, Rotation2d.fromDegrees(yaw));
@@ -155,9 +158,12 @@ public class VisionSubsystem extends SubsystemBase {
         boolean haveTarget,
         double pitch,
         double yaw,
-        double x,
-        double y,
-        double z,
+        double tX,
+        double ty,
+        double tZ,
+        double rX,
+        double rY,
+        double rZ,
         int pipeline,
         int orientation
     ) {}
