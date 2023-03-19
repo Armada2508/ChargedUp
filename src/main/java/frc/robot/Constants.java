@@ -13,11 +13,12 @@ public class Constants {
         public static final int RFID = 1;
         public static final int LID = 2;
         public static final int LFID = 3;
-        public static final int turnAdjustment = 3;
-        public static final double speedMultiplier = .65; // For Fredy
+        public static final double speedAdjustment = 0.25; // For Fredy
+        public static final double turnAdjustment = 0.5;
+        public static final double trimAdjustment = 0.15;
         public static final double joystickDeadband = 0.07;
         public static final double slewRate = 1.5; // This is what helps you not stop abruptly, higher value = stop faster
-        public static final double slowSpeed = 0.1;
+        public static final double slowSpeed = 0.2;
 
         // Closed Loop Driving
         public static final double kP = 0.3; 

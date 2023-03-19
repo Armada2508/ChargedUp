@@ -32,22 +32,22 @@ public class AprilTagCommand extends InstantCommand {
     public void initialize() {
         double xOffset = 0;
         double yOffset = 0.3556;
-        Pose2d targetPose = visionSubsystem.getPoseToTarget(Target.APRILTAG);
+        Pose2d targetPose = visionSubsystem.getPoseToTarget(Target.APRILTAG, pigeon);
         switch (position.get()) {
             case LEFT:
-            xOffset = 0.47625; //temporary
+            xOffset = 0.47625; 
             break;
             case CENTER:
             xOffset = 0;
             break;
             case RIGHT: 
-            xOffset = -0.47625; //temporary
+            xOffset = -0.47625;
             break;
         }
-        Pose2d pose = new Pose2d((targetPose.getX() + xOffset), (targetPose.getY() + yOffset), targetPose.getRotation());
+        Pose2d pose = new Pose2d((targetPose.getX() + xOffset), (targetPose.getY() + yOffset), (targetPose.getRotation().times(-1)));
         Command command = new MoveRelativeCommand(pose.getX(), pose.getY(), pose.getRotation().getDegrees(), driveSubsystem, pigeon);
+        // Command command = getTrajectoryCommand(targetPose);
         command.schedule();
-        // getTrajectoryCommand(targetPose);
     }
 
     // private Command getTrajectoryCommand(Pose2d pose) {

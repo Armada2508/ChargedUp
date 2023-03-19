@@ -72,6 +72,14 @@ resolutionHeight: int = 360
 verticalFOVRad: float 
 horizontalFOVRad: float 
 focalLengthPixels: float
+cameraMatrix: np.ndarray
+distCoeffs = np.array([
+    0.12308428809814226,
+    -0.8911552442414836,
+    0.0036990419967787612,
+    0.0009950580085113828,
+    1.8819261759956036
+])
 fps: Final[int] = 30
 exposure: Final[int] = 35
 
@@ -348,7 +356,28 @@ def getTagData(pipeline: AprilTagPipeline, result: AprilTagDetection) -> None:
     pipeline.rX.setDouble(math.degrees(bestResult.rotation().X()))
     pipeline.rY.setDouble(math.degrees(bestResult.rotation().Y()))
     pipeline.rZ.setDouble(math.degrees(bestResult.rotation().Z()))
-
+    
+def getTagDataPNP(pipeline: AprilTagPipeline, result: AprilTagDetection) -> None:
+    length = aprilTagLengthMeters
+    pts = np.asarray(result.getCorners(np.zeros(8)))
+    pts = pts.reshape((-1, 2))
+    imagePoints = pts[::-1]
+    objectPoints = np.array([
+        [-length / 2, length / 2, 0],
+        [length / 2, length / 2, 0],
+        [length / 2, -length / 2, 0],
+        [-length / 2, -length / 2, 0]
+    ])
+    retval, rvec, tvec = cv2.solvePnP(objectPoints, imagePoints, cameraMatrix = cameraMatrix, distCoeffs = distCoeffs, flags = cv2.SOLVEPNP_IPPE_SQUARE)
+    # print(np.linalg.norm(tvec) * 39.37)
+    
+    pipeline.tX.setDouble(tvec[0])
+    pipeline.tY.setDouble(tvec[1])
+    pipeline.tZ.setDouble(tvec[2])
+    pipeline.rX.setDouble(math.degrees(rvec[0]))
+    pipeline.rY.setDouble(math.degrees(rvec[1]))
+    pipeline.rZ.setDouble(math.degrees(rvec[2]))
+    
 def drawDetection(drawnImg: Mat, result: AprilTagDetection) -> Mat:
     # Crosshair
     y1: float = abs(result.getCorner(0).y - result.getCorner(1).y)
@@ -387,7 +416,8 @@ def aprilTagPipeline(input_img: Mat, drawnImg: Mat, pipeline: AprilTagPipeline) 
             pipeline.rZ.setDouble(0)
             return drawnImg
         drawDetection(drawnImg, result)
-        getTagData(pipeline, result)
+        # getTagData(pipeline, result)
+        getTagDataPNP(pipeline, result)
         pipeline.hasTarget.setBoolean(True)
         return drawnImg
     pipeline.hasTarget.setBoolean(False)
@@ -470,9 +500,15 @@ def proccessContours(binaryImg: Mat, drawnImg: Mat, pipeline: ColorPipeline) -> 
         return drawnImg
        
 def setupCameraConstants() -> None:
-    global horizontalFOVRad, verticalFOVRad  
+    global horizontalFOVRad, verticalFOVRad, cameraMatrix
+    scale: float = (resolutionWidth / lifecam.resolutionWidth)
     horizontalFOVRad = getHorizontalFOVRad(resolutionWidth, resolutionHeight, lifecam.diagonalFOV)
     verticalFOVRad = getVerticalFOVRad(resolutionWidth, resolutionHeight, lifecam.diagonalFOV)
+    cameraMatrix = np.array([
+        [lifecam.fx * scale, 0, lifecam.cx * scale],
+        [0, lifecam.fy * scale, lifecam.cy * scale],
+        [0, 0, 1]
+    ])
     
 def main() -> None: # Image proccessing user code
     CameraServer.enableLogging()
@@ -486,6 +522,7 @@ def main() -> None: # Image proccessing user code
     originalStream = CameraServer.putVideo("Original Video", resolutionWidth, resolutionHeight)
     mat = np.zeros(shape=(resolutionWidth, resolutionHeight, 3), dtype=np.uint8)
     mainTable.getEntry("Current Pipeline").setInteger(tagPipeline.pipelineIndex.getInteger(0))
+    setupCameraConstants()
     global poseEstimator
     scalingFactor: float = (resolutionWidth / lifecam.resolutionWidth)
     poseEstimator = AprilTagPoseEstimator(AprilTagPoseEstimator.Config(
@@ -545,7 +582,10 @@ if __name__ == "__main__":
 
     # start NetworkTables
     ntinst = NetworkTableInstance.getDefault()
-    if server or not onRPI():
+    arg = ""
+    if len(sys.argv) >= 2:
+        arg = str(sys.argv[1])
+    if server or (not onRPI() and arg != "client"):
         print("Setting up NetworkTables server")
         ntinst.startServer()
     else:

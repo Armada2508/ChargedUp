@@ -51,13 +51,13 @@ public class RobotContainer {
         pigeon.setYaw(0);
         FollowTrajectory.config(0.31, 1.95, 0.35, 2.0, 0.7, Drive.trackWidthMeters, new PIDController(0.25, 0, 0), 0.875);
         InverseKinematics.config(Arm.jointLengthInches, Wrist.jointLengthInches);
-        driveSubsystem.setDefaultCommand(new ButterySmoothDriveCommand(() -> joystick.getRawAxis(1)*-1 * Drive.speedMultiplier, () -> joystick.getRawAxis(0)*-1,  () -> joystick.getRawAxis(2) * -1, () -> joystick.getRawButton(4), true, driveSubsystem)); // default to driving from joystick input
+        driveSubsystem.setDefaultCommand(new ButterySmoothDriveCommand(() -> -joystick.getRawAxis(1), () -> -joystick.getRawAxis(0),  () -> -joystick.getRawAxis(2), () -> joystick.getRawButton(4), true, driveSubsystem)); // default to driving from joystick input
         if (RobotBase.isReal()) {
             // configureCamera();
         }
         configureShuffleboard();
         configureButtons();
-        // logSubsystems();
+        logSubsystems();
     }
 
     private void logSubsystems() {
@@ -103,17 +103,19 @@ public class RobotContainer {
             new WristCommand(0, 180, 180, wristSubsystem)
         ), 8);
 
-        mapButton(new SequentialCommandGroup(
+        mapButton(new SequentialCommandGroup( // store
             new WristCommand(Wrist.maxDegrees, 180, 180, wristSubsystem),
             new ArmCommand(5, 45, 45, armSubsystem)
         ), 9);
 
-        mapButton(new SequentialCommandGroup(
+        mapButton(new SequentialCommandGroup( // calibrate
             gripperSubsystem.getCalibrateSequence(),
             wristSubsystem.getCalibrateSequence(gripperSubsystem),
             armSubsystem.getCalibrateSequence(wristSubsystem, gripperSubsystem)
         ), 12);
         */
+        // mapButton(new MoveRelativeCommand(1, 1, 0, driveSubsystem, pigeon), 12);
+        // mapButton(new AprilTagCommand(() -> Position.CENTER, driveSubsystem, visionSubsystem, pigeon), 12);
         // mapButton(new AltSeekCommand(() -> Target.CONE, 1.5, driveSubsystem, visionSubsystem, pigeon), 10);
         // mapButton(new ArmCommand(60, 45, 45, armSubsystem), 7);
         // mapButton(new ArmCommand(102, 45, 45, armSubsystem), 8);

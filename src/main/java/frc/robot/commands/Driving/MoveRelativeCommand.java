@@ -19,8 +19,8 @@ public class MoveRelativeCommand extends SequentialCommandGroup {
      * @param y forward and backward positon in 2d space to move to in meters
      * @param subsystem DriveSubsystem
      */
-    public MoveRelativeCommand(double x, double y, double degrees, DriveSubsystem driveSubsystem, PigeonIMU pigeon) {
-       this(() -> x, () -> y, () -> degrees, driveSubsystem, pigeon);
+    public MoveRelativeCommand(double xMeters, double yMeters, double degrees, DriveSubsystem driveSubsystem, PigeonIMU pigeon) {
+       this(() -> xMeters, () -> yMeters, () -> degrees, driveSubsystem, pigeon);
     }
 
     /**
@@ -34,9 +34,9 @@ public class MoveRelativeCommand extends SequentialCommandGroup {
         this.targetX = targetX;
         addCommands(
             new InstantCommand(this::getDegreeOffset),
-            new AutoDriveCommand(targetY.getAsDouble(), 1, 1, driveSubsystem),
+            new AutoDriveCommand(targetY.getAsDouble(), 1, .5, driveSubsystem),
             new AutoTurnCommand(degreeOffset, driveSubsystem, pigeon),
-            new AutoDriveCommand(targetX.getAsDouble(), 1, 1, driveSubsystem),
+            new AutoDriveCommand(targetX.getAsDouble(), 1, .5, driveSubsystem),
             new AutoTurnCommand(targetDegrees.getAsDouble() - degreeOffset, driveSubsystem, pigeon)
         );
     }

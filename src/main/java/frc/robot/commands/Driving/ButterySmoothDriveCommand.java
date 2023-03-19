@@ -31,8 +31,8 @@ public class ButterySmoothDriveCommand extends CommandBase {
     @Override
     public void execute() {
         double speed = joystickSpeed.getAsDouble();
-        double turn = joystickTurn.getAsDouble()/Drive.turnAdjustment;
-        double trim = joystickTrim.getAsDouble()/Drive.turnAdjustment;
+        double turn = joystickTurn.getAsDouble();
+        double trim = joystickTrim.getAsDouble();
 
         // Deadband
         speed = processDeadband(speed);
@@ -49,10 +49,13 @@ public class ButterySmoothDriveCommand extends CommandBase {
             turn = Math.signum(turn) * (turn * turn);        
             trim = Math.signum(trim) * (trim * trim);   
         }
-        // Slew Rate Limiting
+        // Slew Rate Limiting and Turn Adjusting
+        speed *= Drive.speedAdjustment;
+        turn *= Drive.turnAdjustment;
+        trim *= Drive.trimAdjustment;
         speed = limiterNormal.calculate(speed);
         // Constant Curvature, WPILib DifferentialDrive#curvatureDriveIK
-        turn = turn * Math.abs(speed) + trim; 
+        turn = turn * speed + trim; 
 
         double powerFactor = findSpeed((speed - turn), (speed + turn));
 

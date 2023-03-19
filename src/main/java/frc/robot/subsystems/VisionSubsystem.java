@@ -7,6 +7,9 @@ import java.util.List;
 
 import org.photonvision.PhotonUtils;
 
+import com.ctre.phoenix.sensors.PigeonIMU;
+import com.ctre.phoenix.sensors.WPI_PigeonIMU;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
@@ -14,7 +17,9 @@ import edu.wpi.first.networktables.IntegerEntry;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.Constants.Vision;
+import frc.robot.Lib.util.Util;
 
 /**
  * Used to interface with the raspberry pi.
@@ -35,7 +40,7 @@ public class VisionSubsystem extends SubsystemBase {
         subtables.add(cubeTable);
         subtables.add(tagTable);
     }
-    
+    static int i = 0;
     @Override
     public void periodic() {
         currentResults.clear();
@@ -59,6 +64,10 @@ public class VisionSubsystem extends SubsystemBase {
         // System.out.println((getPoseToTarget(Target.APRILTAG)));
         // distanceFromTargetMeters(Target.CUBE);
         // System.out.println("Pitch: " + getTargetPitch(Target.CUBE) + " Yaw: " + getTargetYaw(Target.CUBE) + " Distance: " + distanceFromTargetMeters(Target.CUBE));
+        if (i % 2 == 0) {
+            System.out.println("\nTarget Pose: " + getPoseToTarget(Target.APRILTAG, new WPI_PigeonIMU(Constants.pigeonID)));
+        }
+        i++;
     }
 
     private PipelineResult getResult(Target pipeline) {
@@ -88,13 +97,16 @@ public class VisionSubsystem extends SubsystemBase {
      * @param pipeline to use for getting target pose
      * @return A Pose2d in meters representing the robot's position in 2d space relative to the target at (0, 0)
      */
-    public Pose2d getPoseToTarget(Target pipeline) {
+    public Pose2d getPoseToTarget(Target pipeline, PigeonIMU pigeon) {
         if (!hasTarget(pipeline)) return new Pose2d();
         PipelineResult result = getResult(pipeline);
-        double yaw = result.rY();
-        double distance = Math.sqrt((result.tZ() * result.tZ()) - (Vision.heightDiffToTag * Vision.heightDiffToTag));
-        double x = distance * Math.sin(Math.toRadians(yaw));
-        double y = distance * Math.cos(Math.toRadians(yaw));
+        // double yaw = result.rY();
+        // double distance = Math.sqrt((result.tZ() * result.tZ()) - (Vision.heightDiffToTag * Vision.heightDiffToTag));
+        // double x = distance * Math.sin(Math.toRadians(yaw));
+        // double y = distance * Math.cos(Math.toRadians(yaw));
+        double x = result.tX() * 39.37;
+        double y = result.tZ() * 39.37;
+        double yaw = Util.boundedAngleDegreesPositive(pigeon.getFusedHeading());
         return new Pose2d(x, y, Rotation2d.fromDegrees(yaw));
     }
 
