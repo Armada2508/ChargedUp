@@ -59,7 +59,7 @@ public class RobotContainer {
         }
         configureShuffleboard();
         configureButtons();
-        logSubsystems();
+        // logSubsystems();
     }
 
     private int printer = 0;
@@ -139,8 +139,7 @@ public class RobotContainer {
             armSubsystem.getCalibrateSequence(wristSubsystem, gripperSubsystem)
         ), 12);
         */
-        mapButton(new MoveRelativeCommand(1, 1, 0, driveSubsystem, pigeon), 1);
-        // mapButton(wristSubsystem.getCalibrateSequence(gripperSubsystem), 1);
+        // mapButton(new MoveRelativeCommand(12, 1, 0, driveSubsystem, pigeon), 1);
         // mapButton(new AprilTagCommand(() -> Position.CENTER, driveSubsystem, visionSubsystem, pigeon), 12);
         // mapButton(new AltSeekCommand(() -> Target.CONE, 1.5, driveSubsystem, visionSubsystem, pigeon), 10);
         // mapButton(new ArmCommand(60, 45, 45, armSubsystem), 7);
