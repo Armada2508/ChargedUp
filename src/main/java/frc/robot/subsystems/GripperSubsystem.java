@@ -169,7 +169,7 @@ public class GripperSubsystem extends SubsystemBase {
             ), new InstantCommand(), this::pollLimitSwitch),
             calibrateGripper(),
             new InstantCommand(this::endCalibrate, this)
-        );
+        ).withName("GripperCalibrationSequence");
     }
 
     private Command calibrateGripper() {

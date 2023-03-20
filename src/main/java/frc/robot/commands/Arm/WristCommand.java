@@ -15,7 +15,7 @@ public class WristCommand extends CommandBase {
 
     /**
      * 
-     * @param theta degree to go to, 0 is straight out.
+     * @param theta degree to go to, Parallel with the arm is 0.
      * @param wristSubsystem
      */
     public WristCommand(double theta, double velocity, double acceleration, WristSubsystem wristSubsystem) {
@@ -24,7 +24,7 @@ public class WristCommand extends CommandBase {
 
     /**
      * 
-     * @param theta degree to go to, 0 is straight out.
+     * @param theta degree to go to, Parallel with the arm is 0.
      * @param wristSubsystem
      */
     public WristCommand(DoubleSupplier theta, double velocity, double acceleration, WristSubsystem wristSubsystem) {

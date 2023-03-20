@@ -48,6 +48,30 @@ def getVerticalFOVRad(resolutionWidth: int, resolutionHeight: int, diagonalFOVDe
     Vf: float = math.atan(math.tan(DfRad/2) * (resolutionHeight/Da)) * 2
     return Vf
 
+def rotateMatrixX(theta):
+    rad = math.radians(theta)
+    return np.array([
+        [1, 0, 0],
+        [0, math.cos(rad), -math.sin(rad)],
+        [0, math.sin(rad), math.cos(rad)]
+    ])
+
+def rotateMatrixY(theta):
+    rad = math.radians(theta)
+    return np.array([
+        [math.cos(rad), 0, math.sin(rad)],
+        [0, 1, 0],
+        [-math.sin(rad), 0, math.cos(rad)]
+    ])
+
+def rotateMatrixZ(theta):
+    rad = math.radians(theta)
+    return np.array([
+        [math.cos(rad), -math.sin(rad), 0],
+        [math.sin(rad), math.cos(rad), 0],
+        [0, 0, 1]
+    ])
+
 configFile = "/boot/frc.json"
 team: Final[int] = 2508
 server = False
@@ -607,3 +631,5 @@ if __name__ == "__main__":
         startCameraDesktop()
     # start opencv
     main()
+
+

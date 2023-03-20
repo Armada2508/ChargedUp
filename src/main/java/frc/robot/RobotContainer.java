@@ -38,7 +38,6 @@ public class RobotContainer {
     private final ArmSubsystem armSubsystem = new ArmSubsystem();
     private final WristSubsystem wristSubsystem = new WristSubsystem();
     private final GripperSubsystem gripperSubsystem = new GripperSubsystem(armSubsystem, wristSubsystem);
-    private final SubsystemBase loggerSubsystem = new SubsystemBase() {};
     private SubsystemBase[] subsystems;
     private final PigeonIMU pigeon;
     private final TimeOfFlight tof;
@@ -60,17 +59,23 @@ public class RobotContainer {
         logSubsystems();
     }
 
+    private int printer = 0;
     private void logSubsystems() {
+        SubsystemBase loggerSubsystem = new SubsystemBase() {};
         loggerSubsystem.setDefaultCommand(Commands.run(() -> {
-            System.out.println("\n");
-            System.out.println("DEBUG: Subsystem Logger");
-            for (int i = 0; i < subsystems.length; i++) {
-                String name = "None";
-                if (subsystems[i].getCurrentCommand() != null) {
-                    name = subsystems[i].getCurrentCommand().getName();
+            if (printer % 2 == 0) {
+                System.out.println("\n");
+                System.out.println("DEBUG: Subsystem Logger");
+                for (int i = 0; i < subsystems.length; i++) {
+                    String name = "None";
+                    Command command = subsystems[i].getCurrentCommand();
+                    if (command != null) {
+                        name = command.getName();
+                    }
+                    System.out.println(subsystems[i].getName() + ": " + name);
                 }
-                System.out.println(subsystems[i].getName() + ": " + name);
             }
+            printer++;
         }, loggerSubsystem));
     }
 
@@ -114,7 +119,8 @@ public class RobotContainer {
             armSubsystem.getCalibrateSequence(wristSubsystem, gripperSubsystem)
         ), 12);
         */
-        // mapButton(new MoveRelativeCommand(1, 1, 0, driveSubsystem, pigeon), 12);
+        // mapButton(new MoveRelativeCommand(1, 1, 0, driveSubsystem, pigeon), 1);
+        // mapButton(wristSubsystem.getCalibrateSequence(gripperSubsystem), 1);
         // mapButton(new AprilTagCommand(() -> Position.CENTER, driveSubsystem, visionSubsystem, pigeon), 12);
         // mapButton(new AltSeekCommand(() -> Target.CONE, 1.5, driveSubsystem, visionSubsystem, pigeon), 10);
         // mapButton(new ArmCommand(60, 45, 45, armSubsystem), 7);
@@ -198,7 +204,6 @@ public class RobotContainer {
             .withSize(4, 3);
     }
 
-    // private static int i = 0;
     public static void addPIDToShuffleBoard(PIDController pid, String name) {
         int i = 1;
         Shuffleboard.getTab("PID Tuning")

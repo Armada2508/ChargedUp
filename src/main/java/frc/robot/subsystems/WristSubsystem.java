@@ -156,7 +156,7 @@ public class WristSubsystem extends SubsystemBase {
             ),
             calibrateWrist(gripperSubsystem),
             new InstantCommand(this::endCalibrate, this)
-        );
+        ).withName("WristCalibrationSequence");
     }
 
     private Command calibrateWrist(GripperSubsystem gripperSubsystem) {

@@ -8,7 +8,6 @@ import java.util.List;
 import org.photonvision.PhotonUtils;
 
 import com.ctre.phoenix.sensors.PigeonIMU;
-import com.ctre.phoenix.sensors.WPI_PigeonIMU;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -17,7 +16,6 @@ import edu.wpi.first.networktables.IntegerEntry;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants;
 import frc.robot.Constants.Vision;
 import frc.robot.Lib.util.Util;
 
@@ -40,7 +38,8 @@ public class VisionSubsystem extends SubsystemBase {
         subtables.add(cubeTable);
         subtables.add(tagTable);
     }
-    static int i = 0;
+    
+    private int i = 0;
     @Override
     public void periodic() {
         currentResults.clear();
@@ -65,7 +64,7 @@ public class VisionSubsystem extends SubsystemBase {
         // distanceFromTargetMeters(Target.CUBE);
         // System.out.println("Pitch: " + getTargetPitch(Target.CUBE) + " Yaw: " + getTargetYaw(Target.CUBE) + " Distance: " + distanceFromTargetMeters(Target.CUBE));
         if (i % 2 == 0) {
-            System.out.println("\nTarget Pose: " + getPoseToTarget(Target.APRILTAG, new WPI_PigeonIMU(Constants.pigeonID)));
+            // System.out.println("\nTarget Pose: " + getPoseToTarget(Target.APRILTAG, new WPI_PigeonIMU(Constants.pigeonID)));
         }
         i++;
     }

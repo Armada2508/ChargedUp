@@ -5,6 +5,7 @@ import java.util.function.DoubleSupplier;
 import com.ctre.phoenix.sensors.PigeonIMU;
 
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.DriveSubsystem;
 
@@ -36,6 +37,7 @@ public class MoveRelativeCommand extends SequentialCommandGroup {
             new InstantCommand(this::getDegreeOffset),
             new AutoDriveCommand(targetY.getAsDouble(), 1, .5, driveSubsystem),
             new AutoTurnCommand(degreeOffset, driveSubsystem, pigeon),
+            new PrintCommand("Ended Turn Command"),
             new AutoDriveCommand(targetX.getAsDouble(), 1, .5, driveSubsystem),
             new AutoTurnCommand(targetDegrees.getAsDouble() - degreeOffset, driveSubsystem, pigeon)
         );

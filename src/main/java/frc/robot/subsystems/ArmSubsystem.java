@@ -176,7 +176,7 @@ public class ArmSubsystem extends SubsystemBase {
                 new WaitCommand(.5),
                 fixFollower(),
                 new InstantCommand(this::endCalibrate, this)
-        ), new InstantCommand(), wristSubsystem::pollLimitSwitch);
+        ), new InstantCommand(), wristSubsystem::pollLimitSwitch).withName("ArmCalibrationSequence");
     }
 
     private Command fixFollower() {
