@@ -115,7 +115,7 @@ public class VisionSubsystem extends SubsystemBase {
     public double[] getRotationalVector(Target pipeline) {
         if (!hasTarget(pipeline)) return new double[3];
         PipelineResult result = getResult(pipeline);
-        return new double[]{Math.toRadians(result.rX()), Math.toRadians(result.rY()), Math.toRadians(result.rZ())};
+        return new double[]{result.rX(), result.rY(), result.rZ()};
     }
 
     /**

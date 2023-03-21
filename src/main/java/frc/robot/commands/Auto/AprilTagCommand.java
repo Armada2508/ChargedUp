@@ -39,6 +39,10 @@ public class AprilTagCommand extends InstantCommand {
         visionSubsystem.setPipeline(Target.APRILTAG);
         double xOffset = 0;
         double zOffset = 0.3556;
+        if (!visionSubsystem.hasTarget(Target.APRILTAG)) {
+            cancel();
+            return;
+        }
         Pose2d cameraPose = visionSubsystem.getPoseToTarget(Target.APRILTAG, pigeon);
         System.out.println("Camera Pose: " + cameraPose);
         switch (position.get()) {
@@ -56,9 +60,12 @@ public class AprilTagCommand extends InstantCommand {
         zOffset = 1;
         double[] rvecArray = visionSubsystem.getRotationalVector(Target.APRILTAG);
         Vector<N3> rvec = VecBuilder.fill(rvecArray[0], rvecArray[1], rvecArray[2]); 
+        // Translation Offset rotated into the camera's frame to be added onto target position
         Translation3d tagOffset = new Translation3d(xOffset, 0, zOffset).rotateBy(new Rotation3d(rvec));
+        // Used to find april tag skew angle
         Translation3d tagNormal = new Translation3d(0, 0, 1).rotateBy(new Rotation3d(rvec));
         System.out.println("Tag Normal: " + tagNormal);
+        // skew
         double finalAngleRad = Util.boundedAngle(Math.atan2(tagNormal.getX(), tagNormal.getZ()) + Math.PI);
         System.out.println("AprilTag Translation in Camera Frame: " + tagOffset);
         System.out.println("Final Translation: " + (cameraPose.getX() + tagOffset.getX()) + " " + (cameraPose.getY() + tagOffset.getZ()) + " " + finalAngleRad);

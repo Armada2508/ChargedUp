@@ -48,27 +48,24 @@ def getVerticalFOVRad(resolutionWidth: int, resolutionHeight: int, diagonalFOVDe
     Vf: float = math.atan(math.tan(DfRad/2) * (resolutionHeight/Da)) * 2
     return Vf
 
-def rotateMatrixX(theta):
-    rad = math.radians(theta)
+def rotateMatrixX(thetaRad):
     return np.array([
         [1, 0, 0],
-        [0, math.cos(rad), -math.sin(rad)],
-        [0, math.sin(rad), math.cos(rad)]
+        [0, math.cos(thetaRad), -math.sin(thetaRad)],
+        [0, math.sin(thetaRad), math.cos(thetaRad)]
     ])
 
-def rotateMatrixY(theta):
-    rad = math.radians(theta)
+def rotateMatrixY(thetaRad):
     return np.array([
-        [math.cos(rad), 0, math.sin(rad)],
+        [math.cos(thetaRad), 0, math.sin(thetaRad)],
         [0, 1, 0],
-        [-math.sin(rad), 0, math.cos(rad)]
+        [-math.sin(thetaRad), 0, math.cos(thetaRad)]
     ])
 
-def rotateMatrixZ(theta):
-    rad = math.radians(theta)
+def rotateMatrixZ(thetaRad):
     return np.array([
-        [math.cos(rad), -math.sin(rad), 0],
-        [math.sin(rad), math.cos(rad), 0],
+        [math.cos(thetaRad), -math.sin(thetaRad), 0],
+        [math.sin(thetaRad), math.cos(thetaRad), 0],
         [0, 0, 1]
     ])
 
@@ -366,21 +363,6 @@ def getAreaAprilTag(tag: AprilTagDetection) -> float:
     height: float = max(y1, y2); 
     return width * height
 
-def getTagData(pipeline: AprilTagPipeline, result: AprilTagDetection) -> None:
-    bestResult = Transform3d()
-    # bestResult = poseEstimator.estimateHomography(result)
-    estimate: AprilTagPoseEstimate = poseEstimator.estimateOrthogonalIteration(result, pipeline.poseIterations.getInteger(0))
-    if (estimate.error1 <= estimate.error2):
-        bestResult = estimate.pose1
-    else:
-        bestResult = estimate.pose2
-    pipeline.tX.setDouble(bestResult.X())
-    pipeline.tY.setDouble(bestResult.Y())
-    pipeline.tZ.setDouble(bestResult.Z())
-    pipeline.rX.setDouble(math.degrees(bestResult.rotation().X()))
-    pipeline.rY.setDouble(math.degrees(bestResult.rotation().Y()))
-    pipeline.rZ.setDouble(math.degrees(bestResult.rotation().Z()))
-    
 def getTagDataPNPGeneric(pipeline: AprilTagPipeline, result: AprilTagDetection) -> None:
     length = aprilTagLengthMeters
     pts = np.asarray(result.getCorners(np.zeros(8)))
@@ -418,9 +400,9 @@ def getTagDataPNPGeneric(pipeline: AprilTagPipeline, result: AprilTagDetection) 
     pipeline.tX.setDouble(tvec[0])
     pipeline.tY.setDouble(tvec[1])
     pipeline.tZ.setDouble(tvec[2])
-    pipeline.rX.setDouble(math.degrees(rvec[0]))
-    pipeline.rY.setDouble(math.degrees(rvec[1]))
-    pipeline.rZ.setDouble(math.degrees(rvec[2]))
+    pipeline.rX.setDouble(rvec[0])
+    pipeline.rY.setDouble(rvec[1])
+    pipeline.rZ.setDouble(rvec[2])
     pipeline.hasTarget.setBoolean(True)
     
 def drawDetection(drawnImg: Mat, result: AprilTagDetection) -> Mat:
@@ -474,7 +456,6 @@ def aprilTagPipeline(input_img: Mat, drawnImg: Mat, pipeline: AprilTagPipeline) 
     return drawnImg
 
 def pointToYawAndPitch(px: int, py: int) -> tuple[float, float]: # Converts a point in pixel system to a pitch and a yaw and returns that.
-    # print("{}, {}, {}, {}".format(resolutionWidth, resolutionHeight, math.degrees(horizontalFOVRad), math.degrees(verticalFOVRad)))
     nx: float = (2/resolutionWidth) * (px - ((resolutionWidth/2) - 0.5))
     ny: float = (2/resolutionHeight) * (((resolutionHeight/2) - 0.5) - py)
     vpw: float = 2.0*math.tan(horizontalFOVRad/2)
