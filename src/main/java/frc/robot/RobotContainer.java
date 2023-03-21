@@ -22,9 +22,11 @@ import frc.robot.Constants.Arm;
 import frc.robot.Constants.Drive;
 import frc.robot.Constants.Wrist;
 import frc.robot.Lib.motion.FollowTrajectory;
+import frc.robot.commands.Auto.AprilTagCommand;
+import frc.robot.commands.Auto.AprilTagCommand.Position;
 import frc.robot.commands.Driving.AutoDriveCommand;
+import frc.robot.commands.Driving.AutoTurnCommand;
 import frc.robot.commands.Driving.ButterySmoothDriveCommand;
-import frc.robot.commands.Driving.MoveRelativeCommand;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.GripperSubsystem;
@@ -62,7 +64,6 @@ public class RobotContainer {
         // logSubsystems();
     }
 
-    private int printer = 0;
     @SuppressWarnings("unchecked")
     private void logSubsystems() {
         try {
@@ -72,27 +73,23 @@ public class RobotContainer {
             fieldCommands.setAccessible(true);
             SubsystemBase loggerSubsystem = new SubsystemBase() {};
             loggerSubsystem.setDefaultCommand(Commands.run(() -> {
-                if (printer % 2 == 0) {
-                    System.out.println("\n");
-                    System.out.println("DEBUG: Subsystem Logger");
-                    for (int i = 0; i < subsystems.length; i++) {
-                        String name = "None";
-                        Command command = subsystems[i].getCurrentCommand();
-                        if (command != null) {
-                            name = command.getName();
-                            if (command instanceof SequentialCommandGroup) {
-                                try {
-                                    List<Command> list = (List<Command>) fieldCommands.get(command);
-                                    name += " - " + list.get(fieldIndex.getInt(command)).getName();
-                                } catch (IllegalArgumentException | IllegalAccessException e) {
-                                    e.printStackTrace();
-                                }
+                System.out.println("\nDEBUG: Subsystem Logger");
+                for (int i = 0; i < subsystems.length; i++) {
+                    String name = "None";
+                    Command command = subsystems[i].getCurrentCommand();
+                    if (command != null) {
+                        name = command.getName();
+                        if (command instanceof SequentialCommandGroup) {
+                            try {
+                                List<Command> list = (List<Command>) fieldCommands.get(command);
+                                name += " - " + list.get(fieldIndex.getInt(command)).getName();
+                            } catch (IllegalArgumentException | IllegalAccessException e) {
+                                e.printStackTrace();
                             }
                         }
-                        System.out.println(subsystems[i].getName() + ": " + name);
                     }
+                    System.out.println(subsystems[i].getName() + ": " + name);
                 }
-                printer++;
             }, loggerSubsystem));
         } catch (NoSuchFieldException | SecurityException e) {
             e.printStackTrace();
@@ -139,8 +136,10 @@ public class RobotContainer {
             armSubsystem.getCalibrateSequence(wristSubsystem, gripperSubsystem)
         ), 12);
         */
-        // mapButton(new MoveRelativeCommand(12, 1, 0, driveSubsystem, pigeon), 1);
-        // mapButton(new AprilTagCommand(() -> Position.CENTER, driveSubsystem, visionSubsystem, pigeon), 12);
+        // mapButton(new MoveRelativeCommand(-1, 1, 0, driveSubsystem, pigeon), 12);
+        // mapButton(new MoveRelativeCommand(0, 1, 0, driveSubsystem, pigeon), 9);
+        mapButton(new AprilTagCommand(() -> Position.CENTER, driveSubsystem, visionSubsystem, pigeon), 12);
+        mapButton(new AutoTurnCommand(30, driveSubsystem, pigeon), 10);
         // mapButton(new AltSeekCommand(() -> Target.CONE, 1.5, driveSubsystem, visionSubsystem, pigeon), 10);
         // mapButton(new ArmCommand(60, 45, 45, armSubsystem), 7);
         // mapButton(new ArmCommand(102, 45, 45, armSubsystem), 8);

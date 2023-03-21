@@ -4,20 +4,19 @@ import java.util.function.DoubleSupplier;
 
 import com.ctre.phoenix.sensors.PigeonIMU;
 
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.DriveSubsystem;
 
 public class MoveRelativeCommand extends SequentialCommandGroup {
 
-    private DoubleSupplier targetX;
-    private double degreeOffset = 0;
+    private final double velocity = 0.5;
+    private final double acceleration = 0.25;
 
     /**
      * Moves the robot to a position in 2D space relative to its current position
      * @param x left and right positon in 2d space to move to in meters
-     * @param y forward and backward positon in 2d space to move to in meters
+     * @param y forward and backward poiton in 2d space to move to in meters
      * @param subsystem DriveSubsystem
      */
     public MoveRelativeCommand(double xMeters, double yMeters, double degrees, DriveSubsystem driveSubsystem, PigeonIMU pigeon) {
@@ -31,25 +30,15 @@ public class MoveRelativeCommand extends SequentialCommandGroup {
      * @param subsystem DriveSubsystem
      * @param rotation the ending rotation that the robot should be at
      */
-    public MoveRelativeCommand(DoubleSupplier targetX, DoubleSupplier targetY, DoubleSupplier targetDegrees, DriveSubsystem driveSubsystem, PigeonIMU pigeon) {
-        this.targetX = targetX;
+    public MoveRelativeCommand(DoubleSupplier targetX, DoubleSupplier targetY, DoubleSupplier finalAngleRad, DriveSubsystem driveSubsystem, PigeonIMU pigeon) {
         addCommands(
-            new InstantCommand(this::getDegreeOffset),
-            new AutoDriveCommand(targetY.getAsDouble(), 1, .5, driveSubsystem),
-            new AutoTurnCommand(degreeOffset, driveSubsystem, pigeon),
-            new PrintCommand("Ended Turn Command"),
-            new AutoDriveCommand(targetX.getAsDouble(), 1, .5, driveSubsystem),
-            new AutoTurnCommand(targetDegrees.getAsDouble() - degreeOffset, driveSubsystem, pigeon)
+            new PrintCommand("First Turn: "  + Math.toDegrees(Math.atan2(targetX.getAsDouble(), targetY.getAsDouble())) + " Distance: "  + 
+            Math.hypot(targetX.getAsDouble(), targetY.getAsDouble()) + " Skew: " + Math.toDegrees(finalAngleRad.getAsDouble()) + " Second Turn: " + 
+            Math.toDegrees(-Math.atan2(targetX.getAsDouble(), targetY.getAsDouble()) + finalAngleRad.getAsDouble())),
+            new AutoTurnCommand(() -> Math.toDegrees(Math.atan2(targetX.getAsDouble(), targetY.getAsDouble())), driveSubsystem, pigeon),
+            new AutoDriveCommand(() -> Math.hypot(targetX.getAsDouble(), targetY.getAsDouble()), velocity, acceleration, driveSubsystem),
+            new AutoTurnCommand(() -> Math.toDegrees(Math.atan2(targetX.getAsDouble(), targetY.getAsDouble()) + finalAngleRad.getAsDouble()), driveSubsystem, pigeon)
         );
-    }
-
-    private void getDegreeOffset() {
-        if (targetX.getAsDouble() > 0) {
-            degreeOffset = 90;
-        }
-        else if (targetX.getAsDouble() < 0) {
-            degreeOffset = -90;
-        }
     }
 
 }

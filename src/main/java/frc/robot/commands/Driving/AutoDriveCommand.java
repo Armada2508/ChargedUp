@@ -8,7 +8,7 @@ import frc.robot.subsystems.DriveSubsystem;
 
 public class AutoDriveCommand extends CommandBase {
 
-    private final double distanceDeadbandMeters = Units.inchesToMeters(1.1);
+    private final double distanceDeadbandMeters = Units.inchesToMeters(0.25);
     private final DoubleSupplier targetDistance;
     private double velocity;
     private double acceleration;

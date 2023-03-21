@@ -19,6 +19,8 @@ public class AutoTurnCommand extends CommandBase {
     }
     private final DoubleSupplier relativeDegrees;
     private final double deadbandDegrees = 0.5;
+    private final double minIntegral = -1;
+    private final double maxIntegral = 1;
     private double absoluteTarget;
     private DriveSubsystem driveSubsystem;
     private PigeonIMU pigeon;
@@ -49,9 +51,12 @@ public class AutoTurnCommand extends CommandBase {
     @Override
     public void initialize() {
         absoluteTarget = pigeon.getYaw() + relativeDegrees.getAsDouble();
+        // System.out.println(pigeon.getYaw() + " " + relativeDegrees.getAsDouble());
         pid.reset();
         pid.setSetpoint(absoluteTarget);
         pid.setTolerance(deadbandDegrees);
+        pid.setIntegratorRange(minIntegral, maxIntegral);
+        // System.out.println("P: " + pid.getP() + ", I: " + pid.getI() + ", D: " + pid.getD());
     }
 
     @Override

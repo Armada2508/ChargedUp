@@ -4,9 +4,15 @@ import java.util.function.Supplier;
 
 import com.ctre.phoenix.sensors.PigeonIMU;
 
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import frc.robot.Lib.util.Util;
 import frc.robot.commands.Driving.MoveRelativeCommand;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
@@ -30,9 +36,11 @@ public class AprilTagCommand extends InstantCommand {
 
     @Override
     public void initialize() {
+        visionSubsystem.setPipeline(Target.APRILTAG);
         double xOffset = 0;
-        double yOffset = 0.3556;
-        Pose2d targetPose = visionSubsystem.getPoseToTarget(Target.APRILTAG, pigeon);
+        double zOffset = 0.3556;
+        Pose2d cameraPose = visionSubsystem.getPoseToTarget(Target.APRILTAG, pigeon);
+        System.out.println("Camera Pose: " + cameraPose);
         switch (position.get()) {
             case LEFT:
             xOffset = 0.47625; 
@@ -44,8 +52,17 @@ public class AprilTagCommand extends InstantCommand {
             xOffset = -0.47625;
             break;
         }
-        Pose2d pose = new Pose2d((targetPose.getX() + xOffset), (targetPose.getY() + yOffset), (targetPose.getRotation().times(-1)));
-        Command command = new MoveRelativeCommand(pose.getX(), pose.getY(), pose.getRotation().getDegrees(), driveSubsystem, pigeon);
+        xOffset = 0;
+        zOffset = 1;
+        double[] rvecArray = visionSubsystem.getRotationalVector(Target.APRILTAG);
+        Vector<N3> rvec = VecBuilder.fill(rvecArray[0], rvecArray[1], rvecArray[2]); 
+        Translation3d tagOffset = new Translation3d(xOffset, 0, zOffset).rotateBy(new Rotation3d(rvec));
+        Translation3d tagNormal = new Translation3d(0, 0, 1).rotateBy(new Rotation3d(rvec));
+        System.out.println("Tag Normal: " + tagNormal);
+        double finalAngleRad = Util.boundedAngle(Math.atan2(tagNormal.getX(), tagNormal.getZ()) + Math.PI);
+        System.out.println("AprilTag Translation in Camera Frame: " + tagOffset);
+        System.out.println("Final Translation: " + (cameraPose.getX() + tagOffset.getX()) + " " + (cameraPose.getY() + tagOffset.getZ()) + " " + finalAngleRad);
+        Command command = new MoveRelativeCommand(cameraPose.getX() + tagOffset.getX(), cameraPose.getY() + tagOffset.getZ(), finalAngleRad, driveSubsystem, pigeon);
         // Command command = getTrajectoryCommand(targetPose);
         command.schedule();
     }

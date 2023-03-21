@@ -381,7 +381,7 @@ def getTagData(pipeline: AprilTagPipeline, result: AprilTagDetection) -> None:
     pipeline.rY.setDouble(math.degrees(bestResult.rotation().Y()))
     pipeline.rZ.setDouble(math.degrees(bestResult.rotation().Z()))
     
-def getTagDataPNP(pipeline: AprilTagPipeline, result: AprilTagDetection) -> None:
+def getTagDataPNPGeneric(pipeline: AprilTagPipeline, result: AprilTagDetection) -> None:
     length = aprilTagLengthMeters
     pts = np.asarray(result.getCorners(np.zeros(8)))
     pts = pts.reshape((-1, 2))
@@ -392,8 +392,28 @@ def getTagDataPNP(pipeline: AprilTagPipeline, result: AprilTagDetection) -> None
         [length / 2, -length / 2, 0],
         [-length / 2, -length / 2, 0]
     ])
-    retval, rvec, tvec = cv2.solvePnP(objectPoints, imagePoints, cameraMatrix = cameraMatrix, distCoeffs = distCoeffs, flags = cv2.SOLVEPNP_IPPE_SQUARE)
-    # print(np.linalg.norm(tvec) * 39.37)
+    # retval, rvec, tvec = cv2.solvePnP(objectPoints, imagePoints, cameraMatrix = cameraMatrix, distCoeffs = distCoeffs, flags = cv2.SOLVEPNP_IPPE_SQUARE)
+    ret, rVecs, tVecs, rerr = cv2.solvePnPGeneric(objectPoints, imagePoints, cameraMatrix = cameraMatrix, distCoeffs = distCoeffs, flags = cv2.SOLVEPNP_IPPE_SQUARE) 
+    tvec = [0, 0, 0]
+    rvec = [0, 0, 0]
+    foundMatch = False
+    for i, tvec in enumerate(tVecs):
+        if(tvec[2] < 0): # z less than 0, skip it
+            continue
+        rvec = rVecs[i]
+        tvec = tVecs[i]
+        foundMatch = True
+        break
+    
+    if (foundMatch == False):
+        pipeline.hasTarget.setBoolean(False)
+        pipeline.tX.setDouble(0)
+        pipeline.tY.setDouble(0)
+        pipeline.tZ.setDouble(0)
+        pipeline.rX.setDouble(0)
+        pipeline.rY.setDouble(0)
+        pipeline.rZ.setDouble(0)
+        return
     
     pipeline.tX.setDouble(tvec[0])
     pipeline.tY.setDouble(tvec[1])
@@ -401,6 +421,7 @@ def getTagDataPNP(pipeline: AprilTagPipeline, result: AprilTagDetection) -> None
     pipeline.rX.setDouble(math.degrees(rvec[0]))
     pipeline.rY.setDouble(math.degrees(rvec[1]))
     pipeline.rZ.setDouble(math.degrees(rvec[2]))
+    pipeline.hasTarget.setBoolean(True)
     
 def drawDetection(drawnImg: Mat, result: AprilTagDetection) -> Mat:
     # Crosshair
@@ -441,8 +462,7 @@ def aprilTagPipeline(input_img: Mat, drawnImg: Mat, pipeline: AprilTagPipeline) 
             return drawnImg
         drawDetection(drawnImg, result)
         # getTagData(pipeline, result)
-        getTagDataPNP(pipeline, result)
-        pipeline.hasTarget.setBoolean(True)
+        getTagDataPNPGeneric(pipeline, result)
         return drawnImg
     pipeline.hasTarget.setBoolean(False)
     pipeline.tX.setDouble(0)

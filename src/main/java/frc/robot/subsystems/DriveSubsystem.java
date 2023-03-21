@@ -59,6 +59,7 @@ public class DriveSubsystem extends SubsystemBase {
     public void periodic() {
         // System.out.println(getHeading());
         odometry.update(Rotation2d.fromDegrees(getHeading()), getleftPostition(), getRightPostition());
+        // System.out.println(odometry.getPoseMeters());
     }
 
     public void setPower(double leftPower, double rightPower) {

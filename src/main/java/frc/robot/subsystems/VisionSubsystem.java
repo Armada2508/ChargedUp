@@ -103,10 +103,19 @@ public class VisionSubsystem extends SubsystemBase {
         // double distance = Math.sqrt((result.tZ() * result.tZ()) - (Vision.heightDiffToTag * Vision.heightDiffToTag));
         // double x = distance * Math.sin(Math.toRadians(yaw));
         // double y = distance * Math.cos(Math.toRadians(yaw));
-        double x = result.tX() * 39.37;
-        double y = result.tZ() * 39.37;
+        double x = result.tX() + Vision.cameraXOffset;
+        double y = result.tZ() + Vision.cameraZOffset;
         double yaw = Util.boundedAngleDegreesPositive(pigeon.getFusedHeading());
         return new Pose2d(x, y, Rotation2d.fromDegrees(yaw));
+    }
+
+    /**
+     * Gets rotational vector of april tag in radians
+     */
+    public double[] getRotationalVector(Target pipeline) {
+        if (!hasTarget(pipeline)) return new double[3];
+        PipelineResult result = getResult(pipeline);
+        return new double[]{Math.toRadians(result.rX()), Math.toRadians(result.rY()), Math.toRadians(result.rZ())};
     }
 
     /**
@@ -129,7 +138,7 @@ public class VisionSubsystem extends SubsystemBase {
             Vision.cameraPitchRadians, 
             Units.degreesToRadians(getTargetPitch(pipeline))
         );
-        return distanceMeters - Vision.distanceToBumperMeters;
+        return distanceMeters - Vision.cameraZOffset;
     }
 
     public double getCameraPitch(double distanceMeters, Target pipeline) {
