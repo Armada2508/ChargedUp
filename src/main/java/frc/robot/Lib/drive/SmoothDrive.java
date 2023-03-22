@@ -1,8 +1,8 @@
-package frc.robot.Lib.drive;
+package frc.robot.lib.drive;
 
-import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.MathUtil;
-import frc.robot.Lib.util.Util;
+import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
+import frc.robot.lib.util.Util;
 
 /**
  * Helper class to implement curvature controlled drive. This helps make the robot more controllable at high

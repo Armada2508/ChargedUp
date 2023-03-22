@@ -1,4 +1,4 @@
-package frc.robot.Lib.config;
+package frc.robot.lib.config;
 
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;

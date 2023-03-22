@@ -1,4 +1,4 @@
-package frc.robot.Lib.motion;
+package frc.robot.lib.motion;
 
 import com.ctre.phoenix.motion.*;
 

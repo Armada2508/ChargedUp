@@ -1,7 +1,7 @@
-package frc.robot.Lib.drive;
+package frc.robot.lib.drive;
 
-import frc.robot.Lib.motion.DifferentialDriveWheelPowers;
-import frc.robot.Lib.util.Util;
+import frc.robot.lib.motion.DifferentialDriveWheelPowers;
+import frc.robot.lib.util.Util;
 
 /**
  * Helper class to implement a basic drive.

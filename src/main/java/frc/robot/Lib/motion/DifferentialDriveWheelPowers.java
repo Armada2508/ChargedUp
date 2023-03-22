@@ -1,6 +1,6 @@
-package frc.robot.Lib.motion;
+package frc.robot.lib.motion;
 
-import frc.robot.Lib.util.Util;
+import frc.robot.lib.util.Util;
 
 public class DifferentialDriveWheelPowers {
     private double mRPower;

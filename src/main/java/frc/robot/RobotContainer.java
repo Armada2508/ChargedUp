@@ -21,12 +21,12 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Constants.Arm;
 import frc.robot.Constants.Drive;
 import frc.robot.Constants.Wrist;
-import frc.robot.Lib.motion.FollowTrajectory;
-import frc.robot.commands.Auto.AprilTagCommand;
-import frc.robot.commands.Auto.AprilTagCommand.Position;
-import frc.robot.commands.Driving.AutoDriveCommand;
-import frc.robot.commands.Driving.AutoTurnCommand;
-import frc.robot.commands.Driving.ButterySmoothDriveCommand;
+import frc.robot.commands.auto.AprilTagCommand;
+import frc.robot.commands.auto.AprilTagCommand.Position;
+import frc.robot.commands.driving.AutoDriveCommand;
+import frc.robot.commands.driving.AutoTurnCommand;
+import frc.robot.commands.driving.ButterySmoothDriveCommand;
+import frc.robot.lib.motion.FollowTrajectory;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.GripperSubsystem;
@@ -48,12 +48,12 @@ public class RobotContainer {
     private final TimeOfFlight tof;
 
     public RobotContainer(PigeonIMU pigeon, TimeOfFlight tof) {
+        pigeon.setYaw(0);
         this.pigeon = pigeon;
         this.tof = tof;
         this.driveSubsystem = new DriveSubsystem(pigeon);
         subsystems = new SubsystemBase[]{driveSubsystem, visionSubsystem, armSubsystem, wristSubsystem, gripperSubsystem};
-        pigeon.setYaw(0);
-        FollowTrajectory.config(0.31, 1.95, 0.35, 2.0, 0.7, Drive.trackWidthMeters, new PIDController(0.25, 0, 0), 0.875);
+        FollowTrajectory.config(Drive.kS, Drive.kV, Drive.kA, Drive.ramseteB, Drive.ramseteZeta, Drive.trackWidthMeters, Drive.ramsetePIDController, Drive.ramseteTurnCompensation);
         InverseKinematics.config(Arm.jointLengthInches, Wrist.jointLengthInches);
         driveSubsystem.setDefaultCommand(new ButterySmoothDriveCommand(() -> -joystick.getRawAxis(1), () -> -joystick.getRawAxis(0),  () -> -joystick.getRawAxis(2), () -> joystick.getRawButton(4), true, driveSubsystem)); // default to driving from joystick input
         if (RobotBase.isReal()) {
@@ -138,7 +138,7 @@ public class RobotContainer {
         */
         // mapButton(new MoveRelativeCommand(-1, 1, 0, driveSubsystem, pigeon), 12);
         // mapButton(new MoveRelativeCommand(0, 1, 0, driveSubsystem, pigeon), 9);
-        mapButton(new AprilTagCommand(() -> Position.CENTER, driveSubsystem, visionSubsystem, pigeon), 12);
+        mapButton(new AprilTagCommand(() -> Position.CENTER, driveSubsystem, visionSubsystem), 12);
         mapButton(new AutoTurnCommand(30, driveSubsystem, pigeon), 10);
         mapButton(new AutoTurnCommand(90, driveSubsystem, pigeon), 9);
         // mapButton(new AltSeekCommand(() -> Target.CONE, 1.5, driveSubsystem, visionSubsystem, pigeon), 10);

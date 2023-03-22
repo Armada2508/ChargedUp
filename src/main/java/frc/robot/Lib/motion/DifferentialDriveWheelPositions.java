@@ -1,4 +1,4 @@
-package frc.robot.Lib.motion;
+package frc.robot.lib.motion;
 
 public class DifferentialDriveWheelPositions {
     private double mRWheelPos;

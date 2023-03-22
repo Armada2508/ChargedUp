@@ -1,4 +1,4 @@
-package frc.robot.Lib.motion;
+package frc.robot.lib.motion;
 
 import java.util.ArrayList;
 
@@ -79,7 +79,6 @@ public class FollowTrajectory {
         trajectory = trajectory.relativeTo(zeroPose);
         PIDController leftController = new PIDController(0, 0, 0);
         PIDController rightController = new PIDController(0, 0, 0);
-        driveSubsystem.brake();
         return new RamseteCommand(
                 trajectory,
                 driveSubsystem::getPose,
@@ -109,7 +108,6 @@ public class FollowTrajectory {
      */
     public static Command getCommand(DriveSubsystem driveSubsystem, Trajectory trajectory, Pose2d zeroPose) {
         trajectory = trajectory.relativeTo(zeroPose);
-        driveSubsystem.brake();
         return new RamseteCommand(
                 trajectory,
                 driveSubsystem::getPose,
@@ -139,7 +137,6 @@ public class FollowTrajectory {
      */
     public static Command getCommandTalon(DriveSubsystem driveSubsystem, Trajectory trajectory, Pose2d zeroPose) {
         trajectory = trajectory.relativeTo(zeroPose);
-        driveSubsystem.brake();
         return new RamseteCommand(
                 trajectory,
                 driveSubsystem::getPose,

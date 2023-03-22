@@ -1,37 +1,37 @@
-package frc.robot.commands.Auto;
+package frc.robot.commands.auto;
 
+import java.util.ArrayList;
 import java.util.function.Supplier;
 
-import com.ctre.phoenix.sensors.PigeonIMU;
-
-import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.Constants.Vision;
-import frc.robot.Lib.util.Util;
-import frc.robot.commands.Driving.MoveRelativeCommand;
+import frc.robot.lib.motion.FollowTrajectory;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.VisionSubsystem.Target;
 
 public class AprilTagCommand extends InstantCommand {
     
-    // private final TrajectoryConfig config = new TrajectoryConfig(2, 1);
+    private final TrajectoryConfig config = new TrajectoryConfig(2, 1);
+    private final Supplier<Position> position;    
     private final DriveSubsystem driveSubsystem;
     private final VisionSubsystem visionSubsystem;
-    private final PigeonIMU pigeon;
-    private Supplier<Position> position;    
 
-    public AprilTagCommand(Supplier<Position> position, DriveSubsystem driveSubsystem, VisionSubsystem visionSubsystem, PigeonIMU pigeon) {
+    public AprilTagCommand(Supplier<Position> position, DriveSubsystem driveSubsystem, VisionSubsystem visionSubsystem) {
         this.position = position;
         this.driveSubsystem = driveSubsystem;
         this.visionSubsystem = visionSubsystem;
-        this.pigeon = pigeon;
         addRequirements(driveSubsystem);
     }
 
@@ -44,48 +44,40 @@ public class AprilTagCommand extends InstantCommand {
             cancel();
             return;
         }
-        Pose2d cameraPose = visionSubsystem.getPoseToTarget(Target.APRILTAG);
-        System.out.println("Camera Pose: " + cameraPose);
-        switch (position.get()) {
-            case LEFT:
-            xOffset = 0.47625; 
-            break;
-            case CENTER:
-            xOffset = 0;
-            break;
-            case RIGHT: 
-            xOffset = -0.47625;
-            break;
-        }
+        Pose3d cameraPose = visionSubsystem.getPoseToTarget();
+        xOffset = switch (position.get()) {
+            case LEFT -> xOffset = 0.47625; 
+            case CENTER -> xOffset = 0;
+            case RIGHT -> xOffset = -0.47625;
+        };
         xOffset = 0;
         zOffset = 1;
         zOffset += Vision.centerToFront;
-        double[] rvecArray = visionSubsystem.getRotationalVector(Target.APRILTAG);
-        Vector<N3> rvec = VecBuilder.fill(rvecArray[0], rvecArray[1], rvecArray[2]); 
         // Translation Offset rotated into the camera's frame to be added onto target position
+        Vector<N3> rvec = visionSubsystem.getRotationalVector();
         Translation3d tagOffset = new Translation3d(xOffset, 0, zOffset).rotateBy(new Rotation3d(rvec));
-        // Used to find april tag skew angle
-        Translation3d tagNormal = new Translation3d(0, 0, 1).rotateBy(new Rotation3d(rvec));
-        System.out.println("Tag Normal: " + tagNormal);
-        // skew
-        double finalAngleRad = Util.boundedAngle(Math.atan2(tagNormal.getX(), tagNormal.getZ()) + Math.PI);
-        System.out.println("AprilTag Translation in Camera Frame: " + tagOffset);
-        System.out.println("Final Translation: " + (cameraPose.getX() + tagOffset.getX()) + " " + (cameraPose.getY() + tagOffset.getZ()) + " " + finalAngleRad);
-        Command command = new MoveRelativeCommand(cameraPose.getX() + tagOffset.getX(), cameraPose.getY() + tagOffset.getZ(), finalAngleRad, driveSubsystem, pigeon, visionSubsystem);
-        // Command command = getTrajectoryCommand(targetPose);
+        double skew = visionSubsystem.getSkew();
+        Pose2d targetPose = new Pose2d(cameraPose.getX() + tagOffset.getX(), cameraPose.getZ() + tagOffset.getZ(), new Rotation2d(skew));
+        // Command command = new MoveRelativeCommand(cameraPose.getX() + tagOffset.getX(), cameraPose.getZ() + tagOffset.getZ(), skew, driveSubsystem, pigeon);
+        Command command = getTrajectoryCommand(targetPose);
         command.schedule();
+        
     }
 
-    // private Command getTrajectoryCommand(Pose2d pose) {
-    //     Trajectory trajectory = TrajectoryGenerator.generateTrajectory(new Pose2d(), new ArrayList<>(), pose, config);
-    //     return FollowTrajectory.getCommand(driveSubsystem, trajectory, driveSubsystem.getPose());
-    // }
+    private Command getTrajectoryCommand(Pose2d pose) {
+        Trajectory trajectory = TrajectoryGenerator.generateTrajectory(new Pose2d(), new ArrayList<>(), pose, config);
+        return FollowTrajectory.getCommand(driveSubsystem, trajectory, driveSubsystem.getPose());
+    }
+
+    @Override
+    public boolean isFinished() {
+        return true;
+    }
 
     public enum Position {
         LEFT,
         CENTER,
         RIGHT
     }
-
 
 }

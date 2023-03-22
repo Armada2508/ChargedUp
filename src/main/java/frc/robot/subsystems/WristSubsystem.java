@@ -15,7 +15,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.Constants;
 import frc.robot.Constants.Wrist;
-import frc.robot.Lib.Encoder;
+import frc.robot.lib.Encoder;
 
 public class WristSubsystem extends SubsystemBase {
 

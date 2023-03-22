@@ -1,9 +1,9 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import frc.robot.Lib.util.BetterPair;
-import frc.robot.commands.Arm.ArmCommand;
-import frc.robot.commands.Arm.WristCommand;
+import frc.robot.commands.arm.ArmCommand;
+import frc.robot.commands.arm.WristCommand;
+import frc.robot.lib.util.BetterPair;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.WristSubsystem;
 

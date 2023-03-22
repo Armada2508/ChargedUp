@@ -1,4 +1,4 @@
-package frc.robot.Lib.drive;
+package frc.robot.lib.drive;
 
 import java.util.function.Supplier;
 
@@ -9,7 +9,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.numbers.N2;
-import frc.robot.Lib.util.Util;
+import frc.robot.lib.util.Util;
 
 public class FieldOrientedDrive {
     private Supplier<Vector<N2>> mVelocity;

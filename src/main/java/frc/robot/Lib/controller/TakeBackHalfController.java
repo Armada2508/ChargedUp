@@ -1,4 +1,4 @@
-package frc.robot.Lib.controller;
+package frc.robot.lib.controller;
 
 /**
  * Based on https://www.chiefdelphi.com/t/paper-take-back-half-shooter-wheel-speed-control/121640

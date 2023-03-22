@@ -9,8 +9,7 @@ import org.photonvision.PhotonUtils;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N3;
@@ -20,7 +19,7 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.Vision;
-import frc.robot.Lib.util.Util;
+import frc.robot.lib.util.Util;
 
 /**
  * Used to interface with the raspberry pi.
@@ -62,19 +61,9 @@ public class VisionSubsystem extends SubsystemBase {
                 (int) table.getEntry("Orientation").getInteger(0)
             ));
         }
-        // System.out.println(getCameraPitch(0.755 + Vision.distanceToBumperMeters, Target.CONE));
-        // System.out.println((getPoseToTarget(Target.APRILTAG)));
-        // distanceFromTargetMeters(Target.CUBE);
-        // System.out.println("Pitch: " + getTargetPitch(Target.CUBE) + " Yaw: " + getTargetYaw(Target.CUBE) + " Distance: " + distanceFromTargetMeters(Target.CUBE));
         if (i % 2 == 0) {
-            // System.out.println("\nTarget Pose: " + getPoseToTarget(Target.APRILTAG, new WPI_PigeonIMU(Constants.pigeonID)));
-            double[] rvecArray = getRotationalVector(Target.APRILTAG);
-            Vector<N3> rvec = VecBuilder.fill(rvecArray[0], rvecArray[1], rvecArray[2]); 
-            Translation3d tagNormal = new Translation3d(0, 0, 1).rotateBy(new Rotation3d(rvec));
-            // skew
-            double finalAngleRad = Util.boundedAngle(Math.atan2(tagNormal.getX(), tagNormal.getZ()) + Math.PI);
-            Pose2d pose = getPoseToTarget(Target.APRILTAG);
-            // System.out.println("Skew: " + Math.toDegrees(finalAngleRad) + " X: " + pose.getX() + " Z: " + pose.getY());
+            Pose3d pose = getPoseToTarget();
+            System.out.println("Camera Pose: " + pose + " , Skew: " + getSkew());
         }
         i++;
     }
@@ -88,8 +77,13 @@ public class VisionSubsystem extends SubsystemBase {
         };
     }
 
+    /**
+     * You should always be calling this method before you interact with the vision subsystem for your desired pipeline
+     * @param pipeline the pipeline to check for a valid target
+     * @return whether or not that pipeline currently has a target
+     */
     public boolean hasTarget(Target pipeline) {
-        return getResult(pipeline).haveTarget();
+        return getResult(pipeline).hasTarget();
     }
 
     public double getTargetPitch(Target pipeline) {
@@ -102,26 +96,52 @@ public class VisionSubsystem extends SubsystemBase {
         return getResult(pipeline).yaw();
     }
 
+    //? AprilTag
+
     /**
-     * @param pipeline to use for getting target pose
-     * @return A Pose2d in meters representing the robot's position in 2d space relative to the target at (0, 0)
+     * @return A Pose3d in meters representing the robot's position in 3d space relative to the target. (0, 0, 0) is the robot's origin.
      */
-    public Pose2d getPoseToTarget(Target pipeline) {
-        if (!hasTarget(pipeline)) return null;
-        PipelineResult result = getResult(pipeline);
+    public Pose3d getPoseToTarget() {
+        if (!hasTarget(Target.APRILTAG)) return null;
+        PipelineResult result = getResult(Target.APRILTAG);
         double x = result.tX() + Vision.cameraXOffset;
-        double y = result.tZ() + Vision.cameraZOffset;
-        return new Pose2d(x, y, new Rotation2d());
+        double y = result.tY() + Vision.cameraYOffset;
+        double z = result.tZ() + Vision.cameraZOffset;
+        Vector<N3> rvec = getRotationalVector();
+        return new Pose3d(x, y, z, new Rotation3d(rvec));
     }
 
     /**
-     * Gets rotational vector of april tag in radians
+     * @return rotational vector of april tag in radians
      */
-    public double[] getRotationalVector(Target pipeline) {
-        if (!hasTarget(pipeline)) return new double[3];
-        PipelineResult result = getResult(pipeline);
+    public double[] getRotationalArray() {
+        if (!hasTarget(Target.APRILTAG)) return null;
+        PipelineResult result = getResult(Target.APRILTAG);
         return new double[]{result.rX(), result.rY(), result.rZ()};
     }
+
+    /**
+     * @return rotational vector of april tag in radians in wpilib vector form
+     */
+    public Vector<N3> getRotationalVector() {
+        if (!hasTarget(Target.APRILTAG)) return null;
+        double[] rvecArray = getRotationalArray();
+        Vector<N3> rvec = VecBuilder.fill(rvecArray[0], rvecArray[1], rvecArray[2]); 
+        return rvec;
+    }
+    
+    /**
+     * @return Skew angle of the april tag in radians
+     */
+    public double getSkew() {
+        if (!hasTarget(Target.APRILTAG)) return Double.NaN;
+        Vector<N3> rvec = getRotationalVector();
+        Translation3d tagNormal = new Translation3d(0, 0, 1).rotateBy(new Rotation3d(rvec));
+        double skew = Util.boundedAngle(Math.atan2(tagNormal.getX(), tagNormal.getZ()) + Math.PI);
+        return skew;
+    }
+
+    //? AprilTag
 
     /**
      * Calculates distance from the front of the robot to the current target in meters
@@ -147,6 +167,7 @@ public class VisionSubsystem extends SubsystemBase {
     }
 
     public double getCameraPitch(double distanceMeters, Target pipeline) {
+        if (!hasTarget(pipeline)) return Double.NaN;
         return Math.toDegrees(Math.atan((Vision.cameraHeightMeters - 0) / distanceMeters)) - getTargetPitch(pipeline);
     }
 
@@ -159,6 +180,7 @@ public class VisionSubsystem extends SubsystemBase {
     }
 
     public Orientation getTargetOrientation(Target pipeline) {
+        if (!hasTarget(pipeline)) return null;
         return switch(getResult(pipeline).orientation()) {
             case 0 -> Orientation.LANDSCAPE;
             case 1 -> Orientation.PORTRAIT;
@@ -180,11 +202,11 @@ public class VisionSubsystem extends SubsystemBase {
 
     private record PipelineResult(
         String name,
-        boolean haveTarget,
+        boolean hasTarget,
         double pitch,
         double yaw,
         double tX,
-        double ty,
+        double tY,
         double tZ,
         double rX,
         double rY,

@@ -15,8 +15,8 @@ import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Drive;
-import frc.robot.Lib.Encoder;
-import frc.robot.Lib.util.Util;
+import frc.robot.lib.Encoder;
+import frc.robot.lib.util.Util;
 
 
 public class DriveSubsystem extends SubsystemBase {
@@ -40,9 +40,9 @@ public class DriveSubsystem extends SubsystemBase {
         talonFXLfollow.follow(talonFXL);
         talonFXRfollow.follow(talonFXR);
         talonFXL.configNominalOutputForward(Drive.nominalOutputLeft);
-        talonFXL.configNominalOutputReverse(Drive.nominalOutputLeft);
+        talonFXL.configNominalOutputReverse(-Drive.nominalOutputLeft);
         talonFXR.configNominalOutputForward(Drive.nominalOutputRight);
-        talonFXR.configNominalOutputReverse(Drive.nominalOutputRight);
+        talonFXR.configNominalOutputReverse(-Drive.nominalOutputRight);
         odometry = new DifferentialDriveOdometry(Rotation2d.fromDegrees(getHeading()), getleftPostition(), getRightPostition());
     }
 
@@ -122,16 +122,6 @@ public class DriveSubsystem extends SubsystemBase {
 
     public double getTarget() {
         return Encoder.toDistance(talonFXL.getClosedLoopTarget(), Drive.encoderUnitsPerRev, Drive.gearboxRatio, Drive.wheelDiameterMeters);
-    }
-
-    /**
-     * Put motors in brake mode
-     */
-    public void brake() {
-        talonFXL.setNeutralMode(NeutralMode.Brake);
-        talonFXLfollow.setNeutralMode(NeutralMode.Brake);
-        talonFXR.setNeutralMode(NeutralMode.Brake);
-        talonFXRfollow.setNeutralMode(NeutralMode.Brake);
     }
 
     public void setVoltage(double leftVolts, double rightVolts) {

@@ -1,4 +1,4 @@
-package frc.robot.Lib;
+package frc.robot.lib;
 
 public class Encoder {
     /**

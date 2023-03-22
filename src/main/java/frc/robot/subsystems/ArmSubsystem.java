@@ -18,8 +18,8 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.Constants;
 import frc.robot.Constants.Arm;
-import frc.robot.Lib.Encoder;
-import frc.robot.commands.Arm.CalibrateArmCommand;
+import frc.robot.commands.arm.CalibrateArmCommand;
+import frc.robot.lib.Encoder;
 
 public class ArmSubsystem extends SubsystemBase {
     

@@ -1,6 +1,6 @@
-package frc.robot.Lib.vision;
+package frc.robot.lib.vision;
 
-import frc.robot.Lib.util.Util;
+import frc.robot.lib.util.Util;
 
 public class FOV {
     public final double mX;

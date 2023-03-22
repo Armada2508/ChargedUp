@@ -1,7 +1,7 @@
-package frc.robot.Lib.vision;
+package frc.robot.lib.vision;
 
 import edu.wpi.first.math.MathUtil;
-import frc.robot.Lib.util.Util;
+import frc.robot.lib.util.Util;
 
 public class VisionUtil {
     /**

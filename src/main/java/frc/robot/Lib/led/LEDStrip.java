@@ -1,4 +1,4 @@
-package frc.robot.Lib.led;
+package frc.robot.lib.led;
 
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
