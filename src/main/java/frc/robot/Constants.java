@@ -1,6 +1,8 @@
 package frc.robot;
 
-import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import frc.robot.lib.util.Util;
 
@@ -43,13 +45,8 @@ public class Constants {
         public static final double trackWidthMeters = Util.inchesToMeters(24.5);
 
         // WPILib Trajectories/Ramsete
-        public static final double kS = 0; 
-        public static final double kV = 0; 
-        public static final double kA = 0; 
         public static final double ramseteB = 2.0; 
         public static final double ramseteZeta = 0.7; 
-        public static final PIDController ramsetePIDController = new PIDController(0, 0, 0);
-        public static final double ramseteTurnCompensation = 0.875; 
     }
 
     public static final class Balance {
@@ -67,6 +64,7 @@ public class Constants {
         public static final double cameraXOffset = Units.inchesToMeters(10);
         public static final double cameraYOffset = Units.inchesToMeters(0);
         public static final double cameraZOffset = Units.inchesToMeters(13.5);
+        public static final Transform3d cameraOffset = new Transform3d(new Translation3d(cameraXOffset, cameraYOffset, cameraZOffset), new Rotation3d());
         public static final double centerToFront = Units.inchesToMeters(14.5);
         // Target Heights
         public static final double coneHeightMeters = 0;

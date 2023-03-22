@@ -1,16 +1,21 @@
 package frc.robot.subsystems;
 
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 
 import org.photonvision.PhotonUtils;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
@@ -33,12 +38,18 @@ public class VisionSubsystem extends SubsystemBase {
     private final NetworkTable tagTable = mainTable.getSubTable("AprilTag");
     private final List<NetworkTable> subtables = new ArrayList<>();
     private final HashMap<NetworkTable, PipelineResult> currentResults = new HashMap<>();
+    private AprilTagFieldLayout layout = null;
 
     public VisionSubsystem() {
         super();
         subtables.add(coneTable);
         subtables.add(cubeTable);
         subtables.add(tagTable);
+        try {
+            layout = AprilTagFields.k2023ChargedUp.loadAprilTagLayoutField();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
     
     private int i = 0;
@@ -49,21 +60,23 @@ public class VisionSubsystem extends SubsystemBase {
             currentResults.put(table, new PipelineResult(
                 table.getPath(), 
                 table.getEntry("Has Target").getBoolean(false), 
-                table.getEntry("Pitch").getDouble(0), 
-                table.getEntry("Yaw").getDouble(0),
-                table.getEntry("tX").getDouble(0),
-                table.getEntry("tY").getDouble(0),
-                table.getEntry("tZ").getDouble(0),
-                table.getEntry("rX").getDouble(0),
-                table.getEntry("rY").getDouble(0),
-                table.getEntry("rZ").getDouble(0),
-                (int) table.getEntry("Pipeline").getInteger(0), 
-                (int) table.getEntry("Orientation").getInteger(0)
+                table.getEntry("Pitch").getDouble(Double.NaN), 
+                table.getEntry("Yaw").getDouble(Double.NaN),
+                table.getEntry("tX").getDouble(Double.NaN),
+                table.getEntry("tY").getDouble(Double.NaN),
+                table.getEntry("tZ").getDouble(Double.NaN),
+                table.getEntry("rX").getDouble(Double.NaN),
+                table.getEntry("rY").getDouble(Double.NaN),
+                table.getEntry("rZ").getDouble(Double.NaN),
+                (int) table.getEntry("id").getInteger(-1),
+                (int) table.getEntry("Pipeline").getInteger(-1), 
+                (int) table.getEntry("Orientation").getInteger(-1)
             ));
         }
         if (i % 2 == 0) {
-            Pose3d pose = getPoseToTarget();
-            System.out.println("Camera Pose: " + pose + " , Skew: " + getSkew());
+            // Pose3d pose = getPoseToTarget();
+            // System.out.println("Camera Pose: " + pose + " , Skew: " + getSkew());
+            System.out.println(getFieldPose());
         }
         i++;
     }
@@ -98,17 +111,28 @@ public class VisionSubsystem extends SubsystemBase {
 
     //? AprilTag
 
+    public Pose3d getFieldPose() {
+        if (!hasTarget(Target.APRILTAG)) return null;
+        Optional<Pose3d> fieldTagPoseOptional = layout.getTagPose(getResult(Target.APRILTAG).id());
+        if (fieldTagPoseOptional.isPresent()) {
+            Pose3d fieldTagPose = fieldTagPoseOptional.get();
+            Transform3d botPose = new Transform3d(new Pose3d(), getPoseToTarget()).inverse();
+            // return new Pose3d().plus(fieldTagPose.minus(getPoseToTarget()));
+            return fieldTagPose.plus(botPose);
+        }
+        return null;
+    }
+
     /**
-     * @return A Pose3d in meters representing the robot's position in 3d space relative to the target. (0, 0, 0) is the robot's origin.
+     * @return A Pose3d in meters representing the target's position in 3d space relative to the robot. (0, 0, 0) is the robot's origin.
      */
     public Pose3d getPoseToTarget() {
         if (!hasTarget(Target.APRILTAG)) return null;
         PipelineResult result = getResult(Target.APRILTAG);
-        double x = result.tX() + Vision.cameraXOffset;
-        double y = result.tY() + Vision.cameraYOffset;
-        double z = result.tZ() + Vision.cameraZOffset;
         Vector<N3> rvec = getRotationalVector();
-        return new Pose3d(x, y, z, new Rotation3d(rvec));
+        Pose3d cameraPose = new Pose3d(result.tX(), result.tY(), result.tZ(), new Rotation3d(rvec));
+        Pose3d robotPose = cameraPose.plus(Vision.cameraOffset);
+        return robotPose;
     }
 
     /**
@@ -211,6 +235,7 @@ public class VisionSubsystem extends SubsystemBase {
         double rX,
         double rY,
         double rZ,
+        int id,
         int pipeline,
         int orientation
     ) {}

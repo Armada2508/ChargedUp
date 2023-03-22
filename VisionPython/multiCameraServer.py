@@ -291,6 +291,7 @@ class AprilTagPipeline(Pipeline):
         self.poseIterations = self.subTable.getEntry("DEBUG: Pose Iterations")
         self.minArea = self.subTable.getEntry("DEBUG: Min Area")
         self.minDecisionMargin = self.subTable.getEntry("DEBUG: Min Decision Margin")
+        self.tagID = self.subTable.getEntry("id")
         self.tX = self.subTable.getEntry("tX") 
         self.tY = self.subTable.getEntry("tY")
         self.tZ = self.subTable.getEntry("tZ")
@@ -300,6 +301,7 @@ class AprilTagPipeline(Pipeline):
         self.poseIterations.setInteger(poseIterations)
         self.minArea.setDouble(minArea)
         self.minDecisionMargin.setDouble(minDecisionMargin)
+        self.tagID.setInteger(0)
         self.tX.setDouble(0)
         self.tY.setDouble(0)
         self.tZ.setDouble(0)
@@ -431,7 +433,7 @@ def aprilTagPipeline(input_img: Mat, drawnImg: Mat, pipeline: AprilTagPipeline) 
     if (len(detections) > 0):
         result = detections[0]
         for detection in detections:
-            if (detection.getDecisionMargin() > result.getDecisionMargin() and getAreaAprilTag(detection) > getAreaAprilTag(result)):
+            if (getAreaAprilTag(detection) > getAreaAprilTag(result)):
                 result = detection
         if (getAreaAprilTag(result) < pipeline.minArea.getDouble(0) or result.getDecisionMargin() < pipeline.minDecisionMargin.getDouble(0)):
             pipeline.hasTarget.setBoolean(False)
@@ -443,8 +445,8 @@ def aprilTagPipeline(input_img: Mat, drawnImg: Mat, pipeline: AprilTagPipeline) 
             pipeline.rZ.setDouble(0)
             return drawnImg
         drawDetection(drawnImg, result)
-        # getTagData(pipeline, result)
         getTagDataPNPGeneric(pipeline, result)
+        pipeline.tagID.setInteger(result.getId())
         return drawnImg
     pipeline.hasTarget.setBoolean(False)
     pipeline.tX.setDouble(0)

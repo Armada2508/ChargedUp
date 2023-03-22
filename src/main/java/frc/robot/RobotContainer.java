@@ -53,7 +53,7 @@ public class RobotContainer {
         this.tof = tof;
         this.driveSubsystem = new DriveSubsystem(pigeon);
         subsystems = new SubsystemBase[]{driveSubsystem, visionSubsystem, armSubsystem, wristSubsystem, gripperSubsystem};
-        FollowTrajectory.config(Drive.kS, Drive.kV, Drive.kA, Drive.ramseteB, Drive.ramseteZeta, Drive.trackWidthMeters, Drive.ramsetePIDController, Drive.ramseteTurnCompensation);
+        FollowTrajectory.config(0, 0, 0, Drive.ramseteB, Drive.ramseteZeta, Drive.trackWidthMeters, new PIDController(0, 0, 0), 0);
         InverseKinematics.config(Arm.jointLengthInches, Wrist.jointLengthInches);
         driveSubsystem.setDefaultCommand(new ButterySmoothDriveCommand(() -> -joystick.getRawAxis(1), () -> -joystick.getRawAxis(0),  () -> -joystick.getRawAxis(2), () -> joystick.getRawButton(4), true, driveSubsystem)); // default to driving from joystick input
         if (RobotBase.isReal()) {

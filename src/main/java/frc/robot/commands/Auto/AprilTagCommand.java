@@ -61,12 +61,11 @@ public class AprilTagCommand extends InstantCommand {
         // Command command = new MoveRelativeCommand(cameraPose.getX() + tagOffset.getX(), cameraPose.getZ() + tagOffset.getZ(), skew, driveSubsystem, pigeon);
         Command command = getTrajectoryCommand(targetPose);
         command.schedule();
-        
     }
 
     private Command getTrajectoryCommand(Pose2d pose) {
         Trajectory trajectory = TrajectoryGenerator.generateTrajectory(new Pose2d(), new ArrayList<>(), pose, config);
-        return FollowTrajectory.getCommand(driveSubsystem, trajectory, driveSubsystem.getPose());
+        return FollowTrajectory.getCommandTalon(driveSubsystem, trajectory, driveSubsystem.getPose());
     }
 
     @Override
