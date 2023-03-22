@@ -140,6 +140,7 @@ public class RobotContainer {
         // mapButton(new MoveRelativeCommand(0, 1, 0, driveSubsystem, pigeon), 9);
         mapButton(new AprilTagCommand(() -> Position.CENTER, driveSubsystem, visionSubsystem, pigeon), 12);
         mapButton(new AutoTurnCommand(30, driveSubsystem, pigeon), 10);
+        mapButton(new AutoTurnCommand(90, driveSubsystem, pigeon), 9);
         // mapButton(new AltSeekCommand(() -> Target.CONE, 1.5, driveSubsystem, visionSubsystem, pigeon), 10);
         // mapButton(new ArmCommand(60, 45, 45, armSubsystem), 7);
         // mapButton(new ArmCommand(102, 45, 45, armSubsystem), 8);

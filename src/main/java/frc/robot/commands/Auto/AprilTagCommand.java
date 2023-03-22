@@ -12,6 +12,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import frc.robot.Constants.Vision;
 import frc.robot.Lib.util.Util;
 import frc.robot.commands.Driving.MoveRelativeCommand;
 import frc.robot.subsystems.DriveSubsystem;
@@ -43,7 +44,7 @@ public class AprilTagCommand extends InstantCommand {
             cancel();
             return;
         }
-        Pose2d cameraPose = visionSubsystem.getPoseToTarget(Target.APRILTAG, pigeon);
+        Pose2d cameraPose = visionSubsystem.getPoseToTarget(Target.APRILTAG);
         System.out.println("Camera Pose: " + cameraPose);
         switch (position.get()) {
             case LEFT:
@@ -58,6 +59,7 @@ public class AprilTagCommand extends InstantCommand {
         }
         xOffset = 0;
         zOffset = 1;
+        zOffset += Vision.centerToFront;
         double[] rvecArray = visionSubsystem.getRotationalVector(Target.APRILTAG);
         Vector<N3> rvec = VecBuilder.fill(rvecArray[0], rvecArray[1], rvecArray[2]); 
         // Translation Offset rotated into the camera's frame to be added onto target position
@@ -69,7 +71,7 @@ public class AprilTagCommand extends InstantCommand {
         double finalAngleRad = Util.boundedAngle(Math.atan2(tagNormal.getX(), tagNormal.getZ()) + Math.PI);
         System.out.println("AprilTag Translation in Camera Frame: " + tagOffset);
         System.out.println("Final Translation: " + (cameraPose.getX() + tagOffset.getX()) + " " + (cameraPose.getY() + tagOffset.getZ()) + " " + finalAngleRad);
-        Command command = new MoveRelativeCommand(cameraPose.getX() + tagOffset.getX(), cameraPose.getY() + tagOffset.getZ(), finalAngleRad, driveSubsystem, pigeon);
+        Command command = new MoveRelativeCommand(cameraPose.getX() + tagOffset.getX(), cameraPose.getY() + tagOffset.getZ(), finalAngleRad, driveSubsystem, pigeon, visionSubsystem);
         // Command command = getTrajectoryCommand(targetPose);
         command.schedule();
     }

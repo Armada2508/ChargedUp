@@ -26,13 +26,15 @@ public class Constants {
         public static final double kD = 0;
         public static final double kF = 0; // Probably keep this at 0
         public static final double maxOutput = 1;
+        public static final double nominalOutputLeft = 0.04;
+        public static final double nominalOutputRight = 0.03;
 
         // Closed Loop Turning (WPILib not on Falcons)
-        public static final double turnkP = 0.019;
+        public static final double turnkP = 0.015;
         public static final double turnkI = 0;
         public static final double turnkD = 0.001;
         public static final double maxTurnSpeed = 0.2;
-
+        
         // DriveBase
         public static final double wheelDiameterMeters = Units.inchesToMeters(6);
         public static final int encoderUnitsPerRev = 2048;
@@ -52,9 +54,10 @@ public class Constants {
 
     public static final class Vision {
         // Distances
-        public static final double cameraZOffset = Units.inchesToMeters(0);
-        public static final double cameraXOffset = Units.inchesToMeters(0);
+        public static final double cameraZOffset = Units.inchesToMeters(13.5);
+        public static final double cameraXOffset = Units.inchesToMeters(10);
         public static final double heightDiffToTag = Units.inchesToMeters(4);
+        public static final double centerToFront = Units.inchesToMeters(14.5);
         // Target Heights
         public static final double coneHeightMeters = 0;
         public static final double cubeHeightMeters = 0;

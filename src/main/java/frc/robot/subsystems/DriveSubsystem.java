@@ -30,6 +30,7 @@ public class DriveSubsystem extends SubsystemBase {
 
     public DriveSubsystem(PigeonIMU pigeon) {
         this.pigeon = pigeon;
+        calibrate(0);
         configureMotor(talonFXL);
         configureMotor(talonFXR);
         configureMotor(talonFXLfollow);
@@ -38,6 +39,10 @@ public class DriveSubsystem extends SubsystemBase {
         talonFXRfollow.setInverted(true);
         talonFXLfollow.follow(talonFXL);
         talonFXRfollow.follow(talonFXR);
+        talonFXL.configNominalOutputForward(Drive.nominalOutputLeft);
+        talonFXL.configNominalOutputReverse(Drive.nominalOutputLeft);
+        talonFXR.configNominalOutputForward(Drive.nominalOutputRight);
+        talonFXR.configNominalOutputReverse(Drive.nominalOutputRight);
         odometry = new DifferentialDriveOdometry(Rotation2d.fromDegrees(getHeading()), getleftPostition(), getRightPostition());
     }
 
@@ -57,9 +62,7 @@ public class DriveSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        // System.out.println(getHeading());
         odometry.update(Rotation2d.fromDegrees(getHeading()), getleftPostition(), getRightPostition());
-        // System.out.println(odometry.getPoseMeters());
     }
 
     public void setPower(double leftPower, double rightPower) {

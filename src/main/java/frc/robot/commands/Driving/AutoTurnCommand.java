@@ -63,7 +63,9 @@ public class AutoTurnCommand extends CommandBase {
     public void execute() {
         double speed = pid.calculate(pigeon.getYaw());
         speed = MathUtil.clamp(speed, -Drive.maxTurnSpeed, Drive.maxTurnSpeed);
-        driveSubsystem.setPower(speed, -speed);
+        double leftSpeed = speed;
+        double rightSpeed = -speed;
+        driveSubsystem.setPower(leftSpeed, rightSpeed);
     }
 
     @Override
@@ -75,4 +77,5 @@ public class AutoTurnCommand extends CommandBase {
     public boolean isFinished() {
         return pid.atSetpoint();
     }
+
 }
