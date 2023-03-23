@@ -1,5 +1,6 @@
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -64,7 +65,8 @@ public class Constants {
         public static final double cameraXOffset = Units.inchesToMeters(10);
         public static final double cameraYOffset = Units.inchesToMeters(0);
         public static final double cameraZOffset = Units.inchesToMeters(13.5);
-        public static final Transform3d cameraOffset = new Transform3d(new Translation3d(cameraXOffset, cameraYOffset, cameraZOffset), new Rotation3d());
+        public static final Pose3d cameraOffset = new Pose3d(new Translation3d(cameraXOffset, cameraYOffset, cameraZOffset), new Rotation3d());
+        public static final Transform3d cameraToRobotTransform = new Transform3d(Vision.cameraOffset, new Pose3d());
         public static final double centerToFront = Units.inchesToMeters(14.5);
         // Target Heights
         public static final double coneHeightMeters = 0;

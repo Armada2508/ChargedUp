@@ -58,7 +58,7 @@ public class AprilTagCommand extends InstantCommand {
         Translation3d tagOffset = new Translation3d(xOffset, 0, zOffset).rotateBy(new Rotation3d(rvec));
         double skew = visionSubsystem.getSkew();
         Pose2d targetPose = new Pose2d(cameraPose.getX() + tagOffset.getX(), cameraPose.getZ() + tagOffset.getZ(), new Rotation2d(skew));
-        // Command command = new MoveRelativeCommand(cameraPose.getX() + tagOffset.getX(), cameraPose.getZ() + tagOffset.getZ(), skew, driveSubsystem, pigeon);
+        // Command command = new MoveRelativeCommand(targetPose.getX(), targetPose.getY(), skew, driveSubsystem, pigeon);
         Command command = getTrajectoryCommand(targetPose);
         command.schedule();
     }

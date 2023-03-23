@@ -13,6 +13,8 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
+import edu.wpi.first.math.geometry.CoordinateAxis;
+import edu.wpi.first.math.geometry.CoordinateSystem;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -38,6 +40,8 @@ public class VisionSubsystem extends SubsystemBase {
     private final NetworkTable tagTable = mainTable.getSubTable("AprilTag");
     private final List<NetworkTable> subtables = new ArrayList<>();
     private final HashMap<NetworkTable, PipelineResult> currentResults = new HashMap<>();
+    private final CoordinateSystem tagCoordinateSystem = new CoordinateSystem(CoordinateAxis.N(), CoordinateAxis.U(), CoordinateAxis.E());
+    private final CoordinateSystem fieldCoordinateSystem = new CoordinateSystem(CoordinateAxis.E(), CoordinateAxis.N(), CoordinateAxis.U());
     private AprilTagFieldLayout layout = null;
 
     public VisionSubsystem() {
@@ -74,9 +78,11 @@ public class VisionSubsystem extends SubsystemBase {
             ));
         }
         if (i % 2 == 0) {
-            // Pose3d pose = getPoseToTarget();
-            // System.out.println("Camera Pose: " + pose + " , Skew: " + getSkew());
-            System.out.println(getFieldPose());
+            if (hasTarget(Target.APRILTAG)) {
+                System.out.println(getPoseToTarget());
+                // System.out.println(new Pose3d().relativeTo(getPoseToTarget()));
+                // System.out.println(getFieldPose());
+            }
         }
         i++;
     }
@@ -116,9 +122,10 @@ public class VisionSubsystem extends SubsystemBase {
         Optional<Pose3d> fieldTagPoseOptional = layout.getTagPose(getResult(Target.APRILTAG).id());
         if (fieldTagPoseOptional.isPresent()) {
             Pose3d fieldTagPose = fieldTagPoseOptional.get();
-            Transform3d botPose = new Transform3d(new Pose3d(), getPoseToTarget()).inverse();
-            // return new Pose3d().plus(fieldTagPose.minus(getPoseToTarget()));
-            return fieldTagPose.plus(botPose);
+            Pose3d robotInTagFrame = new Pose3d().relativeTo(getPoseToTarget());
+            Pose3d robotTagFrameCorrected = CoordinateSystem.convert(robotInTagFrame, tagCoordinateSystem, fieldCoordinateSystem);
+            Pose3d robotFieldPose = fieldTagPose.transformBy(new Transform3d(new Pose3d(), robotTagFrameCorrected));
+            return robotFieldPose;
         }
         return null;
     }
@@ -131,7 +138,7 @@ public class VisionSubsystem extends SubsystemBase {
         PipelineResult result = getResult(Target.APRILTAG);
         Vector<N3> rvec = getRotationalVector();
         Pose3d cameraPose = new Pose3d(result.tX(), result.tY(), result.tZ(), new Rotation3d(rvec));
-        Pose3d robotPose = cameraPose.plus(Vision.cameraOffset);
+        Pose3d robotPose = cameraPose.transformBy(Vision.cameraToRobotTransform);
         return robotPose;
     }
 

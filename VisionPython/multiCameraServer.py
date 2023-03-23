@@ -101,7 +101,7 @@ distCoeffs = np.array([
     0.0009950580085113828,
     1.8819261759956036
 ])
-fps: Final[int] = 30
+fps: Final[int] = 10
 exposure: Final[int] = 35
 
 
