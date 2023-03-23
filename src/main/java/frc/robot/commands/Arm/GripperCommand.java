@@ -28,12 +28,11 @@ public class GripperCommand extends CommandBase {
 
     @Override
     public void execute() {
-        // System.out.println("Goin Gripper");
+        
     }
    
     @Override
     public void end(boolean interrupted) {
-        // System.out.println("FINISHED GRIPPER COMMAND");
         gripperSubsystem.stop();
     }
 

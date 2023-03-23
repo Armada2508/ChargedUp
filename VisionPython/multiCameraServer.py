@@ -80,6 +80,7 @@ cameras = []
 detector: Final[AprilTagDetector] = AprilTagDetector()
 detector.addFamily("tag16h5")
 aprilTagLengthMeters: Final[float] = 0.1524
+maxTagID: Final[int] = 8
 
 # NetworkTables
 networkTableName: Final[str] = "VisionRPI"
@@ -254,7 +255,6 @@ def startCameraDesktop() -> None:
     camNum: str = "1"
     print("Starting camera {}".format("USB Camera " + camNum))
     camera = CameraServer.startAutomaticCapture(int(camNum))
-    # print("CS: USB Camera {}: Setting Video Mode to PixelFormat {}, Width {}, Height {} and FPS {}".format(camNum, VideoMode.PixelFormat.kMJPEG, resolutionWidth, resolutionHeight, fps))
     print("CS: USB Camera {}: Setting Video Mode to PixelFormat {}, Width {}, Height {} and FPS {}".format(camNum, VideoMode.PixelFormat.kYUYV, resolutionWidth, resolutionHeight, fps))
     print("CS: USB Camera {}: Set Video Mode Successfully ? ".format(camNum) + str(camera.setVideoMode(VideoMode.PixelFormat.kYUYV, resolutionWidth, resolutionHeight, fps)))
     camera.setExposureManual(exposure)
@@ -352,7 +352,7 @@ config.refineEdges = True
 config.numThreads = 2
 config.debug = False
 quadThreshold: AprilTagDetector.QuadThresholdParameters = AprilTagDetector.QuadThresholdParameters()
-tagPipeline: AprilTagPipeline = AprilTagPipeline(2, "AprilTag", config, quadThreshold, 100, 25, 35)
+tagPipeline: AprilTagPipeline = AprilTagPipeline(2, "AprilTag", config, quadThreshold, 100, 100, 40)
 pipelines: tuple[Pipeline, ...] = (conePipeline, cubePipeline, tagPipeline)
 poseEstimator: AprilTagPoseEstimator # defined in main() so the parameters are correct
 
@@ -376,7 +376,6 @@ def getTagDataPNPGeneric(pipeline: AprilTagPipeline, result: AprilTagDetection) 
         [length / 2, -length / 2, 0],
         [-length / 2, -length / 2, 0]
     ])
-    # retval, rvec, tvec = cv2.solvePnP(objectPoints, imagePoints, cameraMatrix = cameraMatrix, distCoeffs = distCoeffs, flags = cv2.SOLVEPNP_IPPE_SQUARE)
     ret, rVecs, tVecs, rerr = cv2.solvePnPGeneric(objectPoints, imagePoints, cameraMatrix = cameraMatrix, distCoeffs = distCoeffs, flags = cv2.SOLVEPNP_IPPE_SQUARE) 
     tvec = [0, 0, 0]
     rvec = [0, 0, 0]
@@ -435,7 +434,7 @@ def aprilTagPipeline(input_img: Mat, drawnImg: Mat, pipeline: AprilTagPipeline) 
         for detection in detections:
             if (getAreaAprilTag(detection) > getAreaAprilTag(result)):
                 result = detection
-        if (getAreaAprilTag(result) < pipeline.minArea.getDouble(0) or result.getDecisionMargin() < pipeline.minDecisionMargin.getDouble(0)):
+        if (getAreaAprilTag(result) < pipeline.minArea.getDouble(0) or result.getDecisionMargin() < pipeline.minDecisionMargin.getDouble(0) or result.getId() < maxTagID):
             pipeline.hasTarget.setBoolean(False)
             pipeline.tX.setDouble(0)
             pipeline.tY.setDouble(0)
@@ -561,7 +560,6 @@ def main() -> None: # Image proccessing user code
     ))
     # loop forever
     while True:
-        ts = time.time()
         index = mainTable.getEntry("Current Pipeline").getInteger(0)
         cvSink = cvSinkLow
         for pipeline in pipelines:
@@ -594,7 +592,6 @@ def main() -> None: # Image proccessing user code
             originalStream.putFrame(inputImg) # Stream Video
         except:
             continue
-        # print(time.time() - ts)
         
         
 

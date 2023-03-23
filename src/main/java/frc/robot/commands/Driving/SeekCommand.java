@@ -9,7 +9,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
-import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
@@ -25,19 +24,16 @@ public class SeekCommand extends ParallelRaceGroup {
     private VisionSubsystem visionSubsystem;
     
     public SeekCommand(Supplier<Target> target, double desiredDistanceMeters, DriveSubsystem driveSubsystem, VisionSubsystem visionSubsystem, PigeonIMU pigeon) {
-        System.out.println("Creating Alt Seek Command.");
         this.target = target;
         this.visionSubsystem = visionSubsystem;
         Command drive = new AutoDriveCommand(() -> visionSubsystem.distanceFromTargetMeters(target.get()) - desiredDistanceMeters, 1, 1, driveSubsystem);
         RepeatCommand seekLoop = new SequentialCommandGroup(
-            new PrintCommand("Running Alt Seek Command."),
             new AutoTurnCommand(() -> visionSubsystem.getTargetYaw(target.get()), driveSubsystem, pigeon),
             new ConditionalCommand(drive, new InstantCommand(), this::doDrive)
         ).repeatedly();
         addCommands(
             seekLoop,
             new WaitUntilCommand(() -> {
-                System.out.println("Distance: " + visionSubsystem.distanceFromTargetMeters(target.get()) + " Target Distance: " + desiredDistanceMeters);
                 return visionSubsystem.distanceFromTargetMeters(target.get()) <= desiredDistanceMeters;
             })
         );

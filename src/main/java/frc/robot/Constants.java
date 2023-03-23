@@ -44,10 +44,6 @@ public class Constants {
         public static final int encoderUnitsPerRev = 2048;
         public static final double gearboxRatio = 10.71;
         public static final double trackWidthMeters = Util.inchesToMeters(24.5);
-
-        // WPILib Trajectories/Ramsete
-        public static final double ramseteB = 2.0; 
-        public static final double ramseteZeta = 0.7; 
     }
 
     public static final class Balance {

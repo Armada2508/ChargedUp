@@ -8,15 +8,11 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants.Drive;
-import frc.robot.RobotContainer;
 import frc.robot.subsystems.DriveSubsystem;
 
 public class AutoTurnCommand extends CommandBase {
 
     private static final PIDController pid = new PIDController(Drive.turnkP, Drive.turnkI, Drive.turnkD);
-    static {
-        RobotContainer.addPIDToShuffleBoard(pid, "Turning");
-    }
     private final DoubleSupplier relativeDegrees;
     private final double deadbandDegrees = 0.5;
     private final double minIntegral = -1;
@@ -51,12 +47,10 @@ public class AutoTurnCommand extends CommandBase {
     @Override
     public void initialize() {
         absoluteTarget = pigeon.getYaw() + relativeDegrees.getAsDouble();
-        // System.out.println(pigeon.getYaw() + " " + relativeDegrees.getAsDouble());
         pid.reset();
         pid.setSetpoint(absoluteTarget);
         pid.setTolerance(deadbandDegrees);
         pid.setIntegratorRange(minIntegral, maxIntegral);
-        // System.out.println("P: " + pid.getP() + ", I: " + pid.getI() + ", D: " + pid.getD());
     }
 
     @Override
