@@ -11,7 +11,6 @@ import org.photonvision.PhotonUtils;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
-import edu.wpi.first.math.ComputerVisionUtil;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.CoordinateAxis;
@@ -80,9 +79,9 @@ public class VisionSubsystem extends SubsystemBase {
         }
         if (i % 2 == 0) {
             if (hasTarget(Target.APRILTAG)) {
-                // System.out.println(getPoseToTarget());
+                System.out.println(getTargetPose());
                 // System.out.println(new Pose3d().relativeTo(getPoseToTarget()));
-                System.out.println(getFieldPose());
+                // System.out.println(getFieldPose());
             }
         }
         i++;
@@ -123,15 +122,10 @@ public class VisionSubsystem extends SubsystemBase {
         Optional<Pose3d> fieldTagPoseOptional = layout.getTagPose(getResult(Target.APRILTAG).id());
         if (fieldTagPoseOptional.isPresent()) {
             Pose3d fieldTagPose = fieldTagPoseOptional.get();
-            Transform3d robotToCamera = new Transform3d(new Pose3d(), Vision.cameraOffset);
-            Pose3d targetPose = getTargetPose();
-            Pose3d targetPoseCorrected = CoordinateSystem.convert(targetPose, tagCoordinateSystem, fieldCoordinateSystem);
-            Transform3d cameraToObject = new Transform3d(new Pose3d(), targetPoseCorrected);
-            return ComputerVisionUtil.objectToRobotPose(fieldTagPose, cameraToObject, robotToCamera);
-            // Pose3d robotInTagFrame = new Pose3d().relativeTo(getPoseToTarget());
-            // Pose3d robotTagFrameCorrected = CoordinateSystem.convert(robotInTagFrame, tagCoordinateSystem, fieldCoordinateSystem);
-            // Pose3d robotFieldPose = fieldTagPose.transformBy(new Transform3d(new Pose3d(), robotTagFrameCorrected));
-            // return robotFieldPose;
+            Pose3d robotInTagFrame = new Pose3d().relativeTo(getTargetPose());
+            Pose3d robotTagFrameCorrected = CoordinateSystem.convert(robotInTagFrame, tagCoordinateSystem, fieldCoordinateSystem);
+            Pose3d robotFieldPose = fieldTagPose.transformBy(new Transform3d(new Pose3d(), robotTagFrameCorrected));
+            return robotFieldPose;
         }
         return null;
     }
@@ -144,7 +138,7 @@ public class VisionSubsystem extends SubsystemBase {
         PipelineResult result = getResult(Target.APRILTAG);
         Vector<N3> rvec = getRotationalVector();
         Pose3d cameraPose = new Pose3d(result.tX(), result.tY(), result.tZ(), new Rotation3d(rvec));
-        Pose3d robotPose = cameraPose.transformBy(Vision.cameraToRobotTransform);
+        Pose3d robotPose = cameraPose.transformBy(Vision.cameraToRobotTransform.inverse());
         return robotPose;
     }
 
@@ -181,7 +175,7 @@ public class VisionSubsystem extends SubsystemBase {
     //? AprilTag
 
     /**
-     * Calculates distance from the front of the robot to the current target in meters
+     * Calculates distance from the center of the robot to the current target in meters
      * distance = (h2-h1) / tan(a1+a2)
      * h2 = height of target meters, h1 = height of camera meters, a1 = camera angle degrees, a2 = target angle degrees
      * @return distance in meters
@@ -200,7 +194,7 @@ public class VisionSubsystem extends SubsystemBase {
             Vision.cameraPitchRadians, 
             Units.degreesToRadians(getTargetPitch(pipeline))
         );
-        return distanceMeters - Vision.cameraZOffset;
+        return distanceMeters - Vision.cameraTranslationOffset.getZ();
     }
 
     public double getCameraPitch(double distanceMeters, Target pipeline) {

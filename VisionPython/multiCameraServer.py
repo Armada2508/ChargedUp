@@ -434,7 +434,7 @@ def aprilTagPipeline(input_img: Mat, drawnImg: Mat, pipeline: AprilTagPipeline) 
         for detection in detections:
             if (getAreaAprilTag(detection) > getAreaAprilTag(result)):
                 result = detection
-        if (getAreaAprilTag(result) < pipeline.minArea.getDouble(0) or result.getDecisionMargin() < pipeline.minDecisionMargin.getDouble(0) or result.getId() < maxTagID):
+        if (getAreaAprilTag(result) < pipeline.minArea.getDouble(0) or result.getDecisionMargin() < pipeline.minDecisionMargin.getDouble(0) or result.getId() > maxTagID):
             pipeline.hasTarget.setBoolean(False)
             pipeline.tX.setDouble(0)
             pipeline.tY.setDouble(0)
@@ -575,7 +575,7 @@ def main() -> None: # Image proccessing user code
         #     # inputImg = cv2.undistort(inputImg, mtx, dist)
         #     pass
         if error == 0: # There is an error
-            print("CVSINK ERROR: " + cvSink.getError())
+            print("CVSink: " + cvSink.getName() + " ERROR: " + cvSink.getError())
             continue
         drawnImg = inputImg.copy()
         for pipeline in pipelines:

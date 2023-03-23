@@ -57,12 +57,11 @@ public class Constants {
     }
 
     public static final class Vision {
-        // Distances
-        public static final double cameraXOffset = Units.inchesToMeters(10);
-        public static final double cameraYOffset = Units.inchesToMeters(0);
-        public static final double cameraZOffset = Units.inchesToMeters(13.5);
-        public static final Pose3d cameraOffset = new Pose3d(new Translation3d(cameraXOffset, cameraYOffset, cameraZOffset), new Rotation3d());
-        public static final Transform3d cameraToRobotTransform = new Transform3d(Vision.cameraOffset, new Pose3d());
+        // Robot Frame
+        public static final Translation3d cameraTranslationOffset = new Translation3d(Units.inchesToMeters(10), 0, Units.inchesToMeters(13.5));
+        public static final Rotation3d cameraRotationOffset = new Rotation3d(0, 0, 0);
+        public static final Pose3d cameraPoseOffset = new Pose3d(cameraTranslationOffset, cameraRotationOffset);
+        public static final Transform3d cameraToRobotTransform = new Transform3d(new Pose3d(), Vision.cameraPoseOffset);
         public static final double centerToFront = Units.inchesToMeters(14.5);
         // Target Heights
         public static final double coneHeightMeters = 0;
@@ -144,7 +143,8 @@ public class Constants {
         public static final double max = 1;
 
         // Grab Constants
-        public static final double grabCone = max + 0.8;
+        public static final double almostClosed = max - 0.05;
+        public static final double grabCone = max + 0.0;
         public static final double grabCube = max;
     }
 
