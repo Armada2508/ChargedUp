@@ -1,6 +1,5 @@
 package frc.robot.subsystems;
 
-import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
 import com.ctre.phoenix.motorcontrol.TalonFXFeedbackDevice;
@@ -51,10 +50,14 @@ public class DriveSubsystem extends SubsystemBase {
         talon.selectProfileSlot(0, 0);
         talon.setNeutralMode(NeutralMode.Brake);
         talon.configSelectedFeedbackSensor(TalonFXFeedbackDevice.IntegratedSensor, 0, Constants.timeoutMs);
-        talon.config_kP(0, Drive.kP);
-        talon.config_kI(0, Drive.kI);
-        talon.config_kD(0, Drive.kD);
-        talon.config_kF(0, Drive.kF);
+        talon.config_kP(Drive.motionMagicSlot, Drive.motionMagickP);
+        talon.config_kI(Drive.motionMagicSlot, Drive.motionMagickI);
+        talon.config_kD(Drive.motionMagicSlot, Drive.motionMagickD);
+        talon.config_kF(Drive.motionMagicSlot, Drive.motionMagickF);
+        talon.config_kP(Drive.velocitySlot, Drive.velocitykP);
+        talon.config_kI(Drive.velocitySlot, Drive.velocitykI);
+        talon.config_kD(Drive.velocitySlot, Drive.velocitykD);
+        talon.config_kF(Drive.velocitySlot, Drive.velocitykF);
         talon.configNeutralDeadband(0.001);
         talon.configClosedLoopPeakOutput(0, Drive.maxOutput);
         
@@ -63,6 +66,7 @@ public class DriveSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         odometry.update(Rotation2d.fromDegrees(getHeading()), getleftPostition(), getRightPostition());
+        System.out.println(toVelocity(talonFXL.getClosedLoopTarget()));
     }
 
     public void setPower(double leftPower, double rightPower) {
@@ -75,6 +79,8 @@ public class DriveSubsystem extends SubsystemBase {
      * @param distanceMeters distance to travel in meters
      */
     public void driveDistance(double distanceMeters) {
+        talonFXL.selectProfileSlot(Drive.motionMagicSlot, 0);
+        talonFXR.selectProfileSlot(Drive.motionMagicSlot, 0);
         talonFXL.setIntegralAccumulator(0);
         talonFXR.setIntegralAccumulator(0);
         double sensorUnits = Encoder.fromDistance(distanceMeters, Drive.encoderUnitsPerRev, Drive.gearboxRatio, Drive.wheelDiameterMeters);
@@ -142,8 +148,10 @@ public class DriveSubsystem extends SubsystemBase {
      * @param rightVelocity The velocity of the right motors in meters/second
      */
     public void setVelocity(double leftVelocity, double rightVelocity) {
-        talonFXL.set(ControlMode.Velocity, fromVelocity(leftVelocity));
-        talonFXR.set(ControlMode.Velocity, fromVelocity(rightVelocity));
+        talonFXL.selectProfileSlot(Drive.velocitySlot, 0);
+        talonFXR.selectProfileSlot(Drive.velocitySlot, 0);
+        talonFXL.set(TalonFXControlMode.Velocity, fromVelocity(leftVelocity));
+        talonFXR.set(TalonFXControlMode.Velocity, fromVelocity(rightVelocity));
     }
 
     /**
@@ -152,6 +160,8 @@ public class DriveSubsystem extends SubsystemBase {
      * @param rightVelocity Velocity of the right motor in encoder units per 100 ms
      */
     public void setEncoderVelocity(double leftVelocity, double rightVelocity) {
+        talonFXL.selectProfileSlot(Drive.velocitySlot, 0);
+        talonFXR.selectProfileSlot(Drive.velocitySlot, 0);
         talonFXL.set(TalonFXControlMode.Velocity, leftVelocity);
         talonFXR.set(TalonFXControlMode.Velocity, rightVelocity);
     }

@@ -386,7 +386,10 @@ def getTagDataPNPGeneric(pipeline: AprilTagPipeline, result: AprilTagDetection) 
         [length / 2, -length / 2, 0],
         [-length / 2, -length / 2, 0]
     ])
-    ret, rVecs, tVecs, rerr = cv2.solvePnPGeneric(objectPoints, imagePoints, cameraMatrix = cameraMatrix, distCoeffs = np.zeros(5), flags = cv2.SOLVEPNP_IPPE_SQUARE) 
+    dist = currentCamera.distCoeffs
+    if currentCamera is wideangleCam:
+        dist = np.zeroes(5)
+    ret, rVecs, tVecs, rerr = cv2.solvePnPGeneric(objectPoints, imagePoints, cameraMatrix = cameraMatrix, distCoeffs = dist, flags = cv2.SOLVEPNP_IPPE_SQUARE) 
     tvec = [0, 0, 0]
     rvec = [0, 0, 0]
     foundMatch = False
@@ -399,9 +402,10 @@ def getTagDataPNPGeneric(pipeline: AprilTagPipeline, result: AprilTagDetection) 
         break
     
     if (foundMatch == False):
+        print("No Match")
         pipeline.hasTarget.setBoolean(False)
         return
-    print(np.linalg.norm(tvec))
+    # print(np.linalg.norm(tvec))
     pipeline.tX.setDouble(tvec[0])
     pipeline.tY.setDouble(tvec[1])
     pipeline.tZ.setDouble(tvec[2])
@@ -546,7 +550,8 @@ def main() -> None: # Image proccessing user code
         error, inputImg = cvSink.grabFrame(mat)
         inputImg: Mat
         # * Undistort the camera's image
-        inputImg = cv2.undistort(inputImg, cameraMatrix, currentCamera.distCoeffs)
+        if currentCamera is wideangleCam:
+            inputImg = cv2.undistort(inputImg, cameraMatrix, currentCamera.distCoeffs)
         if error == 0: # There is an error
             print("CVSink: " + cvSink.getName() + " ERROR: " + cvSink.getError())
             continue

@@ -25,10 +25,19 @@ public class Constants {
         public static final double slowSpeed = 0.2;
 
         // Closed Loop Driving
-        public static final double kP = 0.3; 
-        public static final double kI = 0;
-        public static final double kD = 0;
-        public static final double kF = 0; // Probably keep this at 0
+        public static final int motionMagicSlot = 0; 
+        public static final double motionMagickP = 0.3; 
+        public static final double motionMagickI = 0;
+        public static final double motionMagickD = 0;
+        public static final double motionMagickF = 0; // Probably keep this at 0
+
+        public static final int velocitySlot = 1; 
+        public static final double velocitykP = 0;
+        public static final double velocitykI = 0;
+        public static final double velocitykD = 0;
+        public static final double velocitykF = 0.04;
+
+
         public static final double maxOutput = 1;
         public static final double nominalOutputLeft = 0.04;
         public static final double nominalOutputRight = 0.03;

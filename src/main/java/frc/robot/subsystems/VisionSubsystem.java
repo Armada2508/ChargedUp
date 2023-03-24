@@ -80,7 +80,7 @@ public class VisionSubsystem extends SubsystemBase {
         }
         if (i % 2 == 0) {
             if (hasTarget(Target.APRILTAG)) {
-                System.out.println(getTargetPose());
+                // System.out.println(getTargetPose());
                 // System.out.println(new Pose3d().relativeTo(getPoseToTarget()));
                 // System.out.println(getFieldPose());
             }
