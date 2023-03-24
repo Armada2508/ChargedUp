@@ -27,7 +27,7 @@ class CameraConfig: pass
 
 class Camera:
     
-    def __init__(self, resolutionWidth: int,  resolutionHeight: int, diagonalFOV: float, fx: float, fy: float, cx: float, cy: float):
+    def __init__(self, resolutionWidth: int,  resolutionHeight: int, diagonalFOV: float, fx: float, fy: float, cx: float, cy: float, distCoeffs):
         self.resolutionWidth: Final[float] = resolutionWidth
         self.resolutionHeight: Final[float] = resolutionHeight
         self.diagonalFOV: Final[float] = diagonalFOV
@@ -35,6 +35,7 @@ class Camera:
         self.fy: Final[float] = fy
         self.cx: Final[float] = cx
         self.cy: Final[float] = cy
+        self.distCoeffs: Final = distCoeffs
 
 def getHorizontalFOVRad(resolutionWidth: int, resolutionHeight: int, diagonalFOVDeg: float) -> float:
     DfRad: float = math.radians(diagonalFOVDeg)
@@ -86,24 +87,33 @@ maxTagID: Final[int] = 8
 networkTableName: Final[str] = "VisionRPI"
 mainTable: NetworkTable = NetworkTableInstance.getDefault().getTable(networkTableName)
 
-lifecam: Camera = Camera(1280, 720, 68.5, 1136.5690362861997, 1141.4736688529676, 641.2131167961169, 367.60929575540644) # calibdb
-logitechCam: Camera = Camera(1920, 1080, 170, 1378.7537012386945, 1375.0934365805474, 986.8907369291361, 513.9387512470897) # calibdb
-
-resolutionWidth: int = 640
-resolutionHeight: int = 360
-verticalFOVRad: float 
-horizontalFOVRad: float 
-focalLengthPixels: float
-cameraMatrix: np.ndarray
-distCoeffs = np.array([
+lifecam: Camera = Camera(1280, 720, 68.5, 1136.5690362861997, 1141.4736688529676, 641.2131167961169, 367.60929575540644, np.array([
     0.12308428809814226,
     -0.8911552442414836,
     0.0036990419967787612,
     0.0009950580085113828,
     1.8819261759956036
-])
+]))
+wideangleCam: Camera = Camera(1920, 1080, -1, 1068.25296, 1067.62212, 963.436053, 588.321748, np.array([
+    -0.40307692, 
+    0.18071752, 
+    0.00181403, 
+    -0.00061986, 
+    -0.04021117
+]).astype(np.float32))
+logitechCam: Camera = Camera(1920, 1080, 170, 1378.7537012386945, 1375.0934365805474, 986.8907369291361, 513.9387512470897, np.zeros(5))
+
+currentCamera = lifecam
+
+resolutionWidth: int = 1280
+resolutionHeight: int = 720
+verticalFOVRad: float 
+horizontalFOVRad: float 
+focalLengthPixels: float
+cameraMatrix: np.ndarray
+
 fps: Final[int] = 10
-exposure: Final[int] = 35
+exposure: Final[int] = 45
 
 
 def onRPI() -> bool:
@@ -252,7 +262,7 @@ def startSwitchedCamera(config):
     return server
 
 def startCameraDesktop() -> None:
-    camNum: str = "1"
+    camNum: str = "0"
     print("Starting camera {}".format("USB Camera " + camNum))
     camera = CameraServer.startAutomaticCapture(int(camNum))
     print("CS: USB Camera {}: Setting Video Mode to PixelFormat {}, Width {}, Height {} and FPS {}".format(camNum, VideoMode.PixelFormat.kYUYV, resolutionWidth, resolutionHeight, fps))
@@ -343,7 +353,7 @@ class ColorPipeline(Pipeline):
 
 # Processing
 conePipeline: ColorPipeline = ColorPipeline(0, "Cone", 15, 40, 150, 255, 180, 255, 1, 1, 150)
-cubePipeline: ColorPipeline = ColorPipeline(0, "Cube", 120, 150, 30, 255, 80, 255, 1, 4, 150)
+cubePipeline: ColorPipeline = ColorPipeline(1, "Cube", 120, 150, 30, 255, 80, 255, 1, 4, 150)
 config: AprilTagDetector.Config = AprilTagDetector.Config()
 config.quadDecimate = 1
 config.decodeSharpening = 0.25
@@ -376,7 +386,7 @@ def getTagDataPNPGeneric(pipeline: AprilTagPipeline, result: AprilTagDetection) 
         [length / 2, -length / 2, 0],
         [-length / 2, -length / 2, 0]
     ])
-    ret, rVecs, tVecs, rerr = cv2.solvePnPGeneric(objectPoints, imagePoints, cameraMatrix = cameraMatrix, distCoeffs = distCoeffs, flags = cv2.SOLVEPNP_IPPE_SQUARE) 
+    ret, rVecs, tVecs, rerr = cv2.solvePnPGeneric(objectPoints, imagePoints, cameraMatrix = cameraMatrix, distCoeffs = np.zeros(5), flags = cv2.SOLVEPNP_IPPE_SQUARE) 
     tvec = [0, 0, 0]
     rvec = [0, 0, 0]
     foundMatch = False
@@ -390,14 +400,8 @@ def getTagDataPNPGeneric(pipeline: AprilTagPipeline, result: AprilTagDetection) 
     
     if (foundMatch == False):
         pipeline.hasTarget.setBoolean(False)
-        pipeline.tX.setDouble(0)
-        pipeline.tY.setDouble(0)
-        pipeline.tZ.setDouble(0)
-        pipeline.rX.setDouble(0)
-        pipeline.rY.setDouble(0)
-        pipeline.rZ.setDouble(0)
         return
-    
+    print(np.linalg.norm(tvec))
     pipeline.tX.setDouble(tvec[0])
     pipeline.tY.setDouble(tvec[1])
     pipeline.tZ.setDouble(tvec[2])
@@ -436,24 +440,12 @@ def aprilTagPipeline(input_img: Mat, drawnImg: Mat, pipeline: AprilTagPipeline) 
                 result = detection
         if (getAreaAprilTag(result) < pipeline.minArea.getDouble(0) or result.getDecisionMargin() < pipeline.minDecisionMargin.getDouble(0) or result.getId() > maxTagID):
             pipeline.hasTarget.setBoolean(False)
-            pipeline.tX.setDouble(0)
-            pipeline.tY.setDouble(0)
-            pipeline.tZ.setDouble(0)
-            pipeline.rX.setDouble(0)
-            pipeline.rY.setDouble(0)
-            pipeline.rZ.setDouble(0)
             return drawnImg
         drawDetection(drawnImg, result)
         getTagDataPNPGeneric(pipeline, result)
         pipeline.tagID.setInteger(result.getId())
         return drawnImg
     pipeline.hasTarget.setBoolean(False)
-    pipeline.tX.setDouble(0)
-    pipeline.tY.setDouble(0)
-    pipeline.tZ.setDouble(0)
-    pipeline.rX.setDouble(0)
-    pipeline.rY.setDouble(0)
-    pipeline.rZ.setDouble(0)
     return drawnImg
 
 def pointToYawAndPitch(px: int, py: int) -> tuple[float, float]: # Converts a point in pixel system to a pitch and a yaw and returns that.
@@ -527,53 +519,34 @@ def proccessContours(binaryImg: Mat, drawnImg: Mat, pipeline: ColorPipeline) -> 
        
 def setupCameraConstants() -> None:
     global horizontalFOVRad, verticalFOVRad, cameraMatrix
-    scale: float = (resolutionWidth / lifecam.resolutionWidth)
-    horizontalFOVRad = getHorizontalFOVRad(resolutionWidth, resolutionHeight, lifecam.diagonalFOV)
-    verticalFOVRad = getVerticalFOVRad(resolutionWidth, resolutionHeight, lifecam.diagonalFOV)
+    scale: float = (resolutionWidth / currentCamera.resolutionWidth)
+    horizontalFOVRad = getHorizontalFOVRad(resolutionWidth, resolutionHeight, currentCamera.diagonalFOV)
+    verticalFOVRad = getVerticalFOVRad(resolutionWidth, resolutionHeight, currentCamera.diagonalFOV)
     cameraMatrix = np.array([
-        [lifecam.fx * scale, 0, lifecam.cx * scale],
-        [0, lifecam.fy * scale, lifecam.cy * scale],
+        [currentCamera.fx * scale, 0, currentCamera.cx * scale],
+        [0, currentCamera.fy * scale, currentCamera.cy * scale],
         [0, 0, 1]
     ])
     
 def main() -> None: # Image proccessing user code
     CameraServer.enableLogging()
-    if onRPI():
-        cvSinkHigh = CameraServer.getVideo("Camera Color") 
-        cvSinkLow = CameraServer.getVideo("Camera Tag") 
-    else:
-        cvSinkHigh = CameraServer.getVideo()
-        cvSinkLow = CameraServer.getVideo()
+    cvSink = CameraServer.getVideo("Camera Tag")
     proccessedStream = CameraServer.putVideo("Proccessed Video", resolutionWidth, resolutionHeight)
     originalStream = CameraServer.putVideo("Original Video", resolutionWidth, resolutionHeight)
     mat = np.zeros(shape=(resolutionWidth, resolutionHeight, 3), dtype=np.uint8)
     mainTable.getEntry("Current Pipeline").setInteger(tagPipeline.pipelineIndex.getInteger(0))
     setupCameraConstants()
-    global poseEstimator
-    scalingFactor: float = (resolutionWidth / lifecam.resolutionWidth)
-    poseEstimator = AprilTagPoseEstimator(AprilTagPoseEstimator.Config(
-        aprilTagLengthMeters, lifecam.fx * scalingFactor, lifecam.fy * scalingFactor, lifecam.cx * scalingFactor, lifecam.cy * scalingFactor
-    ))
-    config = poseEstimator.getConfig()
+    scalingFactor: float = (resolutionWidth / currentCamera.resolutionWidth)
     print("Pose Estimator Config -> tagSize: {} meters, fx: {} pixels, fy: {} pixels, cx: {} pixels, cy: {} pixels".format(
-        config.tagSize, config.fx, config.fy, config.cx, config.cy
+        aprilTagLengthMeters, currentCamera.fx * scalingFactor, currentCamera.fy * scalingFactor, currentCamera.cx * scalingFactor, currentCamera.cy * scalingFactor
     ))
     # loop forever
     while True:
         index = mainTable.getEntry("Current Pipeline").getInteger(0)
-        cvSink = cvSinkLow
-        for pipeline in pipelines:
-            if (pipeline.pipelineIndex.getInteger(0) == index):
-                if (pipeline.type == Pipeline.Type.COLOR):
-                    cvSink = cvSinkHigh
-                elif (pipeline.type == Pipeline.Type.APRILTAG):
-                    cvSink = cvSinkLow
         error, inputImg = cvSink.grabFrame(mat)
         inputImg: Mat
-        # # * Undistort the camera's image
-        # if (mtx is not None and dist is not None):
-        #     # inputImg = cv2.undistort(inputImg, mtx, dist)
-        #     pass
+        # * Undistort the camera's image
+        inputImg = cv2.undistort(inputImg, cameraMatrix, currentCamera.distCoeffs)
         if error == 0: # There is an error
             print("CVSink: " + cvSink.getName() + " ERROR: " + cvSink.getError())
             continue

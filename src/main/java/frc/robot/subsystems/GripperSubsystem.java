@@ -56,7 +56,7 @@ public class GripperSubsystem extends SubsystemBase {
             // System.out.println("Desired Position: " + desiredPosition + " Limited Position: " + pos + " Arm: " + arm + " Wrist: " + wrist + " ArmOffset: " + armOffset + " WristOffset: " + wristOffset);
             // talonFX.set(TalonFXControlMode.Position, fromPosition(pos) + ((arm + armOffset) * Gripper.armSensorMultiplier) + ((wrist + wristOffset) * Gripper.wristSensorMultiplier));  
             // talonFX.set(TalonFXControlMode.Position, fromPosition(pos) + (arm * Gripper.armSensorMultiplier) + (wrist * Gripper.wristSensorMultiplier));
-            talonFX.set(TalonFXControlMode.Position, fromPosition(pos));  
+            // talonFX.set(TalonFXControlMode.Position, fromPosition(pos));  
         }
         // Velocity Check
         if (Math.abs(toPosition(talonFX.getSelectedSensorVelocity())) * 10 > Gripper.maxVelocity) {

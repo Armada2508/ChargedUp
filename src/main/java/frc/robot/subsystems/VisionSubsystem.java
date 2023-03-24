@@ -24,6 +24,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.IntegerEntry;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.Vision;
 import frc.robot.lib.util.Util;
@@ -52,7 +53,7 @@ public class VisionSubsystem extends SubsystemBase {
         try {
             layout = AprilTagFields.k2023ChargedUp.loadAprilTagLayoutField();
         } catch (IOException e) {
-            e.printStackTrace();
+            DriverStation.reportError("Unable to open april tag field layout", e.getStackTrace());
         }
     }
     

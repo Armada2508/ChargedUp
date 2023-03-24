@@ -19,7 +19,7 @@
     ".Glass" : true,
     ".gradle" : true,
     "*.json" : true,
-    "PathWeaver": true
+    // "PathWeaver": true
   },
   "java.test.config": [
     {

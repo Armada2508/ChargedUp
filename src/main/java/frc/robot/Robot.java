@@ -9,6 +9,7 @@ import com.ctre.phoenix.sensors.WPI_PigeonIMU;
 import com.playingwithfusion.TimeOfFlight;
 import com.playingwithfusion.TimeOfFlight.RangingMode;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
@@ -30,6 +31,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
+    DriverStation.silenceJoystickConnectionWarning(true);
     tof.setRangingMode(RangingMode.Short, 100);
     container = new RobotContainer(pigeon, tof);
   }

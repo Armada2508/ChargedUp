@@ -59,8 +59,8 @@ public class Constants {
     public static final class Vision {
         // Robot Frame
         public static final Translation3d cameraTranslationOffset = new Translation3d(Units.inchesToMeters(10), 0, Units.inchesToMeters(13.5));
-        public static final Rotation3d cameraRotationOffset = new Rotation3d(0, 0, 0);
-        public static final Pose3d cameraPoseOffset = new Pose3d(cameraTranslationOffset, cameraRotationOffset);
+        public static final Rotation3d cameraRotationOffset = new Rotation3d(0, Units.degreesToRadians(142.65), 0);
+        public static final Pose3d cameraPoseOffset = new Pose3d(cameraTranslationOffset, new Rotation3d());
         public static final Transform3d cameraToRobotTransform = new Transform3d(new Pose3d(), Vision.cameraPoseOffset);
         public static final double centerToFront = Units.inchesToMeters(14.5);
         // Target Heights
@@ -68,7 +68,7 @@ public class Constants {
         public static final double cubeHeightMeters = 0;
         public static final double aprilTagHeightMeters = 0;
         // Camera
-        public static final double cameraHeightMeters = 1.144;
+        public static final double cameraHeightMeters = Units.inchesToMeters(50.3);
         public static final double cameraPitchRadians = Units.degreesToRadians(0.1); 
     }
 
