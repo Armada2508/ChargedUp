@@ -19,7 +19,11 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Constants.Arm;
 import frc.robot.Constants.Drive;
+import frc.robot.Constants.Gripper;
 import frc.robot.Constants.Wrist;
+import frc.robot.commands.arm.ArmCommand;
+import frc.robot.commands.arm.GripperCommand;
+import frc.robot.commands.arm.WristCommand;
 import frc.robot.commands.driving.AutoDriveCommand;
 import frc.robot.commands.driving.ButterySmoothDriveCommand;
 import frc.robot.lib.motion.FollowTrajectory;
@@ -92,6 +96,10 @@ public class RobotContainer {
         new JoystickButton(joystick, b).onTrue(c);
     }
 
+    public void mapWhileButton(Command c, int b) {
+        new JoystickButton(joystick, b).whileTrue(c);
+    }
+
     public void stopEverything() {
         CommandScheduler.getInstance().cancelAll();
         driveSubsystem.stop();
@@ -103,32 +111,40 @@ public class RobotContainer {
     private void configureButtons() {
         //! Button 4 is used for slow speed.
         mapButton(Commands.runOnce(this::stopEverything), 11); // Joystick Stop
-        /*
         mapButton(new GripperCommand(Gripper.grabCone, gripperSubsystem), 1); // gripper close
         mapButton(new GripperCommand(0, gripperSubsystem), 2); // gripper open
 
         mapButton(new SequentialCommandGroup( // pick up
-            new ArmCommand(60, 45, 45, armSubsystem),
-            new WristCommand(-45, 180, 180, wristSubsystem)
+            new GripperCommand(Gripper.closed, gripperSubsystem),
+            new WristCommand(Wrist.maxDegrees, 45, 45, wristSubsystem),
+            new ArmCommand(0, 45, 45, armSubsystem),
+            new GripperCommand(Gripper.open, gripperSubsystem),
+            new WristCommand(75, 45, 45, wristSubsystem)
         ), 7);
 
-        mapButton(new SequentialCommandGroup( // place down
+        mapButton(new SequentialCommandGroup( // score
+            new GripperCommand(Gripper.grabCone, gripperSubsystem),
+            new WristCommand(Wrist.maxDegrees, 45, 45, wristSubsystem),
             new ArmCommand(102, 45, 45, armSubsystem),
-            new WristCommand(0, 180, 180, wristSubsystem)
+            new WristCommand(0, 45, 45, wristSubsystem)
         ), 8);
 
         mapButton(new SequentialCommandGroup( // store
-            new WristCommand(Wrist.maxDegrees, 180, 180, wristSubsystem),
+            new WristCommand(Wrist.maxDegrees, 45, 45, wristSubsystem),
             new ArmCommand(5, 45, 45, armSubsystem)
         ), 9);
+
+        mapButton(new ArmCommand(0, 45, 45, armSubsystem), 10);
+
+        mapButton(new ArmCommand(60, 45, 45, armSubsystem), 6);
+        mapButton(new WristCommand(Wrist.maxDegrees, 45, 45, wristSubsystem), 5);
+        mapButton(new WristCommand(0, 45, 45, wristSubsystem), 3);
 
         mapButton(new SequentialCommandGroup( // calibrate
             gripperSubsystem.getCalibrateSequence(),
             wristSubsystem.getCalibrateSequence(gripperSubsystem),
             armSubsystem.getCalibrateSequence(wristSubsystem, gripperSubsystem)
         ), 12);
-        */
-        mapButton(gripperSubsystem.getCalibrateSequence(), 12);
         // mapButton(new RunCommand(() -> driveSubsystem.setVelocity(0.25, 0.25), driveSubsystem), 6);
         // mapButton(new RunCommand(() -> driveSubsystem.setVelocity(0.5, 0.5), driveSubsystem), 7);
         // mapButton(new RunCommand(() -> driveSubsystem.setVelocity(1, 1), driveSubsystem), 8);

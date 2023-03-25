@@ -30,7 +30,7 @@ public class WristSubsystem extends SubsystemBase {
     public void periodic() {
        // Velocity Check
        if (Math.abs(toAngle(talonFX.getSelectedSensorVelocity())) * 10 > Wrist.maxVelocity) {
-        // System.out.println("Wrist: HOLY POOP SLOW DOWN");
+        System.out.println("Wrist: HOLY POOP SLOW DOWN");
         if (this.getCurrentCommand() != null) {
             this.getCurrentCommand().cancel();
         }
@@ -41,7 +41,7 @@ public class WristSubsystem extends SubsystemBase {
     private void configureMotor(TalonFX talon) {
         talon.configFactoryDefault();
         talon.selectProfileSlot(0, 0);
-        talon.setNeutralMode(NeutralMode.Coast);
+        talon.setNeutralMode(NeutralMode.Brake);
         talon.configSelectedFeedbackSensor(TalonFXFeedbackDevice.IntegratedSensor, 0, Constants.timeoutMs);
         talon.config_kP(0, Wrist.kP);
         talon.config_kI(0, Wrist.kI);
@@ -59,7 +59,6 @@ public class WristSubsystem extends SubsystemBase {
      * @param power to set the motor between -1.0 and 1.0
      */
     public void setPower(double power) {
-        if (!calibrated) return;
         talonFX.set(TalonFXControlMode.PercentOutput, power);
     }
 
@@ -161,7 +160,7 @@ public class WristSubsystem extends SubsystemBase {
 
     private Command calibrateWrist(GripperSubsystem gripperSubsystem) {
         return new SequentialCommandGroup(
-            new InstantCommand(() -> talonFX.set(TalonFXControlMode.PercentOutput, 0.10), this),
+            new InstantCommand(() -> talonFX.set(TalonFXControlMode.PercentOutput, 0.05), this),
             new WaitUntilCommand(this::pollLimitSwitch),
             new InstantCommand(() -> {
                 stop();

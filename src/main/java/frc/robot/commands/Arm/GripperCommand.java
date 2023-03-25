@@ -7,7 +7,7 @@ import frc.robot.subsystems.GripperSubsystem;
 
 public class GripperCommand extends CommandBase {
 
-    private final double positionDeadband = 0.005;
+    private final double positionDeadband = 0.01;
     private DoubleSupplier position;
     private GripperSubsystem gripperSubsystem;
 
@@ -38,8 +38,9 @@ public class GripperCommand extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        double currentPosition = gripperSubsystem.getPosition();
-        return (currentPosition < gripperSubsystem.getTarget()+positionDeadband && currentPosition > gripperSubsystem.getTarget()-positionDeadband) || (gripperSubsystem.pollLimitSwitch());
+        double currentPosition = gripperSubsystem.getPhysicalPosition();
+        double target = gripperSubsystem.getPhysicalTarget();
+        return (Math.abs(currentPosition - target) < positionDeadband) || (gripperSubsystem.pollLimitSwitch());
     }
 
 }

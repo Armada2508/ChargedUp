@@ -98,7 +98,7 @@ public class Constants {
         public static final double minOutput = 0;
         public static final double maxVelocity = 90; // deg/sec
 
-        public static final int minDegrees = -23; // Straight down is 0.
+        public static final double minDegrees = -32; // Straight down is 0.
         public static final int maxDegrees = 105;
         public static final int limitMargin = 2;
 
@@ -136,24 +136,25 @@ public class Constants {
         public static final int gearboxRatio = 100;
 
         // Closed Loop
-        public static final double kP = 0.05;
+        public static final double kP = 0.2;
         public static final double kI = 0;
         public static final double kD = 0;
         public static final double kF = 0;
         public static final double maxOutput = 1;
         public static final double minOutput = 0;
+        public static final double slewRate = 0.75;
 
         // Bad Engineering Constants
         public static final double armSensorMultiplier = .75;
-        public static final double wristSensorMultiplier = -.52;
+        public static final double wristSensorMultiplier = -.56;
 
         public static final double open = 0;
-        public static final double closed = 1;
+        public static final double onLimit = 1;
 
         // Grab Constants
-        public static final double almostClosed = closed - 0.05;
-        public static final double grabCone = closed + 0.0;
-        public static final double grabCube = closed;
+        public static final double closed = onLimit - 0.08;
+        public static final double grabCone = onLimit + 0.4;
+        public static final double grabCube = onLimit;
     }
 
     // ========================================

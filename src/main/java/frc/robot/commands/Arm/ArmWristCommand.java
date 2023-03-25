@@ -18,7 +18,7 @@ public class ArmWristCommand extends SequentialCommandGroup {
     
     public ArmWristCommand(ArmCommand arm, WristCommand wrist, ArmSubsystem armSubsystem, WristSubsystem wristSubsystem, GripperSubsystem gripperSubsystem) {
         addCommands(
-            new ConditionalCommand(new GripperCommand(Gripper.almostClosed, gripperSubsystem), Commands.none(), () -> gripperSubsystem.getPosition() <= Gripper.almostClosed),
+            new ConditionalCommand(new GripperCommand(Gripper.closed, gripperSubsystem), Commands.none(), () -> gripperSubsystem.getPhysicalPosition() <= Gripper.closed),
             new ConditionalCommand(
                 armOut(arm, wrist, armSubsystem), /* Going Outside Frame */
                 armIn(arm, wrist, wristSubsystem), /* Going Inside Frame */

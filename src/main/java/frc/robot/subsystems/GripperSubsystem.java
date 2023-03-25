@@ -20,10 +20,10 @@ public class GripperSubsystem extends SubsystemBase {
     
     private boolean calibrated = false;
     private double desiredPosition = 1;
-    private double lastArm = 0;
-    private double lastWrist = 0;
-    private final SlewRateLimiter limiter = new SlewRateLimiter(3);
-    private final double revolutionsToClosed = 27;
+    private double armOffset = 0;
+    private double wristOffset = 0;
+    private final SlewRateLimiter limiter = new SlewRateLimiter(Gripper.slewRate);
+    private final double revolutionsToOpen = 35;
     private final WPI_TalonFX talonFX = new WPI_TalonFX(Gripper.motorID);
     private final ArmSubsystem armSubsystem;
     private final WristSubsystem wristSubsystem;
@@ -38,33 +38,29 @@ public class GripperSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        // if (pollLimitSwitch() && calibrated) {
-        //     setPower(-0.05);
-        //     desiredPosition = toPosition(talonFX.getSelectedSensorPosition());
-        //     System.out.println(talonFX.getSelectedSensorPosition() + ", " + desiredPosition);
-        //     return;
-        // } 
+        if (pollLimitSwitch() && calibrated) {
+            setPower(-0.1);
+            desiredPosition = toPosition(talonFX.getSelectedSensorPosition());
+            return;
+        } 
         // Gripper Compensation
-        double arm = armSubsystem.getSensorPosition();
-        double wrist = wristSubsystem.getSensorPosition();
         if (calibrated) {
-            System.out.println(((arm - lastArm) * Gripper.armSensorMultiplier) + ", Error: " + talonFX.getClosedLoopError());
+            double arm = armSubsystem.getSensorPosition();
+            double wrist = wristSubsystem.getSensorPosition();
             double pos = limiter.calculate(desiredPosition);
-            talonFX.setSelectedSensorPosition(talonFX.getSelectedSensorPosition() - ((arm - lastArm) * Gripper.armSensorMultiplier) - ((wrist - lastWrist) * Gripper.wristSensorMultiplier));
-            talonFX.set(TalonFXControlMode.Position, fromPosition(pos));  
+            System.out.println(desiredPosition + " " + pos);
+            // System.out.println("Desired Position: " + desiredPosition + " Limited Position: " + pos + " Arm: " + arm + " Wrist: " + wrist + " ArmOffset: " + armOffset + " WristOffset: " + wristOffset);
+            // System.out.println(fromPosition(pos) + ((arm + armOffset) * Gripper.armSensorMultiplier) + ((wrist + wristOffset) * Gripper.wristSensorMultiplier));
+            talonFX.set(TalonFXControlMode.Position, fromPosition(pos) + ((arm + armOffset) * Gripper.armSensorMultiplier) + ((wrist + wristOffset) * Gripper.wristSensorMultiplier));  
         }
-        lastArm = arm;
-        lastWrist = wrist;
     }
 
     public void updateArmOffset(double offsetSensorUnits) {
-        // armOffset += offsetSensorUnits;
-        talonFX.setSelectedSensorPosition(talonFX.getSelectedSensorPosition() - (offsetSensorUnits * Gripper.armSensorMultiplier));
+        armOffset += offsetSensorUnits;
     }
 
     public void updateWristOffset(double offsetSensorUnits) {
-        // wristOffset += offsetSensorUnits;
-        talonFX.setSelectedSensorPosition(talonFX.getSelectedSensorPosition() - (offsetSensorUnits * Gripper.wristSensorMultiplier));
+        wristOffset += offsetSensorUnits;
     }
 
     private void configureMotor(TalonFX talon) {
@@ -105,26 +101,33 @@ public class GripperSubsystem extends SubsystemBase {
     }
 
     /**
-     * @return position of the gripper, 1 is fully closed, 0 is fully open
+     * 1 is on limit switch, 0 is fully open
      */
-    public double getPosition() { 
-        return toPosition(talonFX.getSelectedSensorPosition());
+    public double getPhysicalPosition() {
+        return (talonFX.getSelectedSensorPosition()
+        - ((armSubsystem.getSensorPosition() + armOffset) * Gripper.armSensorMultiplier)
+        - ((wristSubsystem.getSensorPosition() + wristOffset) * Gripper.wristSensorMultiplier))
+        / (Gripper.encoderUnitsPerRev * revolutionsToOpen);
+    }
+
+    public double getPhysicalTarget() {
+        return desiredPosition;
+    }
+
+    public double getSensorPositon() { 
+        return talonFX.getSelectedSensorPosition();
     }
 
     public double getTarget() {
-        return toPosition(talonFX.getClosedLoopTarget());
+        return talonFX.getClosedLoopTarget();
     }
 
     public double toPosition(double sensorPos) {
-        return ((sensorPos / Gripper.encoderUnitsPerRev) / revolutionsToClosed);
+        return ((sensorPos / Gripper.encoderUnitsPerRev) / revolutionsToOpen);
     }
 
-    public double fromPosition(double position) {
-        return (position * revolutionsToClosed * Gripper.encoderUnitsPerRev);
-    }
-
-    public double fromVelocity(double velocity) {
-        return fromPosition(velocity) * 0.1;
+    private double fromPosition(double position) {
+        return (position * revolutionsToOpen * Gripper.encoderUnitsPerRev);
     }
 
     public boolean pollLimitSwitch() {
@@ -137,8 +140,8 @@ public class GripperSubsystem extends SubsystemBase {
 
     private void startCalibrate() {
         System.out.println("Started Gripper Calibration.");
-        desiredPosition = Gripper.closed;
-        limiter.reset(Gripper.closed);
+        desiredPosition = Gripper.onLimit;
+        limiter.reset(Gripper.onLimit);
         calibrated = false;
         talonFX.neutralOutput();
     }
@@ -166,7 +169,9 @@ public class GripperSubsystem extends SubsystemBase {
             new WaitUntilCommand(this::pollLimitSwitch),
             new InstantCommand(() -> {
                 stop();
-                setSensor(fromPosition(Gripper.closed));
+                setSensor(fromPosition(Gripper.onLimit) + 
+                ((armSubsystem.getSensorPosition() + armOffset) * Gripper.armSensorMultiplier) + 
+                ((wristSubsystem.getSensorPosition() + wristOffset) * Gripper.wristSensorMultiplier));            
             })
         );
     }
