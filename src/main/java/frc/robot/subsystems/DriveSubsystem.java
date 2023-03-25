@@ -66,7 +66,6 @@ public class DriveSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         odometry.update(Rotation2d.fromDegrees(getHeading()), getleftPostition(), getRightPostition());
-        System.out.println(toVelocity(talonFXL.getClosedLoopTarget()));
     }
 
     public void setPower(double leftPower, double rightPower) {

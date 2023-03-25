@@ -142,19 +142,18 @@ public class Constants {
         public static final double kF = 0;
         public static final double maxOutput = 1;
         public static final double minOutput = 0;
-        public static final double maxVelocity = 1;
 
         // Bad Engineering Constants
         public static final double armSensorMultiplier = .75;
         public static final double wristSensorMultiplier = -.52;
 
-        public static final double min = 0;
-        public static final double max = 1;
+        public static final double open = 0;
+        public static final double closed = 1;
 
         // Grab Constants
-        public static final double almostClosed = max - 0.05;
-        public static final double grabCone = max + 0.0;
-        public static final double grabCube = max;
+        public static final double almostClosed = closed - 0.05;
+        public static final double grabCone = closed + 0.0;
+        public static final double grabCube = closed;
     }
 
     // ========================================

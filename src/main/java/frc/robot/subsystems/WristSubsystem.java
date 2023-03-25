@@ -30,7 +30,7 @@ public class WristSubsystem extends SubsystemBase {
     public void periodic() {
        // Velocity Check
        if (Math.abs(toAngle(talonFX.getSelectedSensorVelocity())) * 10 > Wrist.maxVelocity) {
-        System.out.println("Gripper: HOLY POOP SLOW DOWN");
+        // System.out.println("Wrist: HOLY POOP SLOW DOWN");
         if (this.getCurrentCommand() != null) {
             this.getCurrentCommand().cancel();
         }
@@ -41,7 +41,7 @@ public class WristSubsystem extends SubsystemBase {
     private void configureMotor(TalonFX talon) {
         talon.configFactoryDefault();
         talon.selectProfileSlot(0, 0);
-        talon.setNeutralMode(NeutralMode.Brake);
+        talon.setNeutralMode(NeutralMode.Coast);
         talon.configSelectedFeedbackSensor(TalonFXFeedbackDevice.IntegratedSensor, 0, Constants.timeoutMs);
         talon.config_kP(0, Wrist.kP);
         talon.config_kI(0, Wrist.kI);

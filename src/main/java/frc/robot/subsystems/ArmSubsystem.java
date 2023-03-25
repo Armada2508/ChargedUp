@@ -37,7 +37,7 @@ public class ArmSubsystem extends SubsystemBase {
     public void periodic() {
         // Velocity Check
         if (Math.abs(toAngle(talonFX.getSelectedSensorVelocity())) * 10 > Arm.maxVelocity) {
-            System.out.println("Arm: HOLY POOP SLOW DOWN");
+            // System.out.println("Arm: HOLY POOP SLOW DOWN");
             if (this.getCurrentCommand() != null) {
                 this.getCurrentCommand().cancel();
             }
@@ -49,7 +49,7 @@ public class ArmSubsystem extends SubsystemBase {
         talon.configFactoryDefault();
         talon.selectProfileSlot(0, 0);
         talon.configSelectedFeedbackSensor(TalonFXFeedbackDevice.IntegratedSensor, 0, Constants.timeoutMs);
-        talon.setNeutralMode(NeutralMode.Brake);
+        talon.setNeutralMode(NeutralMode.Coast);
         talon.config_kP(0, Arm.kP);
         talon.config_kI(0, Arm.kI);
         talon.config_kD(0, Arm.kD);
@@ -170,7 +170,7 @@ public class ArmSubsystem extends SubsystemBase {
                 new ConditionalCommand(new SequentialCommandGroup(
                     new InstantCommand(() -> talonFX.set(TalonFXControlMode.PercentOutput, 0.20)),
                     new WaitCommand(waitTime)
-                ), new InstantCommand(), () -> true),
+                ), new InstantCommand(), this::pollLimitSwitch),
                 new CalibrateArmCommand(talonFX, this, gripperSubsystem),
                 new InstantCommand(() -> talonFXFollow.set(TalonFXControlMode.PercentOutput, 0.02)),
                 new WaitCommand(.5),
