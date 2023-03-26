@@ -3,27 +3,29 @@ package frc.robot.commands.auto;
 import java.util.function.Supplier;
 
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.ArmSubsystem;
-import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.GripperSubsystem;
-import frc.robot.subsystems.VisionSubsystem.Target;
 import frc.robot.subsystems.WristSubsystem;
 
 public class PlacePieceCommand extends SequentialCommandGroup {
 
-    public PlacePieceCommand(Supplier<Target> target, Supplier<Height> height, DriveSubsystem driveSubsystem, ArmSubsystem armSubsystem, WristSubsystem wristSubsystem, GripperSubsystem gripperSubsystem) {
+    private static Height lastHeight;
+
+    public PlacePieceCommand(Supplier<Height> height, ArmSubsystem armSubsystem, WristSubsystem wristSubsystem, GripperSubsystem gripperSubsystem) {
         addCommands(
+            new InstantCommand(() -> lastHeight = height.get()),
             new ConditionalCommand(
-                new PieceOnFloorCommand(driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), 
-                new ConditionalCommand(
-                    new ConeOnPoleCommand(height, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem),
-                    new CubeOnStationCommand(height, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem),
-                    () -> target.get() == Target.CONE
-                ), 
-                () -> height.get() == Height.BOTTOM
+                new PieceOnFloorCommand(armSubsystem, wristSubsystem, gripperSubsystem), 
+                new ConeOnPoleCommand(lastHeight, armSubsystem, wristSubsystem, gripperSubsystem),
+                () -> lastHeight == Height.BOTTOM
             )
         );
+    }
+
+    public static Height getLastHeight() {
+        return lastHeight;
     }
 
     public enum Height {

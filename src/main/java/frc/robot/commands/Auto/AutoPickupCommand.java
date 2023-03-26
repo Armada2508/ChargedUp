@@ -10,7 +10,6 @@ import frc.robot.Constants.Arm;
 import frc.robot.commands.arm.ArmCommand;
 import frc.robot.commands.arm.GripperCommand;
 import frc.robot.commands.driving.SeekCommand;
-import frc.robot.lib.util.BetterPair;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.GripperSubsystem;
@@ -22,9 +21,9 @@ import frc.robot.subsystems.WristSubsystem;
 public class AutoPickupCommand extends SequentialCommandGroup {
 
     private final double distanceFromTargetMeters = 12;
-    private final BetterPair<Double, Double> coneUp = new BetterPair<>(12.0, 0.0);
-    private final BetterPair<Double, Double> coneDown = new BetterPair<>(12.0, 0.0);
-    private final BetterPair<Double, Double> cube = new BetterPair<>(12.0, 0.0);
+    // private final BetterPair<Double, Double> coneUp = new BetterPair<>(12.0, 0.0);
+    // private final BetterPair<Double, Double> coneDown = new BetterPair<>(12.0, 0.0);
+    // private final BetterPair<Double, Double> cube = new BetterPair<>(12.0, 0.0);
     private Target lastTarget = Target.CONE;
 
     public AutoPickupCommand(VisionSubsystem visionSubsystem, DriveSubsystem driveSubsystem, PigeonIMU pigeon, ArmSubsystem armSubsystem, WristSubsystem wristSubsystem, GripperSubsystem gripperSubsystem) {

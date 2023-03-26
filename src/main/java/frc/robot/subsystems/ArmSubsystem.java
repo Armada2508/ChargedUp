@@ -97,7 +97,7 @@ public class ArmSubsystem extends SubsystemBase {
         return toAngle(talonFX.getClosedLoopTarget());
     }
 
-    public boolean isInsideFrame() {
+    public boolean insideFrame() {
         return getPosition() < Arm.insideFrameDeg;
     }
 

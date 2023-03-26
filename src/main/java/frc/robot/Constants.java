@@ -104,7 +104,7 @@ public class Constants {
 
         public static final double minDegrees = -32; // Straight down is 0.
         public static final int maxDegrees = 105;
-        public static final double insideFrameDeg = -0.5;
+        public static final double insideFrameDeg = -5;
         public static final int limitMargin = 2;
 
         // IK
@@ -157,9 +157,8 @@ public class Constants {
         public static final double onLimit = 1;
 
         // Grab Constants
-        public static final double closed = onLimit - 0.08;
+        public static final double closed = onLimit - 0.05;
         public static final double grabCone = onLimit + 0.8;
-        public static final double grabCube = onLimit;
     }
 
     // ========================================

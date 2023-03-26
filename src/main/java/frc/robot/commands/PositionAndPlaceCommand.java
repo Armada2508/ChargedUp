@@ -25,7 +25,7 @@ public class PositionAndPlaceCommand extends SequentialCommandGroup {
         this.joystick = joystick;
         addCommands(
             new AprilTagCommand(this::getPosition, driveSubsystem, visionSubsystem),
-            new PlacePieceCommand(target, this::getHeight, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem)
+            new PlacePieceCommand(this::getHeight, armSubsystem, wristSubsystem, gripperSubsystem)
         );
     }
 

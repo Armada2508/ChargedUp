@@ -7,18 +7,27 @@ import com.ctre.phoenix.sensors.PigeonIMU;
 import com.playingwithfusion.TimeOfFlight;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Constants.Arm;
 import frc.robot.Constants.Drive;
+import frc.robot.Constants.Gripper;
 import frc.robot.Constants.Wrist;
-import frc.robot.commands.auto.AprilTagCommand;
-import frc.robot.commands.auto.AprilTagCommand.Position;
+import frc.robot.commands.arm.ArmCommand;
+import frc.robot.commands.arm.ArmWristCommand;
+import frc.robot.commands.arm.GripperCommand;
+import frc.robot.commands.arm.WristCommand;
+import frc.robot.commands.auto.FinishScoreCommand;
+import frc.robot.commands.auto.PlacePieceCommand;
+import frc.robot.commands.auto.PlacePieceCommand.Height;
+import frc.robot.commands.auto.StoreCommand;
 import frc.robot.commands.driving.AutoDriveCommand;
 import frc.robot.commands.driving.ButterySmoothDriveCommand;
 import frc.robot.lib.motion.FollowTrajectory;
@@ -105,33 +114,40 @@ public class RobotContainer {
     private void configureButtons() {
         //! Button 4 is used for slow speed.
         mapButton(Commands.runOnce(this::stopEverything), 11); // Joystick Stop
-        // mapButton(new GripperCommand(Gripper.grabCone, gripperSubsystem), 1); // gripper close
-        // mapButton(new GripperCommand(0, gripperSubsystem), 2); // gripper open
 
-        // mapButton(new SequentialCommandGroup( // pick up
-        //     new ArmWristCommand(new ArmCommand(0, 45, 45, armSubsystem), new WristCommand(75, 45, 45, wristSubsystem), armSubsystem, wristSubsystem, gripperSubsystem),
-        //     new GripperCommand(Gripper.open, gripperSubsystem)
-        // ), 7);
+        mapButton(new SequentialCommandGroup( // gripper close
+            new GripperCommand(Gripper.grabCone, gripperSubsystem),
+            new WristCommand(Wrist.maxDegrees, 45, 45, wristSubsystem)
+        ), 1);
 
-        // mapButton(new SequentialCommandGroup( // score
-        //     new GripperCommand(Gripper.grabCone, gripperSubsystem),
-        //     new WristCommand(Wrist.maxDegrees, 45, 45, wristSubsystem),
-        //     new ArmWristCommand(new ArmCommand(97, 45, 45, armSubsystem), new WristCommand(-15, 45, 45, wristSubsystem), armSubsystem, wristSubsystem, gripperSubsystem)
-        // ), 8);
+        mapButton(new ConditionalCommand( // gripper open
+            Commands.none(), new GripperCommand(0, gripperSubsystem), armSubsystem::insideFrame
+        ), 2); 
 
-        // mapButton(new SafePositionCommand(wristSubsystem, gripperSubsystem), 9);
+        mapButton(new FinishScoreCommand(Units.inchesToMeters(-6), driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), 3);
 
-        // mapButton(new SequentialCommandGroup( // calibrate
-        //     gripperSubsystem.getCalibrateSequence(),
-        //     wristSubsystem.getCalibrateSequence(gripperSubsystem),
-        //     armSubsystem.getCalibrateSequence(wristSubsystem, gripperSubsystem)
-        // ), 12);
+        mapButton(new StoreCommand(armSubsystem, wristSubsystem, gripperSubsystem), 5);
+
+        mapButton(new SequentialCommandGroup( // pick up
+            new ArmWristCommand(new ArmCommand(0, 45, 45, armSubsystem), new WristCommand(75, 45, 45, wristSubsystem), -0.5, 10, armSubsystem, wristSubsystem, gripperSubsystem),
+            new GripperCommand(Gripper.open, gripperSubsystem)
+        ), 7);
+
+        mapButton(new PlacePieceCommand(() -> Height.BOTTOM, armSubsystem, wristSubsystem, gripperSubsystem), 8);
+        mapButton(new PlacePieceCommand(() -> Height.MID, armSubsystem, wristSubsystem, gripperSubsystem), 9);
+        mapButton(new PlacePieceCommand(() -> Height.HIGH, armSubsystem, wristSubsystem, gripperSubsystem), 10);
+
+        mapButton(new SequentialCommandGroup( // calibrate
+            gripperSubsystem.getCalibrateSequence(),
+            wristSubsystem.getCalibrateSequence(gripperSubsystem),
+            armSubsystem.getCalibrateSequence(wristSubsystem, gripperSubsystem)
+        ), 12);
         // mapButton(new RunCommand(() -> driveSubsystem.setVelocity(0.25, 0.25), driveSubsystem), 6);
         // mapButton(new RunCommand(() -> driveSubsystem.setVelocity(0.5, 0.5), driveSubsystem), 7);
         // mapButton(new RunCommand(() -> driveSubsystem.setVelocity(1, 1), driveSubsystem), 8);
         // mapButton(new RunCommand(() -> driveSubsystem.setVelocity(2, 2), driveSubsystem), 9);
         // mapButton(new RunCommand(() -> driveSubsystem.setVelocity(3, 3), driveSubsystem), 10);
-        mapButton(new AprilTagCommand(() -> Position.CENTER, driveSubsystem, visionSubsystem), 12);
+        // mapButton(new AprilTagCommand(() -> Position.CENTER, driveSubsystem, visionSubsystem), 12);
         // Combo Button Example
         // new JoystickButton(joystick, 7).and(new JoystickButton(joystick, 9)).and(new JoystickButton(joystick, 11)).whileTrue(new BalanceCommand(driveSubsystem, pigeon));
     }
