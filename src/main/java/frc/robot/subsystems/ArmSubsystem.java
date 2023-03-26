@@ -97,6 +97,10 @@ public class ArmSubsystem extends SubsystemBase {
         return toAngle(talonFX.getClosedLoopTarget());
     }
 
+    public boolean isInsideFrame() {
+        return getPosition() < Arm.insideFrameDeg;
+    }
+
     /**
      * Configures motion magic values for next run. If your acceleration is the same value as your velocity
      * then it will take 1 second to reach your velocity. Higher values of acceleration will make it get there faster, 
@@ -167,7 +171,7 @@ public class ArmSubsystem extends SubsystemBase {
             new SequentialCommandGroup(
                 new InstantCommand(this::startCalibrate, this),
                 new ConditionalCommand(new SequentialCommandGroup(
-                    new InstantCommand(() -> talonFX.set(TalonFXControlMode.PercentOutput, 0.20)),
+                    new InstantCommand(() -> talonFX.set(TalonFXControlMode.PercentOutput, 0.15)),
                     new WaitCommand(waitTime)
                 ), new InstantCommand(), this::pollLimitSwitch),
                 new CalibrateArmCommand(talonFX, this, gripperSubsystem),

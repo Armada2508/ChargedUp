@@ -66,6 +66,7 @@ public class DriveSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         odometry.update(Rotation2d.fromDegrees(getHeading()), getleftPostition(), getRightPostition());
+        // System.out.println(odometry.getPoseMeters());
     }
 
     public void setPower(double leftPower, double rightPower) {
@@ -151,18 +152,6 @@ public class DriveSubsystem extends SubsystemBase {
         talonFXR.selectProfileSlot(Drive.velocitySlot, 0);
         talonFXL.set(TalonFXControlMode.Velocity, fromVelocity(leftVelocity));
         talonFXR.set(TalonFXControlMode.Velocity, fromVelocity(rightVelocity));
-    }
-
-    /**
-     * Sets the velocity of the motor in encoder units
-     * @param leftVelocity Velocity of the left motor in encoder units per 100 ms
-     * @param rightVelocity Velocity of the right motor in encoder units per 100 ms
-     */
-    public void setEncoderVelocity(double leftVelocity, double rightVelocity) {
-        talonFXL.selectProfileSlot(Drive.velocitySlot, 0);
-        talonFXR.selectProfileSlot(Drive.velocitySlot, 0);
-        talonFXL.set(TalonFXControlMode.Velocity, leftVelocity);
-        talonFXR.set(TalonFXControlMode.Velocity, rightVelocity);
     }
 
     /**

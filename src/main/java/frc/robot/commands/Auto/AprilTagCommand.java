@@ -23,7 +23,7 @@ import frc.robot.subsystems.VisionSubsystem.Target;
 
 public class AprilTagCommand extends InstantCommand {
     
-    private final TrajectoryConfig config = new TrajectoryConfig(2, 1);
+    private final TrajectoryConfig config = new TrajectoryConfig(1.5, 0.5);
     private final Supplier<Position> position;    
     private final DriveSubsystem driveSubsystem;
     private final VisionSubsystem visionSubsystem;
@@ -58,6 +58,7 @@ public class AprilTagCommand extends InstantCommand {
         Translation3d tagOffset = new Translation3d(xOffset, 0, zOffset).rotateBy(new Rotation3d(rvec));
         double skew = visionSubsystem.getSkew();
         Pose2d targetPose = new Pose2d(tagPose.getX() + tagOffset.getX(), tagPose.getZ() + tagOffset.getZ(), new Rotation2d(skew));
+        targetPose = new Pose2d(1, 0, new Rotation2d());
         // Command command = new MoveRelativeCommand(targetPose.getX(), targetPose.getY(), skew, driveSubsystem, pigeon);
         Command command = getTrajectoryCommand(targetPose);
         command.schedule();
@@ -65,6 +66,7 @@ public class AprilTagCommand extends InstantCommand {
 
     private Command getTrajectoryCommand(Pose2d pose) {
         Trajectory trajectory = TrajectoryGenerator.generateTrajectory(new Pose2d(), new ArrayList<>(), pose, config);
+        System.out.println("Trajectory: " + trajectory + ", \nFrom: " + new Pose2d() + ", \nTo: " + pose);
         return FollowTrajectory.getCommandTalon(driveSubsystem, trajectory, driveSubsystem.getPose());
     }
 

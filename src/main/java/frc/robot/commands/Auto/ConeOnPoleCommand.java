@@ -7,7 +7,6 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants.Arm;
 import frc.robot.Constants.Wrist;
-import frc.robot.InverseKinematics;
 import frc.robot.commands.arm.ArmCommand;
 import frc.robot.commands.arm.GripperCommand;
 import frc.robot.commands.arm.WristCommand;
@@ -23,16 +22,17 @@ public class ConeOnPoleCommand extends SequentialCommandGroup {
     private final double initialDistanceMeters = Units.inchesToMeters(6);
 
     public ConeOnPoleCommand(Supplier<Height> height, DriveSubsystem driveSubsystem, ArmSubsystem armSubsystem, WristSubsystem wristSubsystem, GripperSubsystem gripperSubsystem) {
-        double x = 0, y = 0;
+        double arm = 0, wrist = Wrist.maxDegrees;
         if (height.get() == Height.MID) {
-            x = 34.75; 
-            y = 34; 
+            arm = 0; 
+            wrist = Wrist.maxDegrees; 
         } else {
-            x = 43.947;
-            y = 14;
+            arm = 0;
+            wrist = Wrist.maxDegrees;
         }
         addCommands(
-            InverseKinematics.getIKPositionCommand(x, y, armSubsystem, wristSubsystem),
+            new ArmCommand(arm, 45, 45, armSubsystem),
+            new WristCommand(wrist, 45, 45, wristSubsystem),
             new AutoDriveCommand(initialDistanceMeters, 1, 1, driveSubsystem),
             new GripperCommand(0, gripperSubsystem),
             new WaitCommand(.5),

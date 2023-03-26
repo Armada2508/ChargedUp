@@ -7,7 +7,6 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants.Arm;
-import frc.robot.InverseKinematics;
 import frc.robot.commands.arm.ArmCommand;
 import frc.robot.commands.arm.GripperCommand;
 import frc.robot.commands.driving.SeekCommand;
@@ -39,11 +38,14 @@ public class AutoPickupCommand extends SequentialCommandGroup {
                     new SeekCommand(this::getPreviousTarget, distanceFromTargetMeters, driveSubsystem, visionSubsystem, pigeon),
                     new ConditionalCommand(
                         new ConditionalCommand(
-                            InverseKinematics.getIKPositionCommand(coneDown.getFirst(), coneDown.getSecond(), armSubsystem, wristSubsystem), /*On True  | Landscape Orientation*/
-                            InverseKinematics.getIKPositionCommand(coneUp.getFirst(), coneUp.getSecond(), armSubsystem, wristSubsystem), /*On False | Portrait Orientation*/
+                            new InstantCommand(),
+                            new InstantCommand(),
+                            // InverseKinematics.getIKPositionCommand(coneDown.getFirst(), coneDown.getSecond(), armSubsystem, wristSubsystem), /*On True  | Landscape Orientation*/
+                            // InverseKinematics.getIKPositionCommand(coneUp.getFirst(), coneUp.getSecond(), armSubsystem, wristSubsystem), /*On False | Portrait Orientation*/
                             () -> visionSubsystem.getTargetOrientation(Target.CONE) == Orientation.LANDSCAPE  /*Boolean Supplier*/
                             ), /*On True  | Target.Cone*/
-                        InverseKinematics.getIKPositionCommand(cube.getFirst(), cube.getSecond(), armSubsystem, wristSubsystem), /*On False | Target.Cube*/
+                        new InstantCommand(),
+                        // InverseKinematics.getIKPositionCommand(cube.getFirst(), cube.getSecond(), armSubsystem, wristSubsystem), /*On False | Target.Cube*/
                         () -> getPreviousTarget() == Target.CONE  /*Boolean Supplier*/
                     ),
                     new ArmCommand(Arm.minDegrees, 45, 45, armSubsystem) /* On True for Conditional, Starts at InstantCommand*/

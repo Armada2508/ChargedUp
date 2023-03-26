@@ -39,7 +39,7 @@ public class GripperSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         if (pollLimitSwitch() && calibrated) {
-            setPower(-0.1);
+            setPower(-0.15);
             desiredPosition = toPosition(talonFX.getSelectedSensorPosition());
             return;
         } 
@@ -48,9 +48,6 @@ public class GripperSubsystem extends SubsystemBase {
             double arm = armSubsystem.getSensorPosition();
             double wrist = wristSubsystem.getSensorPosition();
             double pos = limiter.calculate(desiredPosition);
-            System.out.println(desiredPosition + " " + pos);
-            // System.out.println("Desired Position: " + desiredPosition + " Limited Position: " + pos + " Arm: " + arm + " Wrist: " + wrist + " ArmOffset: " + armOffset + " WristOffset: " + wristOffset);
-            // System.out.println(fromPosition(pos) + ((arm + armOffset) * Gripper.armSensorMultiplier) + ((wrist + wristOffset) * Gripper.wristSensorMultiplier));
             talonFX.set(TalonFXControlMode.Position, fromPosition(pos) + ((arm + armOffset) * Gripper.armSensorMultiplier) + ((wrist + wristOffset) * Gripper.wristSensorMultiplier));  
         }
     }
@@ -104,10 +101,7 @@ public class GripperSubsystem extends SubsystemBase {
      * 1 is on limit switch, 0 is fully open
      */
     public double getPhysicalPosition() {
-        return (talonFX.getSelectedSensorPosition()
-        - ((armSubsystem.getSensorPosition() + armOffset) * Gripper.armSensorMultiplier)
-        - ((wristSubsystem.getSensorPosition() + wristOffset) * Gripper.wristSensorMultiplier))
-        / (Gripper.encoderUnitsPerRev * revolutionsToOpen);
+        return toPosition(talonFX.getSelectedSensorPosition());
     }
 
     public double getPhysicalTarget() {
@@ -123,7 +117,10 @@ public class GripperSubsystem extends SubsystemBase {
     }
 
     public double toPosition(double sensorPos) {
-        return ((sensorPos / Gripper.encoderUnitsPerRev) / revolutionsToOpen);
+        return (sensorPos
+        - ((armSubsystem.getSensorPosition() + armOffset) * Gripper.armSensorMultiplier)
+        - ((wristSubsystem.getSensorPosition() + wristOffset) * Gripper.wristSensorMultiplier))
+        / (Gripper.encoderUnitsPerRev * revolutionsToOpen);    
     }
 
     private double fromPosition(double position) {

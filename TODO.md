@@ -42,7 +42,6 @@
 
 - ~~Calibration~~
 - ~~Cameras~~
-- Shuffleboard Data
 
 ### Key: <br>
 ! = test <br>

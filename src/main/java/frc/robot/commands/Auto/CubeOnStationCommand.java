@@ -7,7 +7,6 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants.Arm;
 import frc.robot.Constants.Wrist;
-import frc.robot.InverseKinematics;
 import frc.robot.commands.arm.ArmCommand;
 import frc.robot.commands.arm.GripperCommand;
 import frc.robot.commands.arm.WristCommand;
@@ -32,7 +31,7 @@ public class CubeOnStationCommand extends SequentialCommandGroup {
             y = 35.5; 
         }
         addCommands(
-            InverseKinematics.getIKPositionCommand(x, y, armSubsystem, wristSubsystem),
+            // InverseKinematics.getIKPositionCommand(x, y, armSubsystem, wristSubsystem),
             new AutoDriveCommand(initialDistanceMeters, 1, 1, driveSubsystem),
             new GripperCommand(0, gripperSubsystem),
             new WaitCommand(.5),

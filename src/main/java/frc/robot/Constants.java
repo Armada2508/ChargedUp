@@ -17,7 +17,7 @@ public class Constants {
         public static final int RFID = 1;
         public static final int LID = 2;
         public static final int LFID = 3;
-        public static final double speedAdjustment = 0.25; // For Fredy
+        public static final double speedAdjustment = 0.4; // For Fredy
         public static final double turnAdjustment = 0.5;
         public static final double trimAdjustment = 0.15;
         public static final double joystickDeadband = 0.07;
@@ -35,7 +35,7 @@ public class Constants {
         public static final double velocitykP = 0;
         public static final double velocitykI = 0;
         public static final double velocitykD = 0;
-        public static final double velocitykF = 0.04;
+        public static final double velocitykF = 0.047;
 
 
         public static final double maxOutput = 1;
@@ -53,6 +53,10 @@ public class Constants {
         public static final int encoderUnitsPerRev = 2048;
         public static final double gearboxRatio = 10.71;
         public static final double trackWidthMeters = Util.inchesToMeters(24.5);
+
+        // Trajectories
+        public static final double ramseteB = 2.0;
+        public static final double ramseteZeta = 0.7;
     }
 
     public static final class Balance {
@@ -100,6 +104,7 @@ public class Constants {
 
         public static final double minDegrees = -32; // Straight down is 0.
         public static final int maxDegrees = 105;
+        public static final double insideFrameDeg = -0.5;
         public static final int limitMargin = 2;
 
         // IK
@@ -153,7 +158,7 @@ public class Constants {
 
         // Grab Constants
         public static final double closed = onLimit - 0.08;
-        public static final double grabCone = onLimit + 0.4;
+        public static final double grabCone = onLimit + 0.8;
         public static final double grabCube = onLimit;
     }
 

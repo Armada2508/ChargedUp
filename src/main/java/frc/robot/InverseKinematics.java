@@ -1,11 +1,6 @@
 package frc.robot;
 
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import frc.robot.commands.arm.ArmCommand;
-import frc.robot.commands.arm.WristCommand;
 import frc.robot.lib.util.BetterPair;
-import frc.robot.subsystems.ArmSubsystem;
-import frc.robot.subsystems.WristSubsystem;
 
 public class InverseKinematics {
     
@@ -41,13 +36,13 @@ public class InverseKinematics {
         return new BetterPair<Double,Double>(Math.toDegrees(q1), Math.toDegrees(q2));
     }
 
-    public static SequentialCommandGroup getIKPositionCommand(double x, double y, ArmSubsystem armSubsystem, WristSubsystem wristSubsystem) {
-        BetterPair<Double, Double> angles = InverseKinematics.coordinatesToAngles(x, y);
-        return new SequentialCommandGroup(
-            new ArmCommand(angles.getFirst(), 45, 45, armSubsystem),
-            new WristCommand(angles.getFirst() + angles.getSecond(), 10, 10, wristSubsystem)
-        );
-    }
+    // public static SequentialCommandGroup getIKPositionCommand(double x, double y, ArmSubsystem armSubsystem, WristSubsystem wristSubsystem) {
+    //     BetterPair<Double, Double> angles = InverseKinematics.coordinatesToAngles(x, y);
+    //     return new SequentialCommandGroup(
+    //         new ArmCommand(angles.getFirst(), 45, 45, armSubsystem),
+    //         new WristCommand(angles.getFirst() + angles.getSecond(), 10, 10, wristSubsystem)
+    //     );
+    // }
 
     private static double squared(double num) {
         return Math.pow(num, 2);
