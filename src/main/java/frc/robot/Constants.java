@@ -32,14 +32,13 @@ public class Constants {
         public static final double motionMagickF = 0; // Probably keep this at 0
 
         public static final int velocitySlot = 1; 
-        public static final double velocitykP = 0;
-        public static final double velocitykI = 0;
+        public static final double velocitykP = 0; // 0.1
+        public static final double velocitykI = 0.0001;
         public static final double velocitykD = 0;
-        public static final double velocitykF = 0.047;
-
+        public static final double velocitykF = 0.052;
 
         public static final double maxOutput = 1;
-        public static final double nominalOutputLeft = 0.04;
+        public static final double nominalOutputLeft = 0.03;
         public static final double nominalOutputRight = 0.03;
 
         // Closed Loop Turning (WPILib not on Falcons)

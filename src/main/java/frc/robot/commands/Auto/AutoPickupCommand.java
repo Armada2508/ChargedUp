@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants.Arm;
+import frc.robot.Constants.Gripper;
 import frc.robot.commands.arm.ArmCommand;
 import frc.robot.commands.arm.GripperCommand;
 import frc.robot.commands.driving.SeekCommand;
@@ -28,7 +29,7 @@ public class AutoPickupCommand extends SequentialCommandGroup {
 
     public AutoPickupCommand(VisionSubsystem visionSubsystem, DriveSubsystem driveSubsystem, PigeonIMU pigeon, ArmSubsystem armSubsystem, WristSubsystem wristSubsystem, GripperSubsystem gripperSubsystem) {
         addCommands(
-            new GripperCommand(0, gripperSubsystem),
+            new GripperCommand(Gripper.open, gripperSubsystem, armSubsystem),
             new ArmCommand(Arm.minDegrees, 45, 45, armSubsystem),
             new InstantCommand(() -> visionSubsystem.setPipeline(Target.CONE),visionSubsystem),
             new WaitCommand(0.05),

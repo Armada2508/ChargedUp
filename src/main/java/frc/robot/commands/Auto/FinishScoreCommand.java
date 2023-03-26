@@ -13,7 +13,7 @@ public class FinishScoreCommand extends SequentialCommandGroup {
     
     public FinishScoreCommand(double backupMeters, DriveSubsystem driveSubsystem, ArmSubsystem armSubsystem, WristSubsystem wristSubsystem, GripperSubsystem gripperSubsystem) {
         addCommands(
-            new GripperCommand(Gripper.open, gripperSubsystem),
+            new GripperCommand(Gripper.open, gripperSubsystem, armSubsystem),
             new AutoDriveCommand(backupMeters, 0.5, 0.5, driveSubsystem),
             new StoreCommand(armSubsystem, wristSubsystem, gripperSubsystem)
         );

@@ -26,11 +26,11 @@ public class AltAutoPickupCommand extends SequentialCommandGroup {
             new InstantCommand(() -> visionSubsystem.setPipeline(Target.CONE),visionSubsystem),
             new WristCommand(80, 180, 180, wristSubsystem),
             new ArmCommand(20, 45, 45, armSubsystem),
-            new GripperCommand(0, gripperSubsystem),
+            new GripperCommand(Gripper.open, gripperSubsystem, armSubsystem),
             new WaitUntilCommand(() -> !Double.isNaN(visionSubsystem.distanceFromTargetMeters(Target.CONE))),
             new AutoTurnCommand(visionSubsystem.getTargetYaw(Target.CONE), driveSubsystem, pigeon),
             new InstantCommand(() -> driveSubsystem.setVelocity(.25, .25)),
-            new GripperTOFCommand(Gripper.grabCone, 15, tof, gripperSubsystem)
+            new GripperTOFCommand(15, tof, gripperSubsystem, armSubsystem)
         );
     }
 

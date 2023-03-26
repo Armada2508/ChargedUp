@@ -15,7 +15,7 @@ public class ArmWristCommand extends SequentialCommandGroup {
 
     public ArmWristCommand(ArmCommand arm, WristCommand wrist, double minArmThreshold, double minWristThreshold, ArmSubsystem armSubsystem, WristSubsystem wristSubsystem, GripperSubsystem gripperSubsystem) {
         addCommands(
-            new ConditionalCommand(new GripperCommand(Gripper.closed, gripperSubsystem), Commands.none(), (() -> armSubsystem.insideFrame() || arm.getTarget() <= Arm.insideFrameDeg)),
+            new ConditionalCommand(new GripperCommand(Gripper.closed, gripperSubsystem, armSubsystem), Commands.none(), (() -> armSubsystem.insideFrame() || arm.getTarget() <= Arm.insideFrameDeg)),
             new ParallelCommandGroup(
                 new SequentialCommandGroup(
                     new WaitUntilCommand(() -> (wristSubsystem.getPosition() > minWristThreshold)),

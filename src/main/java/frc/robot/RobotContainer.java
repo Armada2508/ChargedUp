@@ -12,22 +12,15 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ConditionalCommand;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Constants.Arm;
 import frc.robot.Constants.Drive;
-import frc.robot.Constants.Gripper;
 import frc.robot.Constants.Wrist;
-import frc.robot.commands.arm.ArmCommand;
-import frc.robot.commands.arm.ArmWristCommand;
-import frc.robot.commands.arm.GripperCommand;
-import frc.robot.commands.arm.WristCommand;
-import frc.robot.commands.auto.FinishScoreCommand;
-import frc.robot.commands.auto.PlacePieceCommand;
-import frc.robot.commands.auto.PlacePieceCommand.Height;
-import frc.robot.commands.auto.StoreCommand;
+import frc.robot.commands.auto.AprilTagCommand;
+import frc.robot.commands.auto.AprilTagCommand.Position;
 import frc.robot.commands.driving.AutoDriveCommand;
 import frc.robot.commands.driving.ButterySmoothDriveCommand;
 import frc.robot.lib.motion.FollowTrajectory;
@@ -114,23 +107,21 @@ public class RobotContainer {
     private void configureButtons() {
         //! Button 4 is used for slow speed.
         mapButton(Commands.runOnce(this::stopEverything), 11); // Joystick Stop
-
+        /*
         mapButton(new SequentialCommandGroup( // gripper close
-            new GripperCommand(Gripper.grabCone, gripperSubsystem),
+            new GripperCommand(Gripper.grabCone, gripperSubsystem, armSubsystem),
             new WristCommand(Wrist.maxDegrees, 45, 45, wristSubsystem)
         ), 1);
 
-        mapButton(new ConditionalCommand( // gripper open
-            Commands.none(), new GripperCommand(0, gripperSubsystem), armSubsystem::insideFrame
-        ), 2); 
+        mapButton(new GripperCommand(Gripper.open, gripperSubsystem, armSubsystem), 2); 
 
-        mapButton(new FinishScoreCommand(Units.inchesToMeters(-6), driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), 3);
+        mapButton(new FinishScoreCommand(Units.inchesToMeters(-18), driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), 3);
 
         mapButton(new StoreCommand(armSubsystem, wristSubsystem, gripperSubsystem), 5);
 
         mapButton(new SequentialCommandGroup( // pick up
             new ArmWristCommand(new ArmCommand(0, 45, 45, armSubsystem), new WristCommand(75, 45, 45, wristSubsystem), -0.5, 10, armSubsystem, wristSubsystem, gripperSubsystem),
-            new GripperCommand(Gripper.open, gripperSubsystem)
+            new GripperCommand(Gripper.open, gripperSubsystem, armSubsystem)
         ), 7);
 
         mapButton(new PlacePieceCommand(() -> Height.BOTTOM, armSubsystem, wristSubsystem, gripperSubsystem), 8);
@@ -142,12 +133,13 @@ public class RobotContainer {
             wristSubsystem.getCalibrateSequence(gripperSubsystem),
             armSubsystem.getCalibrateSequence(wristSubsystem, gripperSubsystem)
         ), 12);
-        // mapButton(new RunCommand(() -> driveSubsystem.setVelocity(0.25, 0.25), driveSubsystem), 6);
-        // mapButton(new RunCommand(() -> driveSubsystem.setVelocity(0.5, 0.5), driveSubsystem), 7);
-        // mapButton(new RunCommand(() -> driveSubsystem.setVelocity(1, 1), driveSubsystem), 8);
-        // mapButton(new RunCommand(() -> driveSubsystem.setVelocity(2, 2), driveSubsystem), 9);
-        // mapButton(new RunCommand(() -> driveSubsystem.setVelocity(3, 3), driveSubsystem), 10);
-        // mapButton(new AprilTagCommand(() -> Position.CENTER, driveSubsystem, visionSubsystem), 12);
+        */
+        mapButton(new RunCommand(() -> driveSubsystem.setVelocity(0.25, 0.25), driveSubsystem), 6);
+        mapButton(new RunCommand(() -> driveSubsystem.setVelocity(0.5, 0.5), driveSubsystem), 7);
+        mapButton(new RunCommand(() -> driveSubsystem.setVelocity(1, 1), driveSubsystem), 8);
+        mapButton(new RunCommand(() -> driveSubsystem.setVelocity(2, 2), driveSubsystem), 9);
+        mapButton(new RunCommand(() -> driveSubsystem.setVelocity(3, 3), driveSubsystem), 10);
+        mapButton(new AprilTagCommand(() -> Position.CENTER, driveSubsystem, visionSubsystem), 12);
         // Combo Button Example
         // new JoystickButton(joystick, 7).and(new JoystickButton(joystick, 9)).and(new JoystickButton(joystick, 11)).whileTrue(new BalanceCommand(driveSubsystem, pigeon));
     }
@@ -155,7 +147,7 @@ public class RobotContainer {
     public Command getAutoCommand() {
         return new SequentialCommandGroup(
             // new BalanceCommand(false, driveSubsystem, pigeon),
-            new AutoDriveCommand(1, 1, 0.2, driveSubsystem)
+            new AutoDriveCommand(Units.inchesToMeters(376.98), 0.25, 0.25, driveSubsystem)
             // new AutoDriveCommand(1, 1, 0.2, driveSubsystem)
             // new AutoDriveCommand(-0.2, 1, 0.2, driveSubsystem)
             

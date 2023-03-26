@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
 import com.ctre.phoenix.motorcontrol.TalonFXFeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
@@ -60,13 +61,16 @@ public class DriveSubsystem extends SubsystemBase {
         talon.config_kF(Drive.velocitySlot, Drive.velocitykF);
         talon.configNeutralDeadband(0.001);
         talon.configClosedLoopPeakOutput(0, Drive.maxOutput);
-        
+        talon.setIntegralAccumulator(0);
+        // talon.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 5);
+        talon.setStatusFramePeriod(StatusFrameEnhanced.Status_13_Base_PIDF0, 5);
     }
 
     @Override
     public void periodic() {
         odometry.update(Rotation2d.fromDegrees(getHeading()), getleftPostition(), getRightPostition());
         // System.out.println(odometry.getPoseMeters());
+        System.out.println(talonFXL.getIntegralAccumulator());
     }
 
     public void setPower(double leftPower, double rightPower) {
@@ -166,7 +170,7 @@ public class DriveSubsystem extends SubsystemBase {
      * @param velocity in meters/sec
      * @return velocity in encoder units/100 ms
      */
-    private double fromVelocity(double velocity) {
+    public double fromVelocity(double velocity) {
         return Encoder.fromVelocity(velocity, Drive.encoderUnitsPerRev, Drive.gearboxRatio, Drive.wheelDiameterMeters);
     }
 
