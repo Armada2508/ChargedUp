@@ -1,9 +1,11 @@
 package frc.robot;
 
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.constraint.DifferentialDriveKinematicsConstraint;
 import edu.wpi.first.math.util.Units;
 import frc.robot.lib.util.Util;
 
@@ -32,10 +34,10 @@ public class Constants {
         public static final double motionMagickF = 0; // Probably keep this at 0
 
         public static final int velocitySlot = 1; 
-        public static final double velocitykP = 0; // 0.1
-        public static final double velocitykI = 0.0001;
-        public static final double velocitykD = 0;
-        public static final double velocitykF = 0.052;
+        public static final double velocitykP = 0.35; 
+        public static final double velocitykI = 0; 
+        public static final double velocitykD = 5;
+        public static final double velocitykF = 0.047;
 
         public static final double maxOutput = 1;
         public static final double nominalOutputLeft = 0.03;
@@ -56,6 +58,12 @@ public class Constants {
         // Trajectories
         public static final double ramseteB = 2.0;
         public static final double ramseteZeta = 0.7;
+        public static final TrajectoryConfig trajectoryConfig = new TrajectoryConfig(0.75, 0.5);
+        static {
+            trajectoryConfig.addConstraint(new DifferentialDriveKinematicsConstraint(
+            new DifferentialDriveKinematics(Drive.trackWidthMeters), 0.5) // 1.5
+            );
+        }
     }
 
     public static final class Balance {
@@ -71,9 +79,8 @@ public class Constants {
     public static final class Vision {
         // Robot Frame
         public static final Translation3d cameraTranslationOffset = new Translation3d(Units.inchesToMeters(10), 0, Units.inchesToMeters(13.5));
-        public static final Rotation3d cameraRotationOffset = new Rotation3d(0, Units.degreesToRadians(142.65), 0);
-        public static final Pose3d cameraPoseOffset = new Pose3d(cameraTranslationOffset, new Rotation3d());
-        public static final Transform3d cameraToRobotTransform = new Transform3d(new Pose3d(), Vision.cameraPoseOffset);
+        // public static final Rotation3d cameraRotationOffset = new Rotation3d(0, Units.degreesToRadians(142.65), 0);
+        public static final Transform3d cameraToRobotTransform = new Transform3d(cameraTranslationOffset, new Rotation3d());
         public static final double centerToFront = Units.inchesToMeters(14.5);
         // Target Heights
         public static final double coneHeightMeters = 0;

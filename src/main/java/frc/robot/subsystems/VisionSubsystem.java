@@ -13,6 +13,7 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
+import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.CoordinateAxis;
 import edu.wpi.first.math.geometry.CoordinateSystem;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -43,6 +44,9 @@ public class VisionSubsystem extends SubsystemBase {
     private final HashMap<NetworkTable, PipelineResult> currentResults = new HashMap<>();
     private final CoordinateSystem tagCoordinateSystem = new CoordinateSystem(CoordinateAxis.N(), CoordinateAxis.U(), CoordinateAxis.E());
     private final CoordinateSystem fieldCoordinateSystem = new CoordinateSystem(CoordinateAxis.E(), CoordinateAxis.N(), CoordinateAxis.U());
+    private LinearFilter skewAverage = LinearFilter.movingAverage(8);
+    private double lastSkew = 0;
+    private double currentSkew = 0;
     private AprilTagFieldLayout layout = null;
 
     public VisionSubsystem() {
@@ -78,9 +82,19 @@ public class VisionSubsystem extends SubsystemBase {
                 (int) table.getEntry("Orientation").getInteger(-1)
             ));
         }
-        if (i % 2 == 0) {
-            if (hasTarget(Target.APRILTAG)) {
+        if (hasTarget(Target.APRILTAG)) {
+            double skew = computeSkew();
+            if (skew != lastSkew) {
+                if (Math.toDegrees(Math.abs(currentSkew - skew)) > 3) {
+                    System.out.println("Outlier! " + Math.toDegrees(skew) + " Actual: " + Math.toDegrees(currentSkew));
+                } 
+                System.out.println(Math.toDegrees(currentSkew));
+                currentSkew = skewAverage.calculate(skew);
+                lastSkew = skew;
+            }
+            if (i % 2 == 0) {
                 // System.out.println(getTargetPose());
+                // System.out.println(getSkew());
                 // System.out.println(new Pose3d().relativeTo(getPoseToTarget()));
                 // System.out.println(getFieldPose());
             }
@@ -133,14 +147,17 @@ public class VisionSubsystem extends SubsystemBase {
 
     /**
      * @return A Pose3d in meters representing the target's position in 3d space relative to the robot. (0, 0, 0) is the robot's origin.
+     * +X is right, +Y is up, +Z is forward
      */
     public Pose3d getTargetPose() {
         if (!hasTarget(Target.APRILTAG)) return null;
         PipelineResult result = getResult(Target.APRILTAG);
         Vector<N3> rvec = getRotationalVector();
-        Pose3d cameraPose = new Pose3d(result.tX(), result.tY(), result.tZ(), new Rotation3d(rvec));
-        Pose3d robotPose = cameraPose.transformBy(Vision.cameraToRobotTransform.inverse());
-        return robotPose;
+        Translation3d tagTranslation = new Translation3d(result.tX(), result.tY(), result.tZ());
+        Pose3d tagPoseRobotFrame = new Pose3d(tagTranslation.plus(Vision.cameraTranslationOffset), new Rotation3d(rvec));
+        // Pose3d tagPoseCameraFrame = new Pose3d(tagTranslation, new Rotation3d(rvec));
+        // Pose3d tagPoseRobotFrame = tagPoseCameraFrame.transformBy(Vision.cameraToRobotTransform);
+        return tagPoseRobotFrame;
     }
 
     /**
@@ -163,14 +180,18 @@ public class VisionSubsystem extends SubsystemBase {
     }
     
     /**
-     * @return Skew angle of the april tag in radians
+     * @return Skew angle of the april tag in radians, counterclockwise positive
      */
-    public double getSkew() {
+    private double computeSkew() {
         if (!hasTarget(Target.APRILTAG)) return Double.NaN;
         Vector<N3> rvec = getRotationalVector();
         Translation3d tagNormal = new Translation3d(0, 0, 1).rotateBy(new Rotation3d(rvec));
         double skew = Util.boundedAngle(Math.atan2(tagNormal.getX(), tagNormal.getZ()) + Math.PI);
         return skew;
+    }
+
+    public double getSkew() {
+        return currentSkew;
     }
 
     //? AprilTag

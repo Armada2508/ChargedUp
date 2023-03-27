@@ -1,7 +1,6 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.NeutralMode;
-import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
 import com.ctre.phoenix.motorcontrol.TalonFXFeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
@@ -16,7 +15,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Drive;
 import frc.robot.lib.Encoder;
-import frc.robot.lib.util.Util;
 
 
 public class DriveSubsystem extends SubsystemBase {
@@ -62,15 +60,14 @@ public class DriveSubsystem extends SubsystemBase {
         talon.configNeutralDeadband(0.001);
         talon.configClosedLoopPeakOutput(0, Drive.maxOutput);
         talon.setIntegralAccumulator(0);
-        // talon.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 5);
-        talon.setStatusFramePeriod(StatusFrameEnhanced.Status_13_Base_PIDF0, 5);
+        // talon.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 5); // velocity 
+        // talon.setStatusFramePeriod(StatusFrameEnhanced.Status_13_Base_PIDF0, 5); // error
     }
 
     @Override
     public void periodic() {
         odometry.update(Rotation2d.fromDegrees(getHeading()), getleftPostition(), getRightPostition());
         // System.out.println(odometry.getPoseMeters());
-        System.out.println(talonFXL.getIntegralAccumulator());
     }
 
     public void setPower(double leftPower, double rightPower) {
@@ -192,7 +189,7 @@ public class DriveSubsystem extends SubsystemBase {
      * @return pigeon's heading in degrees
      */
     public double getHeading() {
-        return Util.boundedAngleDegrees(pigeon.getFusedHeading());
+        return 360-pigeon.getFusedHeading();
     }
 
 }

@@ -6,6 +6,7 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.RamseteController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
@@ -136,7 +137,7 @@ public class FollowTrajectory {
      * @return Returns a RamseteCommand that will follow the specified trajectory with the specified driveSubsystem
      */
     public static Command getCommandTalon(DriveSubsystem driveSubsystem, Trajectory trajectory, Pose2d zeroPose) {
-        trajectory = trajectory.relativeTo(zeroPose);
+        trajectory = trajectory.transformBy(new Transform2d(new Pose2d(), zeroPose));
         return new RamseteCommand(
                 trajectory,
                 driveSubsystem::getPose,

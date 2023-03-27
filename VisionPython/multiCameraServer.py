@@ -362,7 +362,7 @@ config.refineEdges = True
 config.numThreads = 2
 config.debug = False
 quadThreshold: AprilTagDetector.QuadThresholdParameters = AprilTagDetector.QuadThresholdParameters()
-tagPipeline: AprilTagPipeline = AprilTagPipeline(2, "AprilTag", config, quadThreshold, 100, 100, 40)
+tagPipeline: AprilTagPipeline = AprilTagPipeline(2, "AprilTag", config, quadThreshold, 100, 100, 30)
 pipelines: tuple[Pipeline, ...] = (conePipeline, cubePipeline, tagPipeline)
 poseEstimator: AprilTagPoseEstimator # defined in main() so the parameters are correct
 
@@ -402,10 +402,9 @@ def getTagDataPNPGeneric(pipeline: AprilTagPipeline, result: AprilTagDetection) 
         break
     
     if (foundMatch == False):
-        print("No Match")
         pipeline.hasTarget.setBoolean(False)
         return
-    # print(np.linalg.norm(tvec))
+    
     pipeline.tX.setDouble(tvec[0])
     pipeline.tY.setDouble(tvec[1])
     pipeline.tZ.setDouble(tvec[2])
@@ -440,7 +439,7 @@ def aprilTagPipeline(input_img: Mat, drawnImg: Mat, pipeline: AprilTagPipeline) 
     if (len(detections) > 0):
         result = detections[0]
         for detection in detections:
-            if (getAreaAprilTag(detection) > getAreaAprilTag(result)):
+            if (getAreaAprilTag(detection) > getAreaAprilTag(result) and result.getDecisionMargin() < pipeline.minDecisionMargin.getDouble(0) and result.getId() <= maxTagID):
                 result = detection
         if (getAreaAprilTag(result) < pipeline.minArea.getDouble(0) or result.getDecisionMargin() < pipeline.minDecisionMargin.getDouble(0) or result.getId() > maxTagID):
             pipeline.hasTarget.setBoolean(False)
@@ -541,11 +540,12 @@ def main() -> None: # Image proccessing user code
     mainTable.getEntry("Current Pipeline").setInteger(tagPipeline.pipelineIndex.getInteger(0))
     setupCameraConstants()
     scalingFactor: float = (resolutionWidth / currentCamera.resolutionWidth)
-    print("Pose Estimator Config -> tagSize: {} meters, fx: {} pixels, fy: {} pixels, cx: {} pixels, cy: {} pixels".format(
+    print("Camera Matrix -> tagSize: {} meters, fx: {} pixels, fy: {} pixels, cx: {} pixels, cy: {} pixels".format(
         aprilTagLengthMeters, currentCamera.fx * scalingFactor, currentCamera.fy * scalingFactor, currentCamera.cx * scalingFactor, currentCamera.cy * scalingFactor
     ))
     # loop forever
     while True:
+        start = time.time()
         index = mainTable.getEntry("Current Pipeline").getInteger(0)
         error, inputImg = cvSink.grabFrame(mat)
         inputImg: Mat
@@ -570,6 +570,7 @@ def main() -> None: # Image proccessing user code
             originalStream.putFrame(inputImg) # Stream Video
         except:
             continue
+        # print(time.time() - start)
         
         
 
