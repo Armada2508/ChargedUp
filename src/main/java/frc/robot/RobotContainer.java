@@ -14,8 +14,10 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Constants.Arm;
+import frc.robot.Constants.Balance;
 import frc.robot.Constants.Drive;
 import frc.robot.Constants.Gripper;
 import frc.robot.Constants.Wrist;
@@ -47,9 +49,9 @@ public class RobotContainer {
     private SubsystemBase[] subsystems;
     private final PigeonIMU pigeon;
     private final TimeOfFlight tof;
-    private final PIDController controller = new PIDController(0.25, 0, 0); 
     // TODO: adjust auto's gripper calibrate position
     private final double autoGripperCal = 0.0;
+    private double lastPitch = 0;
 
     public RobotContainer(PigeonIMU pigeon, TimeOfFlight tof) {
         pigeon.setYaw(0);
@@ -172,7 +174,14 @@ public class RobotContainer {
             new FinishScoreCommand(0.25, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), 
             new BalanceCommand(false, driveSubsystem, pigeon),
             new AutoDriveCommand(0.5, 1, 0.25, driveSubsystem),
-            new BalanceCommand(true, driveSubsystem, pigeon)
+            new BalanceCommand(true, driveSubsystem, pigeon),
+            new WaitUntilCommand(() -> { // wait until delta has stopped changing and things have calmed down
+                double pitch = pigeon.getPitch();
+                boolean val = Math.abs(pitch-lastPitch) <= Balance.minDelta;
+                lastPitch = pitch;
+                return val;
+            }),
+            new AutoDriveCommand(-0.2, 1, 0.2, driveSubsystem)
         );
     }
 

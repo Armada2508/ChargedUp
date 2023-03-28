@@ -74,6 +74,8 @@ public class Constants {
         // Pitch angle to start driving at
         public static final double stationAngle = 13;
         public static final double angleToStop = 10;
+        // Pitch Delta minimum to start driving backwards
+        public static final double minDelta = 0.25;
     }
 
     public static final class Vision {
