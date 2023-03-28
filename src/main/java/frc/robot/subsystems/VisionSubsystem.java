@@ -86,13 +86,14 @@ public class VisionSubsystem extends SubsystemBase {
             double skew = computeSkew();
             if (skew != lastSkew) {
                 if (Math.toDegrees(Math.abs(currentSkew - skew)) > 3) {
-                    System.out.println("Outlier! " + Math.toDegrees(skew) + " Actual: " + Math.toDegrees(currentSkew));
+                    // System.out.println("Outlier! " + Math.toDegrees(skew) + " Actual: " + Math.toDegrees(currentSkew));
                 } 
-                System.out.println(Math.toDegrees(currentSkew));
                 currentSkew = skewAverage.calculate(skew);
                 lastSkew = skew;
             }
             if (i % 2 == 0) {
+                // Translation3d translation = getTargetPose().getTranslation();
+                // System.out.println(translation.getNorm());
                 // System.out.println(getTargetPose());
                 // System.out.println(getSkew());
                 // System.out.println(new Pose3d().relativeTo(getPoseToTarget()));
@@ -154,9 +155,8 @@ public class VisionSubsystem extends SubsystemBase {
         PipelineResult result = getResult(Target.APRILTAG);
         Vector<N3> rvec = getRotationalVector();
         Translation3d tagTranslation = new Translation3d(result.tX(), result.tY(), result.tZ());
-        Pose3d tagPoseRobotFrame = new Pose3d(tagTranslation.plus(Vision.cameraTranslationOffset), new Rotation3d(rvec));
-        // Pose3d tagPoseCameraFrame = new Pose3d(tagTranslation, new Rotation3d(rvec));
-        // Pose3d tagPoseRobotFrame = tagPoseCameraFrame.transformBy(Vision.cameraToRobotTransform);
+        Transform3d tagPoseCameraFrame = new Transform3d(tagTranslation, new Rotation3d(rvec));
+        Pose3d tagPoseRobotFrame = Vision.cameraPoseRobotFrame.transformBy(tagPoseCameraFrame); // no clue why this is flipped
         return tagPoseRobotFrame;
     }
 

@@ -1,7 +1,7 @@
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
@@ -78,9 +78,9 @@ public class Constants {
 
     public static final class Vision {
         // Robot Frame
-        public static final Translation3d cameraTranslationOffset = new Translation3d(Units.inchesToMeters(10), 0, Units.inchesToMeters(13.5));
-        // public static final Rotation3d cameraRotationOffset = new Rotation3d(0, Units.degreesToRadians(142.65), 0);
-        public static final Transform3d cameraToRobotTransform = new Transform3d(cameraTranslationOffset, new Rotation3d());
+        public static final Translation3d cameraTranslationOffset = new Translation3d(0, -1.282, Units.inchesToMeters(13.5));
+        public static final Rotation3d cameraRotationOffset = new Rotation3d(Units.degreesToRadians(-53.17), 0, 0);
+        public static final Pose3d cameraPoseRobotFrame = new Pose3d(cameraTranslationOffset, cameraRotationOffset);
         public static final double centerToFront = Units.inchesToMeters(14.5);
         // Target Heights
         public static final double coneHeightMeters = 0;
