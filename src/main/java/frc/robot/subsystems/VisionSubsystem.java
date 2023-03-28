@@ -71,6 +71,7 @@ public class VisionSubsystem extends SubsystemBase {
                 table.getEntry("Has Target").getBoolean(false), 
                 table.getEntry("Pitch").getDouble(Double.NaN), 
                 table.getEntry("Yaw").getDouble(Double.NaN),
+                (int) table.getEntry("Pixel X").getInteger(0),
                 table.getEntry("tX").getDouble(Double.NaN),
                 table.getEntry("tY").getDouble(Double.NaN),
                 table.getEntry("tZ").getDouble(Double.NaN),
@@ -129,6 +130,11 @@ public class VisionSubsystem extends SubsystemBase {
     public double getTargetYaw(Target pipeline) {
         if (!hasTarget(pipeline)) return Double.NaN;
         return getResult(pipeline).yaw();
+    }
+
+    public int getTargetX(Target pipeline) {
+        if (!hasTarget(pipeline)) return 0;
+        return getResult(pipeline).pixelX();
     }
 
     //? AprilTag
@@ -258,6 +264,7 @@ public class VisionSubsystem extends SubsystemBase {
         boolean hasTarget,
         double pitch,
         double yaw,
+        int pixelX,
         double tX,
         double tY,
         double tZ,

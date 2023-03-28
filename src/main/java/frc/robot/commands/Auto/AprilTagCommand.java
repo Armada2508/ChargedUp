@@ -26,14 +26,23 @@ import frc.robot.subsystems.VisionSubsystem.Target;
 
 public class AprilTagCommand extends InstantCommand {
     
+    private double zOffset = 1;
     private final double minZ = 0.05;
     private final double minX = 0.05;
     private final Supplier<Position> position;    
     private final DriveSubsystem driveSubsystem;
     private final VisionSubsystem visionSubsystem;
 
-    public AprilTagCommand(Supplier<Position> position, DriveSubsystem driveSubsystem, VisionSubsystem visionSubsystem) {
+    /**
+     * 
+     * @param position - side to go on relative to the tag
+     * @param zOffset - distance away from the tag on the z axis (forwards, backwards) in meters
+     * @param driveSubsystem
+     * @param visionSubsystem
+     */
+    public AprilTagCommand(Supplier<Position> position, double zOffset, DriveSubsystem driveSubsystem, VisionSubsystem visionSubsystem) {
         this.position = position;
+        this.zOffset = zOffset;
         this.driveSubsystem = driveSubsystem;
         this.visionSubsystem = visionSubsystem;
         addRequirements(driveSubsystem);
@@ -43,7 +52,6 @@ public class AprilTagCommand extends InstantCommand {
     public void initialize() {
         visionSubsystem.setPipeline(Target.APRILTAG);
         double xOffset = 0;
-        double zOffset = 1;
         if (!visionSubsystem.hasTarget(Target.APRILTAG)) {
             cancel();
             return;
@@ -52,9 +60,9 @@ public class AprilTagCommand extends InstantCommand {
         Pose3d tagPose = visionSubsystem.getTargetPose();
         System.out.println("TagPose: " + tagPose);
         xOffset = switch (position.get()) {
-            case LEFT -> xOffset = -0.47625; 
+            case LEFT -> xOffset = -0.549275; 
             case CENTER -> xOffset = 0;
-            case RIGHT -> xOffset = 0.47625;
+            case RIGHT -> xOffset = 0.549275;
         };
         zOffset += Vision.centerToFront;
         // Translation Offset rotated into the robot's frame to be added onto target position

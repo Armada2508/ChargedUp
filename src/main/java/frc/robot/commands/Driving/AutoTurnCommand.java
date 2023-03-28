@@ -15,8 +15,6 @@ public class AutoTurnCommand extends CommandBase {
     private static final PIDController pid = new PIDController(Drive.turnkP, Drive.turnkI, Drive.turnkD);
     private final DoubleSupplier relativeDegrees;
     private final double deadbandDegrees = 0.5;
-    private final double minIntegral = -1;
-    private final double maxIntegral = 1;
     private double absoluteTarget;
     private DriveSubsystem driveSubsystem;
     private PigeonIMU pigeon;
@@ -50,7 +48,6 @@ public class AutoTurnCommand extends CommandBase {
         pid.reset();
         pid.setSetpoint(absoluteTarget);
         pid.setTolerance(deadbandDegrees);
-        pid.setIntegratorRange(minIntegral, maxIntegral);
     }
 
     @Override

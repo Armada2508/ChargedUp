@@ -207,6 +207,11 @@ def startCamera(config):
 	camera.set(cv2.CAP_PROP_FRAME_HEIGHT, resolutionHeight)
  
 	camera.set(cv2.CAP_PROP_EXPOSURE, config.config["exposure"]) # range of 0-63
+ 
+	while not camera.isOpened():
+		print("Attempting to access camera stream")
+		time.sleep(1)
+	print("Camera stream opened")
 
 def startSwitchedCamera(config):
 	"""Start running the switched camera."""
@@ -243,6 +248,11 @@ def startCameraDesktop() -> None:
 	camera = cv2.VideoCapture(camNum, cv2.CAP_DSHOW)
 	camera.set(cv2.CAP_PROP_FRAME_WIDTH, resolutionWidth)
 	camera.set(cv2.CAP_PROP_FRAME_HEIGHT, resolutionHeight)
+	camera.set(cv2.CAP_PROP_EXPOSURE, -7)
+	while not camera.isOpened():
+		print("Attempting to access camera stream")
+		time.sleep(1)
+	print("Camera stream opened")
 
 class Pipeline:
 	
@@ -310,6 +320,7 @@ class ColorPipeline(Pipeline):
 		self.pitch = self.subTable.getEntry("Pitch") 
 		self.yaw = self.subTable.getEntry("Yaw")
 		self.orientation = self.subTable.getEntry("Orientation")
+		self.pixelX = self.subTable.getEntry("Pixel X")
 		self.hueMin.setInteger(hueMin)
 		self.hueMax.setInteger(hueMax)
 		self.saturationMin.setInteger(saturationMin)
@@ -322,6 +333,7 @@ class ColorPipeline(Pipeline):
 		self.pitch.setDouble(0)
 		self.yaw.setDouble(0)
 		self.orientation.setInteger(0)
+		self.pixelX.setInteger(0)
 
 # Processing
 conePipeline: ColorPipeline = ColorPipeline(0, "Cone", 15, 40, 150, 255, 180, 255, 1, 1, 150)
@@ -336,7 +348,6 @@ config.debug = False
 quadThreshold: AprilTagDetector.QuadThresholdParameters = AprilTagDetector.QuadThresholdParameters()
 tagPipeline: AprilTagPipeline = AprilTagPipeline(2, "AprilTag", config, quadThreshold, 100, 100, 35)
 pipelines: tuple[Pipeline, ...] = (conePipeline, cubePipeline, tagPipeline)
-poseEstimator: AprilTagPoseEstimator # defined in main() so the parameters are correct
 
 def getAreaAprilTag(tag: AprilTagDetection) -> float:
 	x1: float = abs(tag.getCorner(0).x - tag.getCorner(1).x)
@@ -485,6 +496,7 @@ def proccessContours(binaryImg: Mat, drawnImg: Mat, pipeline: ColorPipeline) -> 
 		yaw, pitch = pointToYawAndPitch(crosshair[0], crosshair[1])
 		pipeline.pitch.setDouble(pitch)
 		pipeline.yaw.setDouble(yaw)
+		pipeline.pixelX.setInteger(int(crosshair[0] - (resolutionWidth/2)))
 		# Draw Stuff
 		drawnImg = cv2.drawContours(drawnImg, mainContour, -1, color = (255, 0, 0), thickness = 2)
 		drawnImg = cv2.rectangle(drawnImg, (x, y), (x + w, y + h), color = (0, 0, 255), thickness = 2)

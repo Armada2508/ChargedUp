@@ -60,14 +60,11 @@ public class DriveSubsystem extends SubsystemBase {
         talon.configNeutralDeadband(0.001);
         talon.configClosedLoopPeakOutput(0, Drive.maxOutput);
         talon.setIntegralAccumulator(0);
-        // talon.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 5); // velocity 
-        // talon.setStatusFramePeriod(StatusFrameEnhanced.Status_13_Base_PIDF0, 5); // error
     }
 
     @Override
     public void periodic() {
         odometry.update(Rotation2d.fromDegrees(getHeading()), getleftPostition(), getRightPostition());
-        // System.out.println(odometry.getPoseMeters());
     }
 
     public void setPower(double leftPower, double rightPower) {

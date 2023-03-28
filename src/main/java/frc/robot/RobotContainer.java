@@ -7,11 +7,11 @@ import com.ctre.phoenix.sensors.PigeonIMU;
 import com.playingwithfusion.TimeOfFlight;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
@@ -27,6 +27,7 @@ import frc.robot.commands.auto.PlacePieceCommand;
 import frc.robot.commands.auto.PlacePieceCommand.Height;
 import frc.robot.commands.driving.AutoDriveCommand;
 import frc.robot.commands.driving.ButterySmoothDriveCommand;
+import frc.robot.commands.driving.ConeTurnCommand;
 import frc.robot.lib.motion.FollowTrajectory;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
@@ -46,6 +47,9 @@ public class RobotContainer {
     private SubsystemBase[] subsystems;
     private final PigeonIMU pigeon;
     private final TimeOfFlight tof;
+    private final PIDController controller = new PIDController(0.25, 0, 0); 
+    // TODO: adjust auto's gripper calibrate position
+    private final double autoGripperCal = 0.0;
 
     public RobotContainer(PigeonIMU pigeon, TimeOfFlight tof) {
         pigeon.setYaw(0);
@@ -138,12 +142,15 @@ public class RobotContainer {
             armSubsystem.getCalibrateSequence(wristSubsystem, gripperSubsystem)
         ), 12);
         */
-        mapButton(new RunCommand(() -> driveSubsystem.setVelocity(0.25, 0.25), driveSubsystem), 6);
-        mapButton(new RunCommand(() -> driveSubsystem.setVelocity(0.5, 0.5), driveSubsystem), 7);
-        mapButton(new RunCommand(() -> driveSubsystem.setVelocity(1, 1), driveSubsystem), 8);
-        mapButton(new RunCommand(() -> driveSubsystem.setVelocity(2, 2), driveSubsystem), 9);
-        mapButton(new RunCommand(() -> driveSubsystem.setVelocity(3, 3), driveSubsystem), 10);
-        mapButton(new AprilTagCommand(() -> Position.LEFT, driveSubsystem, visionSubsystem), 12);
+        mapButton(new ConeTurnCommand(driveSubsystem, visionSubsystem), 10);
+        
+        mapButton(new SequentialCommandGroup( // Complete auto, go in front of substation, move arm, move forward. User presses button to release and back up.
+            new AprilTagCommand(() -> Position.RIGHT, 0.5, driveSubsystem, visionSubsystem),
+            new PlacePieceCommand(() -> Height.HIGH, armSubsystem, wristSubsystem, gripperSubsystem),
+            new AutoDriveCommand(0.5, 1, 0.25, driveSubsystem)
+        ), 9);
+
+        // mapButton(new AprilTagCommand(() -> Position.LEFT, driveSubsystem, visionSubsystem), 12);
         // Combo Button Example
         // new JoystickButton(joystick, 7).and(new JoystickButton(joystick, 9)).and(new JoystickButton(joystick, 11)).whileTrue(new BalanceCommand(driveSubsystem, pigeon));
     }
@@ -152,9 +159,13 @@ public class RobotContainer {
         gripperSubsystem.getCalibrateSequence();
     }
 
+    // TODO: add forwards/backwards to auto when scoring, not sure how we want to place the robot on the field.
+    /**
+     * Calibrates, scores cone on high pole, taxis and then balances. For the middle placement. 
+     */
     public Command getAutoCommand() {
         return new SequentialCommandGroup(
-            gripperSubsystem.getCalibrateSequence(Gripper.onLimit + 0.0),
+            gripperSubsystem.getCalibrateSequence(Gripper.onLimit + autoGripperCal),
             wristSubsystem.getCalibrateSequence(gripperSubsystem),
             armSubsystem.getCalibrateSequence(wristSubsystem, gripperSubsystem),
             new PlacePieceCommand(() -> Height.HIGH, armSubsystem, wristSubsystem, gripperSubsystem), // this doesn't go forward/backward
@@ -162,6 +173,20 @@ public class RobotContainer {
             new BalanceCommand(false, driveSubsystem, pigeon),
             new AutoDriveCommand(0.5, 1, 0.25, driveSubsystem),
             new BalanceCommand(true, driveSubsystem, pigeon)
+        );
+    }
+
+    /**
+     * Calibrates, scores cone on high pole and then taxis. For side placement.
+     */
+    public Command getAltAutoCommand() {
+        return new SequentialCommandGroup(
+            gripperSubsystem.getCalibrateSequence(Gripper.onLimit + autoGripperCal),
+            wristSubsystem.getCalibrateSequence(gripperSubsystem),
+            armSubsystem.getCalibrateSequence(wristSubsystem, gripperSubsystem),
+            new PlacePieceCommand(() -> Height.HIGH, armSubsystem, wristSubsystem, gripperSubsystem), // this doesn't go forward/backward
+            new FinishScoreCommand(0.25, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem),   
+            new AutoDriveCommand(-Units.inchesToMeters(152), 1, 0.25, driveSubsystem) 
         );
     }
 
