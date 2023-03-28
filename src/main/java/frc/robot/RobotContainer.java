@@ -7,7 +7,6 @@ import com.ctre.phoenix.sensors.PigeonIMU;
 import com.playingwithfusion.TimeOfFlight;
 
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -18,9 +17,14 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Constants.Arm;
 import frc.robot.Constants.Drive;
+import frc.robot.Constants.Gripper;
 import frc.robot.Constants.Wrist;
+import frc.robot.commands.BalanceCommand;
 import frc.robot.commands.auto.AprilTagCommand;
 import frc.robot.commands.auto.AprilTagCommand.Position;
+import frc.robot.commands.auto.FinishScoreCommand;
+import frc.robot.commands.auto.PlacePieceCommand;
+import frc.robot.commands.auto.PlacePieceCommand.Height;
 import frc.robot.commands.driving.AutoDriveCommand;
 import frc.robot.commands.driving.ButterySmoothDriveCommand;
 import frc.robot.lib.motion.FollowTrajectory;
@@ -144,14 +148,20 @@ public class RobotContainer {
         // new JoystickButton(joystick, 7).and(new JoystickButton(joystick, 9)).and(new JoystickButton(joystick, 11)).whileTrue(new BalanceCommand(driveSubsystem, pigeon));
     }
 
+    public void teleopInit() {
+        gripperSubsystem.getCalibrateSequence();
+    }
+
     public Command getAutoCommand() {
         return new SequentialCommandGroup(
-            // new BalanceCommand(false, driveSubsystem, pigeon),
-            new AutoDriveCommand(Units.inchesToMeters(376.98), 0.25, 0.25, driveSubsystem)
-            // new AutoDriveCommand(1, 1, 0.2, driveSubsystem)
-            // new AutoDriveCommand(-0.2, 1, 0.2, driveSubsystem)
-            
-
+            gripperSubsystem.getCalibrateSequence(Gripper.onLimit + 0.0),
+            wristSubsystem.getCalibrateSequence(gripperSubsystem),
+            armSubsystem.getCalibrateSequence(wristSubsystem, gripperSubsystem),
+            new PlacePieceCommand(() -> Height.HIGH, armSubsystem, wristSubsystem, gripperSubsystem), // this doesn't go forward/backward
+            new FinishScoreCommand(0.25, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), 
+            new BalanceCommand(false, driveSubsystem, pigeon),
+            new AutoDriveCommand(0.5, 1, 0.25, driveSubsystem),
+            new BalanceCommand(true, driveSubsystem, pigeon)
         );
     }
 

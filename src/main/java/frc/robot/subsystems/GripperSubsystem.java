@@ -149,24 +149,28 @@ public class GripperSubsystem extends SubsystemBase {
     }
 
     public Command getCalibrateSequence() {
+        return getCalibrateSequence(Gripper.onLimit);
+    }
+
+    public Command getCalibrateSequence(double zeroPos) {
         return new SequentialCommandGroup(
             new InstantCommand(this::startCalibrate, this),
             new ConditionalCommand(new SequentialCommandGroup(
                 new InstantCommand(() -> setPower(-0.1)),
                 new WaitUntilCommand(() -> !pollLimitSwitch())
             ), new InstantCommand(), this::pollLimitSwitch),
-            calibrateGripper(),
+            calibrateGripper(zeroPos),
             new InstantCommand(this::endCalibrate, this)
         ).withName("GripperCalibrationSequence");
     }
 
-    private Command calibrateGripper() {
+    private Command calibrateGripper(double zeroPos) {
         return new SequentialCommandGroup(
             new InstantCommand(() -> setPower(0.12), this),
             new WaitUntilCommand(this::pollLimitSwitch),
             new InstantCommand(() -> {
                 stop();
-                setSensor(fromPosition(Gripper.onLimit) + 
+                setSensor(fromPosition(zeroPos) + 
                 ((armSubsystem.getSensorPosition() + armOffset) * Gripper.armSensorMultiplier) + 
                 ((wristSubsystem.getSensorPosition() + wristOffset) * Gripper.wristSensorMultiplier));            
             })
