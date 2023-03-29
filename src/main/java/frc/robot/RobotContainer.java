@@ -22,12 +22,16 @@ import frc.robot.Constants.Drive;
 import frc.robot.Constants.Gripper;
 import frc.robot.Constants.Wrist;
 import frc.robot.commands.BalanceCommand;
+import frc.robot.commands.arm.ArmCommand;
+import frc.robot.commands.arm.ArmWristCommand;
+import frc.robot.commands.arm.GripperCommand;
+import frc.robot.commands.arm.WristCommand;
 import frc.robot.commands.auto.FinishScoreCommand;
 import frc.robot.commands.auto.PlacePieceCommand;
 import frc.robot.commands.auto.PlacePieceCommand.Height;
+import frc.robot.commands.auto.StoreCommand;
 import frc.robot.commands.driving.AutoDriveCommand;
 import frc.robot.commands.driving.ButterySmoothDriveCommand;
-import frc.robot.commands.driving.ConeTurnCommand;
 import frc.robot.lib.motion.FollowTrajectory;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
@@ -115,7 +119,6 @@ public class RobotContainer {
     private void configureButtons() {
         //! Button 4 is used for slow speed.
         mapButton(Commands.runOnce(this::stopEverything), 11); // Joystick Stop
-        /*
         mapButton(new SequentialCommandGroup( // gripper close
             new GripperCommand(Gripper.grabCone, gripperSubsystem, armSubsystem),
             new WristCommand(Wrist.maxDegrees, 45, 45, wristSubsystem)
@@ -132,18 +135,17 @@ public class RobotContainer {
             new GripperCommand(Gripper.open, gripperSubsystem, armSubsystem)
         ), 7);
 
-        mapButton(new PlacePieceCommand(() -> Height.BOTTOM, armSubsystem, wristSubsystem, gripperSubsystem), 8);
-        mapButton(new PlacePieceCommand(() -> Height.MID, armSubsystem, wristSubsystem, gripperSubsystem), 9);
-        mapButton(new PlacePieceCommand(() -> Height.HIGH, armSubsystem, wristSubsystem, gripperSubsystem), 10);
+        mapButton(new PlacePieceCommand(() -> Height.BOTTOM, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), 8);
+        mapButton(new PlacePieceCommand(() -> Height.MID, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), 9);
+        mapButton(new PlacePieceCommand(() -> Height.HIGH, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), 10);
 
         mapButton(new SequentialCommandGroup( // calibrate
             gripperSubsystem.getCalibrateSequence(),
             wristSubsystem.getCalibrateSequence(gripperSubsystem),
             armSubsystem.getCalibrateSequence(wristSubsystem, gripperSubsystem)
         ), 12);
-        */
-        
-        mapButton(new ConeTurnCommand(driveSubsystem, visionSubsystem), 10);
+
+        // mapButton(new ConeTurnCommand(driveSubsystem, visionSubsystem), 10);
         
         // mapButton(new SequentialCommandGroup( // Complete auto, go in front of substation, move arm, move forward. User presses button to release and back up.
         //     new AprilTagCommand(() -> Position.RIGHT, 0.5, driveSubsystem, visionSubsystem),
@@ -169,7 +171,7 @@ public class RobotContainer {
             gripperSubsystem.getCalibrateSequence(Gripper.onLimit + autoGripperCal),
             wristSubsystem.getCalibrateSequence(gripperSubsystem),
             armSubsystem.getCalibrateSequence(wristSubsystem, gripperSubsystem),
-            new PlacePieceCommand(() -> Height.HIGH, armSubsystem, wristSubsystem, gripperSubsystem), // this doesn't go forward/backward
+            new PlacePieceCommand(() -> Height.HIGH, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), // this doesn't go forward/backward
             new FinishScoreCommand(0.25, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), 
             new BalanceCommand(false, driveSubsystem, pigeon),
             new AutoDriveCommand(0.5, 1, 0.25, driveSubsystem),
@@ -192,7 +194,7 @@ public class RobotContainer {
             gripperSubsystem.getCalibrateSequence(Gripper.onLimit + autoGripperCal),
             wristSubsystem.getCalibrateSequence(gripperSubsystem),
             armSubsystem.getCalibrateSequence(wristSubsystem, gripperSubsystem),
-            new PlacePieceCommand(() -> Height.HIGH, armSubsystem, wristSubsystem, gripperSubsystem), // this doesn't go forward/backward
+            new PlacePieceCommand(() -> Height.HIGH, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), // this doesn't go forward/backward
             new FinishScoreCommand(0.25, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem),   
             new AutoDriveCommand(-Units.inchesToMeters(152), 1, 0.25, driveSubsystem) 
         );

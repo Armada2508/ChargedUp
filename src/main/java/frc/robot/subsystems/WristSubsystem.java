@@ -160,7 +160,7 @@ public class WristSubsystem extends SubsystemBase {
 
     private Command calibrateWrist(GripperSubsystem gripperSubsystem) {
         return new SequentialCommandGroup(
-            new InstantCommand(() -> talonFX.set(TalonFXControlMode.PercentOutput, 0.05), this),
+            new InstantCommand(() -> talonFX.set(TalonFXControlMode.PercentOutput, 0.10), this),
             new WaitUntilCommand(this::pollLimitSwitch),
             new InstantCommand(() -> {
                 stop();

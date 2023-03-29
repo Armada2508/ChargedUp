@@ -48,7 +48,7 @@ public class WristCommand extends CommandBase {
    
     @Override
     public void end(boolean interrupted) {
-        wristSubsystem.stop();
+        
     }
 
     @Override

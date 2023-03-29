@@ -25,7 +25,7 @@ public class CalibrateArmCommand extends CommandBase {
 
     @Override
     public void initialize() {
-        talonFX.set(TalonFXControlMode.PercentOutput, -0.04);
+        talonFX.set(TalonFXControlMode.PercentOutput, -0.08);
     }
 
     @Override

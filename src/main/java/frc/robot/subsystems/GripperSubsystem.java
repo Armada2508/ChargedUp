@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix.motorcontrol.LimitSwitchNormal;
+import com.ctre.phoenix.motorcontrol.LimitSwitchSource;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
 import com.ctre.phoenix.motorcontrol.TalonFXFeedbackDevice;
@@ -73,6 +75,7 @@ public class GripperSubsystem extends SubsystemBase {
         talon.configClosedLoopPeakOutput(0, Gripper.maxOutput);
         talon.configNominalOutputForward(Gripper.minOutput);
         talon.configNominalOutputReverse(Gripper.minOutput);
+        talon.configForwardLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyClosed);
     }
 
     /**
@@ -128,7 +131,7 @@ public class GripperSubsystem extends SubsystemBase {
     }
 
     public boolean pollLimitSwitch() {
-        return talonFX.isFwdLimitSwitchClosed() == 1;
+        return talonFX.isFwdLimitSwitchClosed() == 0;
     }
 
     private void setSensor(double pos) {
@@ -166,7 +169,7 @@ public class GripperSubsystem extends SubsystemBase {
 
     private Command calibrateGripper(double zeroPos) {
         return new SequentialCommandGroup(
-            new InstantCommand(() -> setPower(0.12), this),
+            new InstantCommand(() -> setPower(0.20), this),
             new WaitUntilCommand(this::pollLimitSwitch),
             new InstantCommand(() -> {
                 stop();

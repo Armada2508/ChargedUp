@@ -123,7 +123,7 @@ public class Constants {
         public static final int motorID = 7;
         public static final int encoderUnitsPerRev = 2048;
         public static final double gearboxRatio = 100;
-        public static final double driverPully = 32;
+        public static final double driverPully = 33;
         public static final double drivenPulley = 46;
         public static final double movementRatio = (drivenPulley/driverPully) * gearboxRatio;
 
