@@ -134,6 +134,10 @@ public class GripperSubsystem extends SubsystemBase {
         return talonFX.isFwdLimitSwitchClosed() == 0;
     }
 
+    public boolean isCalibrated() {
+        return calibrated;
+    }
+
     private void setSensor(double pos) {
         talonFX.setSelectedSensorPosition(pos);
     }

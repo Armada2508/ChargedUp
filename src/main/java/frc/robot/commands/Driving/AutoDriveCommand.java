@@ -43,7 +43,7 @@ public class AutoDriveCommand extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        double currentPos = driveSubsystem.getleftPostition();
+        double currentPos = driveSubsystem.getLeftPostition();
         return (currentPos < driveSubsystem.getTarget()+distanceDeadbandMeters && currentPos > driveSubsystem.getTarget()-distanceDeadbandMeters);
     }
 

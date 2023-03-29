@@ -14,7 +14,7 @@ public class GripperTOFCommand extends SequentialCommandGroup {
         addCommands(
             new WaitUntilCommand(() -> {
                 if (tof.isRangeValid()) {
-                    return (tof.getRange() * 10) < distanceCentimeters;
+                    return (tof.getRange() / 10) < distanceCentimeters;
                 }
                 return false;
             }),

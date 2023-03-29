@@ -41,7 +41,7 @@ public class DriveSubsystem extends SubsystemBase {
         talonFXL.configNominalOutputReverse(-Drive.nominalOutputLeft);
         talonFXR.configNominalOutputForward(Drive.nominalOutputRight);
         talonFXR.configNominalOutputReverse(-Drive.nominalOutputRight);
-        odometry = new DifferentialDriveOdometry(Rotation2d.fromDegrees(getHeading()), getleftPostition(), getRightPostition());
+        odometry = new DifferentialDriveOdometry(Rotation2d.fromDegrees(getHeading()), getLeftPostition(), getRightPostition());
     }
 
     private void configureMotor(TalonFX talon) {
@@ -64,7 +64,7 @@ public class DriveSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        odometry.update(Rotation2d.fromDegrees(getHeading()), getleftPostition(), getRightPostition());
+        odometry.update(Rotation2d.fromDegrees(getHeading()), getLeftPostition(), getRightPostition());
     }
 
     public void setPower(double leftPower, double rightPower) {
@@ -113,7 +113,7 @@ public class DriveSubsystem extends SubsystemBase {
     /**
      * @return Distance of left motor in meters
      */
-    public double getleftPostition() {
+    public double getLeftPostition() {
         return Encoder.toDistance(talonFXL.getSelectedSensorPosition(), Drive.encoderUnitsPerRev, Drive.gearboxRatio, Drive.wheelDiameterMeters); 
     }
 
@@ -126,6 +126,14 @@ public class DriveSubsystem extends SubsystemBase {
 
     public double getTarget() {
         return Encoder.toDistance(talonFXL.getClosedLoopTarget(), Drive.encoderUnitsPerRev, Drive.gearboxRatio, Drive.wheelDiameterMeters);
+    }
+
+    public double getLeftVelocity() {
+        return toVelocity(talonFXL.getSelectedSensorVelocity());
+    }
+
+    public double getRightVelocity() {
+        return toVelocity(talonFXR.getSelectedSensorVelocity());
     }
 
     public void setVoltage(double leftVolts, double rightVolts) {
@@ -179,7 +187,7 @@ public class DriveSubsystem extends SubsystemBase {
      * Set the odometry's position 
      */
     public void resetOdometry(Pose2d pose) {
-        odometry.resetPosition(Rotation2d.fromDegrees(getHeading()), getleftPostition(), getRightPostition(), pose);
+        odometry.resetPosition(Rotation2d.fromDegrees(getHeading()), getLeftPostition(), getRightPostition(), pose);
     }
 
     /**

@@ -26,6 +26,7 @@ import frc.robot.commands.arm.ArmCommand;
 import frc.robot.commands.arm.ArmWristCommand;
 import frc.robot.commands.arm.GripperCommand;
 import frc.robot.commands.arm.WristCommand;
+import frc.robot.commands.auto.AutoGripperCommand;
 import frc.robot.commands.auto.FinishScoreCommand;
 import frc.robot.commands.auto.PlacePieceCommand;
 import frc.robot.commands.auto.PlacePieceCommand.Height;
@@ -43,6 +44,7 @@ import frc.robot.subsystems.WristSubsystem;
 public class RobotContainer {
 
     private final Joystick joystick = new Joystick(0);
+    private final Joystick buttonBoard = new Joystick(1);
     private final DriveSubsystem driveSubsystem;
     private final VisionSubsystem visionSubsystem = new VisionSubsystem();
     private final ArmSubsystem armSubsystem = new ArmSubsystem();
@@ -64,6 +66,7 @@ public class RobotContainer {
         FollowTrajectory.config(0, 0, 0, Drive.ramseteB, Drive.ramseteZeta, Drive.trackWidthMeters, new PIDController(0, 0, 0), 0);
         InverseKinematics.config(Arm.jointLengthInches, Wrist.jointLengthInches);
         driveSubsystem.setDefaultCommand(new ButterySmoothDriveCommand(() -> -joystick.getRawAxis(1), () -> -joystick.getRawAxis(0),  () -> -joystick.getRawAxis(2), () -> joystick.getRawButton(4), true, driveSubsystem)); // default to driving from joystick input
+        gripperSubsystem.setDefaultCommand(new AutoGripperCommand(driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem, tof));
         configureButtons();
         // logSubsystems();
     }
@@ -100,12 +103,12 @@ public class RobotContainer {
         }
     }
 
-    public void mapButton(Command c, int b) {
+    public void mapJoyButton(Command c, int b) {
         new JoystickButton(joystick, b).onTrue(c);
     }
 
-    public void mapWhileButton(Command c, int b) {
-        new JoystickButton(joystick, b).whileTrue(c);
+    public void mapBoardButton(Command c, int b) {
+        new JoystickButton(buttonBoard, b).onTrue(c);
     }
 
     public void stopEverything() {
@@ -118,42 +121,45 @@ public class RobotContainer {
 
     private void configureButtons() {
         //! Button 4 is used for slow speed.
-        mapButton(Commands.runOnce(this::stopEverything), 11); // Joystick Stop
-        mapButton(new SequentialCommandGroup( // gripper close
+        mapJoyButton(Commands.runOnce(this::stopEverything), 11); // Joystick Stop
+        mapJoyButton(new SequentialCommandGroup( // gripper close
             new GripperCommand(Gripper.grabCone, gripperSubsystem, armSubsystem),
             new WristCommand(Wrist.maxDegrees, 45, 45, wristSubsystem)
         ), 1);
 
-        mapButton(new GripperCommand(Gripper.open, gripperSubsystem, armSubsystem), 2); 
+        mapJoyButton(new GripperCommand(Gripper.open, gripperSubsystem, armSubsystem), 2); 
 
-        mapButton(new FinishScoreCommand(Units.inchesToMeters(-18), driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), 3);
+        mapJoyButton(new FinishScoreCommand(Units.inchesToMeters(18), driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), 3);
 
-        mapButton(new StoreCommand(armSubsystem, wristSubsystem, gripperSubsystem), 5);
+        mapJoyButton(new StoreCommand(armSubsystem, wristSubsystem, gripperSubsystem), 5);
 
-        mapButton(new SequentialCommandGroup( // pick up
+        mapJoyButton(gripperSubsystem.getCalibrateSequence(), 6);
+
+        mapJoyButton(new SequentialCommandGroup( // pick up
             new ArmWristCommand(new ArmCommand(0, 45, 45, armSubsystem), new WristCommand(75, 45, 45, wristSubsystem), -0.5, 10, armSubsystem, wristSubsystem, gripperSubsystem),
             new GripperCommand(Gripper.open, gripperSubsystem, armSubsystem)
         ), 7);
 
-        mapButton(new PlacePieceCommand(() -> Height.BOTTOM, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), 8);
-        mapButton(new PlacePieceCommand(() -> Height.MID, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), 9);
-        mapButton(new PlacePieceCommand(() -> Height.HIGH, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), 10);
+        mapJoyButton(new PlacePieceCommand(() -> Height.BOTTOM, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), 8);
+        mapJoyButton(new PlacePieceCommand(() -> Height.MID, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), 9);
+        mapJoyButton(new PlacePieceCommand(() -> Height.HIGH, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), 10);
 
-        mapButton(new SequentialCommandGroup( // calibrate
+        mapJoyButton(new SequentialCommandGroup( // calibrate
             gripperSubsystem.getCalibrateSequence(),
             wristSubsystem.getCalibrateSequence(gripperSubsystem),
             armSubsystem.getCalibrateSequence(wristSubsystem, gripperSubsystem)
         ), 12);
-
-        // mapButton(new ConeTurnCommand(driveSubsystem, visionSubsystem), 10);
         
+        mapBoardButton(new WristCommand(() -> wristSubsystem.getPosition() + 5, 45, 45, wristSubsystem), 1);
+        mapBoardButton(new WristCommand(() -> wristSubsystem.getPosition() - 5, 45, 45, wristSubsystem), 2);
+        mapBoardButton(new ArmCommand(() -> armSubsystem.getPosition() + 3, 45, 45, armSubsystem), 3);
+        mapBoardButton(new ArmCommand(() -> armSubsystem.getPosition() - 3, 45, 45, armSubsystem), 4);
         // mapButton(new SequentialCommandGroup( // Complete auto, go in front of substation, move arm, move forward. User presses button to release and back up.
         //     new AprilTagCommand(() -> Position.RIGHT, 0.5, driveSubsystem, visionSubsystem),
         //     new PlacePieceCommand(() -> Height.HIGH, armSubsystem, wristSubsystem, gripperSubsystem),
         //     new AutoDriveCommand(0.5, 1, 0.25, driveSubsystem)
         // ), 9);
 
-        // mapButton(new AprilTagCommand(() -> Position.LEFT, driveSubsystem, visionSubsystem), 12);
         // Combo Button Example
         // new JoystickButton(joystick, 7).and(new JoystickButton(joystick, 9)).and(new JoystickButton(joystick, 11)).whileTrue(new BalanceCommand(driveSubsystem, pigeon));
     }
@@ -162,7 +168,6 @@ public class RobotContainer {
         gripperSubsystem.getCalibrateSequence();
     }
 
-    // TODO: add forwards/backwards to auto when scoring, not sure how we want to place the robot on the field.
     /**
      * Calibrates, scores cone on high pole, taxis and then balances. For the middle placement. 
      */
@@ -171,11 +176,13 @@ public class RobotContainer {
             gripperSubsystem.getCalibrateSequence(Gripper.onLimit + autoGripperCal),
             wristSubsystem.getCalibrateSequence(gripperSubsystem),
             armSubsystem.getCalibrateSequence(wristSubsystem, gripperSubsystem),
-            new PlacePieceCommand(() -> Height.HIGH, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), // this doesn't go forward/backward
-            new FinishScoreCommand(0.25, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), 
-            new BalanceCommand(false, driveSubsystem, pigeon),
-            new AutoDriveCommand(0.5, 1, 0.25, driveSubsystem),
+            new AutoDriveCommand(-0.3, 1, 0.25, driveSubsystem), // go back to raise arm 
+            new PlacePieceCommand(() -> Height.HIGH, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), 
+            new AutoDriveCommand(0.3, 1, 0.25, driveSubsystem), // go forward to score
+            new FinishScoreCommand(0.4, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), 
             new BalanceCommand(true, driveSubsystem, pigeon),
+            new AutoDriveCommand(-0.5, 1, 0.2, driveSubsystem),
+            new BalanceCommand(false, driveSubsystem, pigeon),
             new WaitUntilCommand(() -> { // wait until delta has stopped changing and things have calmed down
                 double pitch = pigeon.getPitch();
                 boolean val = Math.abs(pitch-lastPitch) <= Balance.minDelta;
@@ -194,8 +201,10 @@ public class RobotContainer {
             gripperSubsystem.getCalibrateSequence(Gripper.onLimit + autoGripperCal),
             wristSubsystem.getCalibrateSequence(gripperSubsystem),
             armSubsystem.getCalibrateSequence(wristSubsystem, gripperSubsystem),
+            new AutoDriveCommand(-0.3, 1, 0.25, driveSubsystem), // go back to raise arm 
             new PlacePieceCommand(() -> Height.HIGH, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), // this doesn't go forward/backward
-            new FinishScoreCommand(0.25, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem),   
+            new AutoDriveCommand(0.3, 1, 0.25, driveSubsystem), // go forward to score
+            new FinishScoreCommand(0.4, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem),   
             new AutoDriveCommand(-Units.inchesToMeters(152), 1, 0.25, driveSubsystem) 
         );
     }
