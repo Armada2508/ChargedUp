@@ -15,7 +15,6 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
-import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.Constants;
 import frc.robot.Constants.Arm;
 import frc.robot.commands.arm.CalibrateArmCommand;
@@ -31,6 +30,7 @@ public class ArmSubsystem extends SubsystemBase {
         configureMotor(talonFX);
         configureMotor(talonFXFollow);
         talonFXFollow.setInverted(true);
+        talonFXFollow.follow(talonFX);
     }
 
     @Override
@@ -149,18 +149,12 @@ public class ArmSubsystem extends SubsystemBase {
     private void startCalibrate() {
         System.out.println("Started Arm Calibration.");
         calibrated = false;
-        talonFX.setNeutralMode(NeutralMode.Coast);
-        talonFXFollow.setNeutralMode(NeutralMode.Coast);
         talonFX.neutralOutput();
-        talonFXFollow.neutralOutput();
         configSoftwareLimits(false);
     }
 
     private void endCalibrate() {
-        talonFXFollow.follow(talonFX);
         configSoftwareLimits(true);
-        talonFX.setNeutralMode(NeutralMode.Brake);
-        talonFXFollow.setNeutralMode(NeutralMode.Brake);
         calibrated = true;
         System.out.println("Ended Arm Calibration.");
     }
@@ -171,30 +165,12 @@ public class ArmSubsystem extends SubsystemBase {
             new SequentialCommandGroup(
                 new InstantCommand(this::startCalibrate, this),
                 new ConditionalCommand(new SequentialCommandGroup(
-                    new InstantCommand(() -> talonFX.set(TalonFXControlMode.PercentOutput, 0.15)),
+                    new InstantCommand(() -> talonFX.set(TalonFXControlMode.PercentOutput, 0.10)),
                     new WaitCommand(waitTime)
                 ), new InstantCommand(), this::pollLimitSwitch),
-                new CalibrateArmCommand(talonFX, this, gripperSubsystem),
-                new InstantCommand(() -> talonFXFollow.set(TalonFXControlMode.PercentOutput, 0.02)),
-                new WaitCommand(.5),
-                fixFollower(),
+                new CalibrateArmCommand(talonFX, talonFXFollow, this, gripperSubsystem),
                 new InstantCommand(this::endCalibrate, this)
         ), new InstantCommand(), wristSubsystem::pollLimitSwitch).withName("ArmCalibrationSequence");
-    }
-
-    private Command fixFollower() {
-        return new SequentialCommandGroup(
-            new InstantCommand(() -> {
-                talonFXFollow.setNeutralMode(NeutralMode.Brake);
-                talonFXFollow.set(TalonFXControlMode.PercentOutput, -0.05);
-            }),
-            new WaitUntilCommand(this::pollLimitSwitch),
-            new InstantCommand(() -> {
-                talonFXFollow.setNeutralMode(NeutralMode.Coast);
-                talonFXFollow.setSelectedSensorPosition(fromAngle(Arm.minDegrees));
-                talonFXFollow.neutralOutput();
-            })
-        );
     }
 
 }

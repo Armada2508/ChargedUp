@@ -22,8 +22,6 @@ import frc.robot.Constants.Drive;
 import frc.robot.Constants.Gripper;
 import frc.robot.Constants.Wrist;
 import frc.robot.commands.BalanceCommand;
-import frc.robot.commands.auto.AprilTagCommand;
-import frc.robot.commands.auto.AprilTagCommand.Position;
 import frc.robot.commands.auto.FinishScoreCommand;
 import frc.robot.commands.auto.PlacePieceCommand;
 import frc.robot.commands.auto.PlacePieceCommand.Height;
@@ -144,13 +142,14 @@ public class RobotContainer {
             armSubsystem.getCalibrateSequence(wristSubsystem, gripperSubsystem)
         ), 12);
         */
+        
         mapButton(new ConeTurnCommand(driveSubsystem, visionSubsystem), 10);
         
-        mapButton(new SequentialCommandGroup( // Complete auto, go in front of substation, move arm, move forward. User presses button to release and back up.
-            new AprilTagCommand(() -> Position.RIGHT, 0.5, driveSubsystem, visionSubsystem),
-            new PlacePieceCommand(() -> Height.HIGH, armSubsystem, wristSubsystem, gripperSubsystem),
-            new AutoDriveCommand(0.5, 1, 0.25, driveSubsystem)
-        ), 9);
+        // mapButton(new SequentialCommandGroup( // Complete auto, go in front of substation, move arm, move forward. User presses button to release and back up.
+        //     new AprilTagCommand(() -> Position.RIGHT, 0.5, driveSubsystem, visionSubsystem),
+        //     new PlacePieceCommand(() -> Height.HIGH, armSubsystem, wristSubsystem, gripperSubsystem),
+        //     new AutoDriveCommand(0.5, 1, 0.25, driveSubsystem)
+        // ), 9);
 
         // mapButton(new AprilTagCommand(() -> Position.LEFT, driveSubsystem, visionSubsystem), 12);
         // Combo Button Example

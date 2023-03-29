@@ -46,9 +46,9 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
-    if (tof.isRangeValid()) {
+    // if (tof.isRangeValid()) {
       // System.out.println("Distance: " + String.format("%.3f", tof.getRange() / 25.4) + ", Sigma: " + String.format("%.3f", (tof.getRangeSigma()  / 25.4)));
-    }
+    // }
     // System.out.println("Pigeon: Yaw: " + pigeon.getYaw() + " Pitch: " + pigeon.getPitch() + " Roll: " + pigeon.getRoll());
   }
 

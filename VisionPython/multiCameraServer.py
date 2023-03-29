@@ -93,6 +93,8 @@ verticalFOVRad: float
 horizontalFOVRad: float 
 focalLengthPixels: float
 cameraMatrix: np.ndarray
+mapx = None
+mapy = None
 
 def onRPI() -> bool:
 	return platform.uname().system == "Linux"
@@ -205,8 +207,7 @@ def startCamera(config):
 
 	camera.set(cv2.CAP_PROP_FRAME_WIDTH, resolutionWidth)
 	camera.set(cv2.CAP_PROP_FRAME_HEIGHT, resolutionHeight)
- 
-	camera.set(cv2.CAP_PROP_EXPOSURE, config.config["exposure"]) # range of 0-63
+	camera.set(cv2.CAP_PROP_EXPOSURE, config.config["exposure"]) # range of 0 - 63
  
 	while not camera.isOpened():
 		print("Attempting to access camera stream")
@@ -248,7 +249,7 @@ def startCameraDesktop() -> None:
 	camera = cv2.VideoCapture(camNum, cv2.CAP_DSHOW)
 	camera.set(cv2.CAP_PROP_FRAME_WIDTH, resolutionWidth)
 	camera.set(cv2.CAP_PROP_FRAME_HEIGHT, resolutionHeight)
-	camera.set(cv2.CAP_PROP_EXPOSURE, -7)
+	camera.set(cv2.CAP_PROP_EXPOSURE, -7)  # range of -13 - -1
 	while not camera.isOpened():
 		print("Attempting to access camera stream")
 		time.sleep(1)
@@ -336,7 +337,7 @@ class ColorPipeline(Pipeline):
 		self.pixelX.setInteger(0)
 
 # Processing
-conePipeline: ColorPipeline = ColorPipeline(0, "Cone", 15, 40, 150, 255, 180, 255, 1, 1, 150)
+conePipeline: ColorPipeline = ColorPipeline(0, "Cone", 15, 40, 150, 255, 140, 255, 1, 1, 150)
 cubePipeline: ColorPipeline = ColorPipeline(1, "Cube", 120, 150, 30, 255, 80, 255, 1, 4, 150)
 config: AprilTagDetector.Config = AprilTagDetector.Config()
 config.quadDecimate = 1
@@ -507,7 +508,7 @@ def proccessContours(binaryImg: Mat, drawnImg: Mat, pipeline: ColorPipeline) -> 
 		return drawnImg
 	   
 def setupCameraConstants() -> None:
-	global horizontalFOVRad, verticalFOVRad, cameraMatrix
+	global horizontalFOVRad, verticalFOVRad, cameraMatrix, mapx, mapy
 	scale: float = (resolutionWidth / currentCameraType.resolutionWidth)
 	horizontalFOVRad = getHorizontalFOVRad(resolutionWidth, resolutionHeight, currentCameraType.diagonalFOV)
 	verticalFOVRad = getVerticalFOVRad(resolutionWidth, resolutionHeight, currentCameraType.diagonalFOV)
@@ -517,18 +518,20 @@ def setupCameraConstants() -> None:
 		[0, currentCameraType.fy * scale, currentCameraType.cy * scale],
 		[0, 0, 1]
 	])
+	mapx, mapy = cv2.initUndistortRectifyMap(cameraMatrix, currentCameraType.distCoeffs, None, cameraMatrix, (resolutionWidth, resolutionHeight), 5)
 	
 def main() -> None: # Image proccessing user code
 	CameraServer.enableLogging()
 	proccessedStream = CameraServer.putVideo("Proccessed Video", resolutionWidth, resolutionHeight)
 	originalStream = CameraServer.putVideo("Original Video", resolutionWidth, resolutionHeight)
-	mainTable.getEntry("Current Pipeline").setInteger(tagPipeline.pipelineIndex.getInteger(0))
+	mainTable.getEntry("Current Pipeline").setInteger(conePipeline.pipelineIndex.getInteger(0))
 	setupCameraConstants()
 	print("Resolution: " + str(resolutionWidth) + "x" + str(resolutionHeight))
 	print("Camera Matrix: \n" + str(cameraMatrix))
 	print("Distortion Coefficients: " + str(currentCameraType.distCoeffs))
 	# loop forever
 	while True:
+		start = time.time()
 		index = mainTable.getEntry("Current Pipeline").getInteger(0)
 		ret, frame = camera.read()
 		if not ret:
@@ -537,7 +540,8 @@ def main() -> None: # Image proccessing user code
 		originalImg = frame.copy()
 		# * Undistort the camera's image
 		if currentCameraType is wideangleCam:
-			frame = cv2.undistort(frame, cameraMatrix, currentCameraType.distCoeffs)
+			frame = cv2.remap(frame, mapx, mapy, cv2.INTER_LINEAR)
+			# frame = cv2.undistort(frame, cameraMatrix, currentCameraType.distCoeffs)
 		drawnImg = frame.copy()
 		for pipeline in pipelines:
 			if (pipeline.pipelineIndex.getInteger(0) == index):
@@ -548,12 +552,14 @@ def main() -> None: # Image proccessing user code
 			else:
 				pipeline.hasTarget.setBoolean(False)
 		drawnImg = cv2.circle(drawnImg, (int(resolutionWidth/2), int(resolutionHeight/2)), 5, (255, 255, 255), -1)
+		drawnImg = cv2.resize(drawnImg, (256, 144))
 		try:
-			originalStream.putFrame(originalImg) # Stream Video
+			# originalStream.putFrame(originalImg) # Stream Video
 			proccessedStream.putFrame(drawnImg) # Stream Video
 		except Exception as exception:
 			print("Display Exception: " + exception)
 		cv2.waitKey(10)
+		# print("Cycle Took: " + str((time.time() - start)) + " Seconds")
 
 if __name__ == "__main__":
 	if (onRPI()):

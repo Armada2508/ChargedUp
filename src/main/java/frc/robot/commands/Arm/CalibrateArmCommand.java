@@ -1,6 +1,5 @@
 package frc.robot.commands.arm;
 
-import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 
@@ -12,11 +11,13 @@ import frc.robot.subsystems.GripperSubsystem;
 public class CalibrateArmCommand extends CommandBase {
 
     private TalonFX talonFX;
+    private TalonFX follow;
     private ArmSubsystem armSubsystem;
     private GripperSubsystem gripperSubsystem;
 
-    public CalibrateArmCommand(TalonFX talonFX, ArmSubsystem armSubsystem, GripperSubsystem gripperSubsystem) {
+    public CalibrateArmCommand(TalonFX talonFX, TalonFX follow, ArmSubsystem armSubsystem, GripperSubsystem gripperSubsystem) {
         this.talonFX = talonFX;
+        this.follow = follow;
         this.armSubsystem = armSubsystem;
         this.gripperSubsystem = gripperSubsystem;
         addRequirements(armSubsystem);
@@ -24,8 +25,7 @@ public class CalibrateArmCommand extends CommandBase {
 
     @Override
     public void initialize() {
-        talonFX.setNeutralMode(NeutralMode.Brake);
-        talonFX.set(TalonFXControlMode.PercentOutput, -0.05);
+        talonFX.set(TalonFXControlMode.PercentOutput, -0.04);
     }
 
     @Override
@@ -39,7 +39,7 @@ public class CalibrateArmCommand extends CommandBase {
         armSubsystem.stop();
         gripperSubsystem.updateArmOffset(talonFX.getSelectedSensorPosition() - armSubsystem.fromAngle(calibrateAngle));
         talonFX.setSelectedSensorPosition(armSubsystem.fromAngle(calibrateAngle));
-        talonFX.setNeutralMode(NeutralMode.Coast);
+        follow.setSelectedSensorPosition(armSubsystem.fromAngle(calibrateAngle));
     }
 
     @Override

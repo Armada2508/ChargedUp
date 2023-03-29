@@ -10,7 +10,7 @@ import frc.robot.subsystems.VisionSubsystem.Target;
 
 public class ConeTurnCommand extends CommandBase {
     
-    private PIDController controller = new PIDController(0.0004, 0, 0);
+    private PIDController controller = new PIDController(0.0005, 0, 0);
     private final int pixelTolerance = 30;
     private final DriveSubsystem driveSubsystem;
     private final VisionSubsystem visionSubsystem;

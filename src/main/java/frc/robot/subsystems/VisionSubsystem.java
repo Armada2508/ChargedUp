@@ -83,6 +83,11 @@ public class VisionSubsystem extends SubsystemBase {
                 (int) table.getEntry("Orientation").getInteger(-1)
             ));
         }
+        if (hasTarget(Target.CONE)) {
+            if (i % 2 == 0) {
+                // System.out.println(getTargetX(Target.CONE));
+            }
+        }
         if (hasTarget(Target.APRILTAG)) {
             double skew = computeSkew();
             if (skew != lastSkew) {
