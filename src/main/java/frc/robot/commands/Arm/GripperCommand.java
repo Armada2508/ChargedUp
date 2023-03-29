@@ -30,6 +30,7 @@ public class GripperCommand extends CommandBase {
         double pos = position.getAsDouble();
         if (armSubsystem.insideFrame() && pos < Gripper.closed) {
             cancel();
+            return;
         } else {
             gripperSubsystem.setPosition(pos);  
         }

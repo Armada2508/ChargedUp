@@ -46,7 +46,7 @@ public class AutoGripperCommand extends CommandBase {
             if (!seeingCone && Math.abs(driveSubsystem.getLeftVelocity()) < minVelocity && Math.abs(driveSubsystem.getRightVelocity()) < minVelocity && tof.isRangeValid() && (tof.getRange()/10) < minDistance) {
                 new SequentialCommandGroup( // gripper close
                     new GripperCommand(Gripper.grabCone, gripperSubsystem, armSubsystem),
-                    new WristCommand(Wrist.maxDegrees, 45, 45, wristSubsystem)
+                    new WristCommand(Wrist.maxDegrees, 45, 45, wristSubsystem, armSubsystem)
                 ).schedule(); 
                 seeingCone = true;
             }

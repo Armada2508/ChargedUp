@@ -124,7 +124,7 @@ public class RobotContainer {
         mapJoyButton(Commands.runOnce(this::stopEverything), 11); // Joystick Stop
         mapJoyButton(new SequentialCommandGroup( // gripper close
             new GripperCommand(Gripper.grabCone, gripperSubsystem, armSubsystem),
-            new WristCommand(Wrist.maxDegrees, 45, 45, wristSubsystem)
+            new WristCommand(Wrist.maxDegrees, 45, 45, wristSubsystem, armSubsystem)
         ), 1);
 
         mapJoyButton(new GripperCommand(Gripper.open, gripperSubsystem, armSubsystem), 2); 
@@ -136,7 +136,7 @@ public class RobotContainer {
         mapJoyButton(gripperSubsystem.getCalibrateSequence(), 6);
 
         mapJoyButton(new SequentialCommandGroup( // pick up
-            new ArmWristCommand(new ArmCommand(0, 45, 45, armSubsystem), new WristCommand(75, 45, 45, wristSubsystem), -0.5, 10, armSubsystem, wristSubsystem, gripperSubsystem),
+            new ArmWristCommand(new ArmCommand(0, 45, 45, armSubsystem), new WristCommand(75, 45, 45, wristSubsystem, armSubsystem), -0.5, 10, armSubsystem, wristSubsystem, gripperSubsystem),
             new GripperCommand(Gripper.open, gripperSubsystem, armSubsystem)
         ), 7);
 
@@ -150,8 +150,8 @@ public class RobotContainer {
             armSubsystem.getCalibrateSequence(wristSubsystem, gripperSubsystem)
         ), 12);
         
-        mapBoardButton(new WristCommand(() -> wristSubsystem.getPosition() + 5, 45, 45, wristSubsystem), 1);
-        mapBoardButton(new WristCommand(() -> wristSubsystem.getPosition() - 5, 45, 45, wristSubsystem), 2);
+        mapBoardButton(new WristCommand(() -> wristSubsystem.getPosition() + 5, 45, 45, wristSubsystem, armSubsystem), 1);
+        mapBoardButton(new WristCommand(() -> wristSubsystem.getPosition() - 5, 45, 45, wristSubsystem, armSubsystem), 2);
         mapBoardButton(new ArmCommand(() -> armSubsystem.getPosition() + 3, 45, 45, armSubsystem), 3);
         mapBoardButton(new ArmCommand(() -> armSubsystem.getPosition() - 3, 45, 45, armSubsystem), 4);
         // mapButton(new SequentialCommandGroup( // Complete auto, go in front of substation, move arm, move forward. User presses button to release and back up.
