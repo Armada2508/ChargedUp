@@ -133,23 +133,24 @@ public class RobotContainer {
         mapJoyButton(new ArmCommand(() -> armSubsystem.getPosition() + 3, 45, 45, armSubsystem), 6);
 
         // Place Positions
-        // mapJoyButton(new PlacePieceCommand(() -> Height.HIGH, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), 7);
-        // mapJoyButton(new PlacePieceCommand(() -> Height.MID, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), 9);
-        // mapJoyButton(new PlacePieceCommand(() -> Height.BOTTOM, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), 11);
+        mapJoyButton(new PlacePieceCommand(() -> Height.HIGH, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), 7);
+        mapJoyButton(new PlacePieceCommand(() -> Height.MID, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), 9);
+        mapJoyButton(new PlacePieceCommand(() -> Height.BOTTOM, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), 11);
 
-        // Start Position - Don't press
-        mapJoyButton(new SequentialCommandGroup(
-            new WristCommand(Wrist.maxDegrees-10, 45, 45, wristSubsystem, armSubsystem),
-            new ArmCommand(Arm.minDegrees+3, 45, 45, armSubsystem),
-            new InstantCommand(() -> gripperSubsystem.setPosition(0.5))
-        ), 10);
+        // // Start Position - Don't press
+        // mapJoyButton(new SequentialCommandGroup(
+        //     new GripperCommand(Gripper.closed, gripperSubsystem, armSubsystem),
+        //     new WristCommand(Wrist.maxDegrees-10, 45, 45, wristSubsystem, armSubsystem),
+        //     new ArmCommand(Arm.minDegrees+3, 45, 45, armSubsystem),
+        //     new InstantCommand(() -> gripperSubsystem.setPosition(0.5))
+        // ), 10);
 
         // Store
         mapBoardButton(new StoreCommand(armSubsystem, wristSubsystem, gripperSubsystem), 1);
 
         // Pickup Position
         mapBoardButton(new SequentialCommandGroup( 
-            new ArmWristCommand(new ArmCommand(0, 45, 45, armSubsystem), new WristCommand(75, 45, 45, wristSubsystem, armSubsystem), -0.5, 10, armSubsystem, wristSubsystem, gripperSubsystem),
+            new ArmWristCommand(new ArmCommand(0, 45, 45, armSubsystem), new WristCommand(90, 45, 45, wristSubsystem, armSubsystem), -0.5, 10, armSubsystem, wristSubsystem, gripperSubsystem),
             new GripperCommand(Gripper.open, gripperSubsystem, armSubsystem)
         ), 2);
 
@@ -165,11 +166,7 @@ public class RobotContainer {
 
         // Stop Everything
         mapBoardButton(Commands.runOnce(this::stopEverything), 5);
-        */ 
-    }
-
-    public void teleopInit() {
-        gripperSubsystem.getCalibrateSequence();
+        */
     }
 
     private Command autoScoreSequence() {
@@ -178,7 +175,7 @@ public class RobotContainer {
         double wrist = ConeOnPoleCommand.wristHigh;
         double scale = 1;
         return new SequentialCommandGroup(
-            gripperSubsystem.getCalibrateSequence(Gripper.onLimit + autoGripperCal, 0.2),
+            gripperSubsystem.getCalibrateSequence(Gripper.onLimit + autoGripperCal, 0.3),
             wristSubsystem.getCalibrateSequence(gripperSubsystem),
             armSubsystem.getCalibrateSequence(wristSubsystem, gripperSubsystem),
             new ParallelCommandGroup(
@@ -190,6 +187,7 @@ public class RobotContainer {
                 new ArmWristCommand(new ArmCommand(arm, 120*scale, 70*scale, armSubsystem), new WristCommand(wrist, 130*scale, 130*scale, wristSubsystem, armSubsystem), 10, -15, armSubsystem, wristSubsystem, gripperSubsystem)
             ),
             new GripperCommand(Gripper.open, gripperSubsystem, armSubsystem),
+            new WaitCommand(0.5),
             new ParallelCommandGroup( // going down
                 new AutoDriveCommand(-distance, 3*scale, 2*scale, driveSubsystem),
                 new GripperCommand(Gripper.onLimit, gripperSubsystem, armSubsystem),
@@ -201,6 +199,7 @@ public class RobotContainer {
                     )
                 )
             )
+            // gripperSubsystem.getCalibrateSequence()
         );
     }
 
@@ -209,10 +208,7 @@ public class RobotContainer {
      */
     public Command getAutoCommand() {
         return new SequentialCommandGroup(
-
-            new AutoDriveCommand(2, 1, 0.25, driveSubsystem)
-
-            // autoScoreSequence()
+            autoScoreSequence()
             // new BalanceCommand(true, driveSubsystem, pigeon),
             // new InstantCommand(driveSubsystem::holdPosition, driveSubsystem),
             // new WaitUntilCommand(() -> { // wait until delta has stopped changing and things have calmed down
@@ -233,7 +229,7 @@ public class RobotContainer {
     // public Command getAltAutoCommand() {
     //     return new SequentialCommandGroup(
     //         autoScoreSequence(),
-    //         new AutoDriveCommand(-Units.inchesToMeters(152), 1, 0.25, driveSubsystem) 
+    //         new AutoDriveCommand(-Units.inchesToMeters(152), 1.5, 0.5, driveSubsystem) 
     //     );
     // }
 

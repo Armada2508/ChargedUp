@@ -19,9 +19,9 @@ public class Constants {
         public static final int RFID = 1;
         public static final int LID = 2;
         public static final int LFID = 3;
-        public static final double speedAdjustment = 0.65; // For Fredy
+        public static final double speedAdjustment = 0.75; // For Fredy
         public static final double turnAdjustment = 0.5;
-        public static final double trimAdjustment = 0.15;
+        public static final double trimAdjustment = .23;
         public static final double joystickDeadband = 0.07;
         public static final double slewRate = 1.5; // This is what helps you not stop abruptly, higher value = stop faster
         public static final double slowSpeed = 0.2;
@@ -123,7 +123,7 @@ public class Constants {
         public static final int motorID = 7;
         public static final int encoderUnitsPerRev = 2048;
         public static final double gearboxRatio = 100;
-        public static final double driverPully = 33;
+        public static final double driverPully = 34;
         public static final double drivenPulley = 46;
         public static final double movementRatio = (drivenPulley/driverPully) * gearboxRatio;
 
