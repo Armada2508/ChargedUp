@@ -105,6 +105,14 @@ public class DriveSubsystem extends SubsystemBase {
         talonFXR.configMotionAcceleration(fromVelocity(acceleration));
     }
 
+    public void holdPosition() {
+        talonFXL.selectProfileSlot(Drive.motionMagicSlot, 0);
+        talonFXR.selectProfileSlot(Drive.motionMagicSlot, 0);
+        configMotionMagic(0.25, 0.25);
+        talonFXL.set(TalonFXControlMode.MotionMagic, talonFXL.getSelectedSensorPosition());
+        talonFXR.set(TalonFXControlMode.MotionMagic, talonFXR.getSelectedSensorPosition());
+    }
+
     public void calibrate(double pos) {
         talonFXL.setSelectedSensorPosition(pos);
         talonFXR.setSelectedSensorPosition(pos);

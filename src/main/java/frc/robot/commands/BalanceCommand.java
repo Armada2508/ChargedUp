@@ -42,7 +42,6 @@ public class BalanceCommand extends CommandBase {
     @Override
     public void end(boolean interrupted) {
         System.out.println("Stopped Balancing.");
-        driveSubsystem.stop();
     }
 
     @Override

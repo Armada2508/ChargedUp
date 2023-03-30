@@ -28,14 +28,14 @@ public class WristSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-       // Velocity Check
-       if (Math.abs(toAngle(talonFX.getSelectedSensorVelocity())) * 10 > Wrist.maxVelocity) {
-        System.out.println("Wrist: HOLY POOP SLOW DOWN");
-        if (this.getCurrentCommand() != null) {
-            this.getCurrentCommand().cancel();
-        }
-        talonFX.neutralOutput(); 
-    }
+    //    // Velocity Check
+    //     if (Math.abs(toAngle(talonFX.getSelectedSensorVelocity())) * 10 > Wrist.maxVelocity) {
+    //     System.out.println("Wrist: HOLY POOP SLOW DOWN");
+    //     if (this.getCurrentCommand() != null) {
+    //         this.getCurrentCommand().cancel();
+    //     }
+    //     talonFX.neutralOutput(); 
+    //     }
     }
 
     private void configureMotor(TalonFX talon) {

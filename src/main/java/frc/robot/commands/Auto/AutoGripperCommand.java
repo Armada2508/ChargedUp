@@ -41,9 +41,10 @@ public class AutoGripperCommand extends CommandBase {
 
     @Override
     public void execute() {
-        System.out.println("Cone: " + seeingCone + " Velocity: " + driveSubsystem.getLeftVelocity() + " TOF: " + tof.getRange()/10 + " DetectionFailures: " + detectionFailures);
+        // System.out.println("Cone: " + seeingCone + " Velocity: " + driveSubsystem.getLeftVelocity() + " TOF: " + tof.getRange()/10 + " DetectionFailures: " + detectionFailures);
         if (gripperSubsystem.isCalibrated()) {
             if (!seeingCone && Math.abs(driveSubsystem.getLeftVelocity()) < minVelocity && Math.abs(driveSubsystem.getRightVelocity()) < minVelocity && tof.isRangeValid() && (tof.getRange()/10) < minDistance) {
+                System.out.println("Saw Cone.");
                 new SequentialCommandGroup( // gripper close
                     new GripperCommand(Gripper.grabCone, gripperSubsystem, armSubsystem),
                     new WristCommand(Wrist.maxDegrees, 45, 45, wristSubsystem, armSubsystem)

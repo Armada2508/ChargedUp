@@ -36,13 +36,13 @@ public class ArmSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         // Velocity Check
-        if (Math.abs(toAngle(talonFX.getSelectedSensorVelocity())) * 10 > Arm.maxVelocity) {
-            System.out.println("Arm: HOLY POOP SLOW DOWN");
-            if (this.getCurrentCommand() != null) {
-                this.getCurrentCommand().cancel();
-            }
-            talonFX.neutralOutput(); 
-        } 
+        // if (Math.abs(toAngle(talonFX.getSelectedSensorVelocity())) * 10 > Arm.maxVelocity) {
+        //     System.out.println("Arm: HOLY POOP SLOW DOWN");
+        //     if (this.getCurrentCommand() != null) {
+        //         this.getCurrentCommand().cancel();
+        //     }
+        //     talonFX.neutralOutput(); 
+        // } 
     } 
 
     private void configureMotor(TalonFX talon) {
