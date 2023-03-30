@@ -12,14 +12,17 @@ import frc.robot.subsystems.WristSubsystem;
 
 public class ConeOnPoleCommand extends SequentialCommandGroup {
 
+    public static final int armHigh = 105;
+    public static final int wristHigh = 25;
+
     public ConeOnPoleCommand(Height height, ArmSubsystem armSubsystem, WristSubsystem wristSubsystem, GripperSubsystem gripperSubsystem) {
         double arm = 0, wrist = Wrist.maxDegrees;
         if (height == Height.MID) {
             arm = 78; 
             wrist = 45; 
         } else {
-            arm = 100;
-            wrist = 25;
+            arm = armHigh;
+            wrist = wristHigh;
         }
         addCommands(
             new ArmWristCommand(new ArmCommand(arm, 45, 45, armSubsystem), new WristCommand(wrist, 130, 130, wristSubsystem, armSubsystem), 30, -15, armSubsystem, wristSubsystem, gripperSubsystem)

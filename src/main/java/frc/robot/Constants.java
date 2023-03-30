@@ -137,7 +137,7 @@ public class Constants {
         public static final double maxVelocity = 90; // deg/sec
 
         public static final int minDegrees = -90; // Parallel with the arm is 0.
-        public static final int maxDegrees = 90;
+        public static final int maxDegrees = 125;
 
         // IK
         public static final double jointLengthInches = 13;

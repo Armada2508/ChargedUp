@@ -144,13 +144,13 @@ public class GripperSubsystem extends SubsystemBase {
 
     private void startCalibrate() {
         System.out.println("Started Gripper Calibration.");
-        desiredPosition = Gripper.onLimit;
-        limiter.reset(Gripper.onLimit);
         calibrated = false;
         talonFX.neutralOutput();
     }
 
-    private void endCalibrate() {
+    private void endCalibrate(double pos) {
+        desiredPosition = pos;
+        limiter.reset(pos);
         calibrated = true;
         System.out.println("Ended Gripper Calibration.");
     }
@@ -167,7 +167,7 @@ public class GripperSubsystem extends SubsystemBase {
                 new WaitUntilCommand(() -> !pollLimitSwitch())
             ), new InstantCommand(), this::pollLimitSwitch),
             calibrateGripper(zeroPos),
-            new InstantCommand(this::endCalibrate, this)
+            new InstantCommand(() -> endCalibrate(zeroPos), this)
         ).withName("GripperCalibrationSequence");
     }
 
