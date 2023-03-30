@@ -156,14 +156,14 @@ public class GripperSubsystem extends SubsystemBase {
     }
 
     public Command getCalibrateSequence() {
-        return getCalibrateSequence(Gripper.onLimit);
+        return getCalibrateSequence(Gripper.onLimit, 0.1);
     }
 
-    public Command getCalibrateSequence(double zeroPos) {
+    public Command getCalibrateSequence(double zeroPos, double power) {
         return new SequentialCommandGroup(
             new InstantCommand(this::startCalibrate, this),
             new ConditionalCommand(new SequentialCommandGroup(
-                new InstantCommand(() -> setPower(-0.1)),
+                new InstantCommand(() -> setPower(-Math.abs(power))),
                 new WaitUntilCommand(() -> !pollLimitSwitch())
             ), new InstantCommand(), this::pollLimitSwitch),
             calibrateGripper(zeroPos),

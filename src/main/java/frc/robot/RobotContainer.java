@@ -7,12 +7,10 @@ import com.ctre.phoenix.sensors.PigeonIMU;
 import com.playingwithfusion.TimeOfFlight;
 
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -28,8 +26,6 @@ import frc.robot.commands.arm.GripperCommand;
 import frc.robot.commands.arm.WristCommand;
 import frc.robot.commands.auto.AutoGripperCommand;
 import frc.robot.commands.auto.ConeOnPoleCommand;
-import frc.robot.commands.auto.FinishScoreCommand;
-import frc.robot.commands.auto.StoreCommand;
 import frc.robot.commands.driving.AutoDriveCommand;
 import frc.robot.commands.driving.ButterySmoothDriveCommand;
 import frc.robot.lib.motion.FollowTrajectory;
@@ -52,7 +48,6 @@ public class RobotContainer {
     private SubsystemBase[] subsystems;
     private final PigeonIMU pigeon;
     private final TimeOfFlight tof;
-    // TODO: adjust auto's gripper calibrate position
     private final double autoGripperCal = 0.8;
     private double lastPitch = 0;
 
@@ -120,10 +115,12 @@ public class RobotContainer {
 
     //! Button 12 joystick is used for slow speed.
     private void configureButtons() {
+        /*
+        // mapJoyButton(new ConeTurnCommand(driveSubsystem, visionSubsystem), 10);
         // Close Gripper and Carry Cone
         mapJoyButton(new SequentialCommandGroup( 
-            new GripperCommand(Gripper.grabCone, gripperSubsystem, armSubsystem)
-            // new WristCommand(Wrist.maxDegrees, 45, 45, wristSubsystem, armSubsystem)
+            new GripperCommand(Gripper.grabCone, gripperSubsystem, armSubsystem),
+            new WristCommand(Wrist.maxDegrees, 45, 45, wristSubsystem, armSubsystem)
         ), 1);
 
         // Open Gripper
@@ -140,6 +137,7 @@ public class RobotContainer {
         // mapJoyButton(new PlacePieceCommand(() -> Height.MID, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), 9);
         // mapJoyButton(new PlacePieceCommand(() -> Height.BOTTOM, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), 11);
 
+        // Start Position - Don't press
         mapJoyButton(new SequentialCommandGroup(
             new WristCommand(Wrist.maxDegrees-10, 45, 45, wristSubsystem, armSubsystem),
             new ArmCommand(Arm.minDegrees+3, 45, 45, armSubsystem),
@@ -166,7 +164,8 @@ public class RobotContainer {
         mapBoardButton(new FinishScoreCommand(Units.inchesToMeters(18), driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), 4);
 
         // Stop Everything
-        mapBoardButton(Commands.runOnce(this::stopEverything), 5); 
+        mapBoardButton(Commands.runOnce(this::stopEverything), 5);
+        */ 
     }
 
     public void teleopInit() {
@@ -177,27 +176,28 @@ public class RobotContainer {
         double distance = 0.6;
         double arm = ConeOnPoleCommand.armHigh;
         double wrist = ConeOnPoleCommand.wristHigh;
+        double scale = 1;
         return new SequentialCommandGroup(
-            gripperSubsystem.getCalibrateSequence(Gripper.onLimit + autoGripperCal),
+            gripperSubsystem.getCalibrateSequence(Gripper.onLimit + autoGripperCal, 0.2),
             wristSubsystem.getCalibrateSequence(gripperSubsystem),
             armSubsystem.getCalibrateSequence(wristSubsystem, gripperSubsystem),
             new ParallelCommandGroup(
                 new SequentialCommandGroup(
-                    new AutoDriveCommand(-distance, 2, 2, driveSubsystem), // go back to raise arm 
+                    new AutoDriveCommand(-distance, 2*scale, 2*scale, driveSubsystem), // go back to raise arm 
                     new WaitCommand(1),
-                    new AutoDriveCommand(distance, 2, 2, driveSubsystem) // go forward to score
+                    new AutoDriveCommand(distance, 2*scale, 1.5*scale, driveSubsystem) // go forward to score
                 ),
-                new ArmWristCommand(new ArmCommand(arm, 120, 70, armSubsystem), new WristCommand(wrist, 130, 130, wristSubsystem, armSubsystem), 10, -15, armSubsystem, wristSubsystem, gripperSubsystem)
+                new ArmWristCommand(new ArmCommand(arm, 120*scale, 70*scale, armSubsystem), new WristCommand(wrist, 130*scale, 130*scale, wristSubsystem, armSubsystem), 10, -15, armSubsystem, wristSubsystem, gripperSubsystem)
             ),
             new GripperCommand(Gripper.open, gripperSubsystem, armSubsystem),
             new ParallelCommandGroup( // going down
-                new AutoDriveCommand(-distance, 3, 2, driveSubsystem),
+                new AutoDriveCommand(-distance, 3*scale, 2*scale, driveSubsystem),
                 new GripperCommand(Gripper.onLimit, gripperSubsystem, armSubsystem),
                 new SequentialCommandGroup(
                     new WaitCommand(0.5),
                     new ParallelCommandGroup(
-                        new ArmCommand(Arm.minDegrees, 180, 120, armSubsystem), 
-                        new WristCommand(Wrist.maxDegrees, 150, 150, wristSubsystem, armSubsystem)
+                        new ArmCommand(Arm.minDegrees, 180*scale, 120*scale, armSubsystem), 
+                        new WristCommand(Wrist.maxDegrees, 150*scale, 150*scale, wristSubsystem, armSubsystem)
                     )
                 )
             )
@@ -209,7 +209,10 @@ public class RobotContainer {
      */
     public Command getAutoCommand() {
         return new SequentialCommandGroup(
-            autoScoreSequence()
+
+            new AutoDriveCommand(2, 1, 0.25, driveSubsystem)
+
+            // autoScoreSequence()
             // new BalanceCommand(true, driveSubsystem, pigeon),
             // new InstantCommand(driveSubsystem::holdPosition, driveSubsystem),
             // new WaitUntilCommand(() -> { // wait until delta has stopped changing and things have calmed down
@@ -227,11 +230,11 @@ public class RobotContainer {
     /**
      * Calibrates, scores cone on high pole and then taxis. For side placement.
      */
-    public Command getAltAutoCommand() {
-        return new SequentialCommandGroup(
-            autoScoreSequence(),
-            new AutoDriveCommand(-Units.inchesToMeters(152), 1, 0.25, driveSubsystem) 
-        );
-    }
+    // public Command getAltAutoCommand() {
+    //     return new SequentialCommandGroup(
+    //         autoScoreSequence(),
+    //         new AutoDriveCommand(-Units.inchesToMeters(152), 1, 0.25, driveSubsystem) 
+    //     );
+    // }
 
 }

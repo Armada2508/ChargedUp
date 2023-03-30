@@ -36,7 +36,7 @@ public class ConeTurnCommand extends CommandBase {
     public void execute() {
         if (visionSubsystem.hasTarget(Target.CONE)) {
             double speed = controller.calculate(visionSubsystem.getTargetX(Target.CONE));
-            System.out.println(speed);
+            System.out.println("Speed: " + speed);
             speed = MathUtil.clamp(speed, -Drive.maxTurnSpeed, Drive.maxTurnSpeed);
             driveSubsystem.setPower(-speed, speed);
         }

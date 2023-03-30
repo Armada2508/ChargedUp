@@ -19,7 +19,7 @@ public class Constants {
         public static final int RFID = 1;
         public static final int LID = 2;
         public static final int LFID = 3;
-        public static final double speedAdjustment = 0.4; // For Fredy
+        public static final double speedAdjustment = 0.65; // For Fredy
         public static final double turnAdjustment = 0.5;
         public static final double trimAdjustment = 0.15;
         public static final double joystickDeadband = 0.07;

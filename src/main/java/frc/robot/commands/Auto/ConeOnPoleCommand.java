@@ -12,8 +12,8 @@ import frc.robot.subsystems.WristSubsystem;
 
 public class ConeOnPoleCommand extends SequentialCommandGroup {
 
-    public static final int armHigh = 105;
-    public static final int wristHigh = 25;
+    public static final int armHigh = 102;
+    public static final int wristHigh = 45;
 
     public ConeOnPoleCommand(Height height, ArmSubsystem armSubsystem, WristSubsystem wristSubsystem, GripperSubsystem gripperSubsystem) {
         double arm = 0, wrist = Wrist.maxDegrees;
