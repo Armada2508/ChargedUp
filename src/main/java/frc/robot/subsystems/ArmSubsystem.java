@@ -28,7 +28,8 @@ public class ArmSubsystem extends SubsystemBase {
 
     public ArmSubsystem() {
         configureMotor(talonFX);
-        configureMotor(talonFXFollow);
+        talonFXFollow.configFactoryDefault();
+        talonFXFollow.setNeutralMode(NeutralMode.Brake);
         talonFXFollow.setInverted(true);
         talonFXFollow.follow(talonFX);
     }
@@ -43,6 +44,7 @@ public class ArmSubsystem extends SubsystemBase {
         //     }
         //     talonFX.neutralOutput(); 
         // } 
+        System.out.println("Arm Hard Limit: " + pollLimitSwitch());
     } 
 
     private void configureMotor(TalonFX talon) {
@@ -59,7 +61,6 @@ public class ArmSubsystem extends SubsystemBase {
         talon.configNominalOutputForward(Arm.minOutput);
         talon.configNominalOutputReverse(Arm.minOutput);
         talon.configForwardSoftLimitThreshold(fromAngle(Arm.maxDegrees - Arm.limitMargin), Constants.timeoutMs);
-        talon.configReverseSoftLimitThreshold(fromAngle(Arm.minDegrees + Arm.limitMargin), Constants.timeoutMs);
         talon.configReverseLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyClosed);
     }
 
@@ -141,9 +142,7 @@ public class ArmSubsystem extends SubsystemBase {
 
     private void configSoftwareLimits(boolean enable) {
         talonFX.configForwardSoftLimitEnable(enable, Constants.timeoutMs);
-        talonFX.configReverseSoftLimitEnable(enable, Constants.timeoutMs);
         talonFXFollow.configForwardSoftLimitEnable(enable, Constants.timeoutMs);
-        talonFXFollow.configReverseSoftLimitEnable(enable, Constants.timeoutMs);
     }
 
     private void startCalibrate() {

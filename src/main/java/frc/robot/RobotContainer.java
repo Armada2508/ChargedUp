@@ -7,10 +7,12 @@ import com.ctre.phoenix.sensors.PigeonIMU;
 import com.playingwithfusion.TimeOfFlight;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -26,6 +28,10 @@ import frc.robot.commands.arm.GripperCommand;
 import frc.robot.commands.arm.WristCommand;
 import frc.robot.commands.auto.AutoGripperCommand;
 import frc.robot.commands.auto.ConeOnPoleCommand;
+import frc.robot.commands.auto.FinishScoreCommand;
+import frc.robot.commands.auto.PlacePieceCommand;
+import frc.robot.commands.auto.PlacePieceCommand.Height;
+import frc.robot.commands.auto.StoreCommand;
 import frc.robot.commands.driving.AutoDriveCommand;
 import frc.robot.commands.driving.ButterySmoothDriveCommand;
 import frc.robot.lib.motion.FollowTrajectory;
@@ -48,7 +54,7 @@ public class RobotContainer {
     private SubsystemBase[] subsystems;
     private final PigeonIMU pigeon;
     private final TimeOfFlight tof;
-    private final double autoGripperCal = 0.8;
+    private final double autoGripperCal = 0.4; // 0.8
     private double lastPitch = 0;
 
     public RobotContainer(PigeonIMU pigeon, TimeOfFlight tof) {
@@ -115,8 +121,6 @@ public class RobotContainer {
 
     //! Button 12 joystick is used for slow speed.
     private void configureButtons() {
-        /*
-        // mapJoyButton(new ConeTurnCommand(driveSubsystem, visionSubsystem), 10);
         // Close Gripper and Carry Cone
         mapJoyButton(new SequentialCommandGroup( 
             new GripperCommand(Gripper.grabCone, gripperSubsystem, armSubsystem),
@@ -137,13 +141,13 @@ public class RobotContainer {
         mapJoyButton(new PlacePieceCommand(() -> Height.MID, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), 9);
         mapJoyButton(new PlacePieceCommand(() -> Height.BOTTOM, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), 11);
 
-        // // Start Position - Don't press
-        // mapJoyButton(new SequentialCommandGroup(
-        //     new GripperCommand(Gripper.closed, gripperSubsystem, armSubsystem),
-        //     new WristCommand(Wrist.maxDegrees-10, 45, 45, wristSubsystem, armSubsystem),
-        //     new ArmCommand(Arm.minDegrees+3, 45, 45, armSubsystem),
-        //     new InstantCommand(() -> gripperSubsystem.setPosition(0.5))
-        // ), 10);
+        // Start Position - Don't press
+        mapJoyButton(new SequentialCommandGroup(
+            new GripperCommand(Gripper.closed, gripperSubsystem, armSubsystem),
+            new WristCommand(Wrist.maxDegrees-10, 45, 45, wristSubsystem, armSubsystem),
+            new ArmCommand(Arm.minDegrees+3, 45, 45, armSubsystem),
+            new InstantCommand(() -> gripperSubsystem.setPosition(0.5))
+        ), 10);
 
         // Store
         mapBoardButton(new StoreCommand(armSubsystem, wristSubsystem, gripperSubsystem), 1);
@@ -166,7 +170,6 @@ public class RobotContainer {
 
         // Stop Everything
         mapBoardButton(Commands.runOnce(this::stopEverything), 5);
-        */
     }
 
     private Command autoScoreSequence() {

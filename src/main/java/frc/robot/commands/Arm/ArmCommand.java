@@ -54,6 +54,7 @@ public class ArmCommand extends CommandBase {
     @Override
     public boolean isFinished() {
         double currentDegrees = armSubsystem.getPosition();
+        System.out.println("Current: " + currentDegrees + ", Target: " + armSubsystem.getTarget());
         return (currentDegrees < armSubsystem.getTarget()+degreesDeadband && currentDegrees > armSubsystem.getTarget()-degreesDeadband);
     }
 
