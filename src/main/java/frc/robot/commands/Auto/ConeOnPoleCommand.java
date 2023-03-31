@@ -25,7 +25,7 @@ public class ConeOnPoleCommand extends SequentialCommandGroup {
             wrist = wristHigh;
         }
         addCommands(
-            new ArmWristCommand(new ArmCommand(arm, 45, 45, armSubsystem), new WristCommand(wrist, 130, 130, wristSubsystem, armSubsystem), 30, -15, armSubsystem, wristSubsystem, gripperSubsystem)
+            new ArmWristCommand(new ArmCommand(arm, 180, 120, armSubsystem), new WristCommand(wrist, 130, 130, wristSubsystem, armSubsystem), 30, -15, armSubsystem, wristSubsystem, gripperSubsystem)
         );
     }
 

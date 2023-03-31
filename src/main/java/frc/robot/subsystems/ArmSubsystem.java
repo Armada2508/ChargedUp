@@ -35,7 +35,7 @@ public class ArmSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        System.out.println("Arm Hard Limit: " + pollLimitSwitch() + ", Arm Control Mode: " + talonFX.getControlMode() + ", Follower Control Mode: " + talonFXFollow.getControlMode() + ", Follwoer Limt? " + talonFXFollow.isFwdLimitSwitchClosed());
+        // System.out.println("Arm Hard Limit: " + pollLimitSwitch() + ", Arm Control Mode: " + talonFX.getControlMode() + ", Follower Control Mode: " + talonFXFollow.getControlMode() + ", Follwoer Limt? " + talonFXFollow.isFwdLimitSwitchClosed());
     } 
 
     private void configureMotor(TalonFX talon) {

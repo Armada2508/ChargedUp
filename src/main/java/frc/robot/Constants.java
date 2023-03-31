@@ -70,10 +70,10 @@ public class Constants {
         // Offsets, gathered at start of match.
         public static double pitchOffset = 0;
         // Speeds
-        public static final double pitchSpeed = 0.16;
+        public static final double pitchSpeed = 0.13;
         // Pitch angle to start driving at
         public static final double stationAngle = 13;
-        public static final double angleToStop = 9;
+        public static final double angleToStop = 10;
         // Pitch Delta minimum to start driving backwards
         public static final double minDelta = 0.25;
     }
@@ -161,7 +161,7 @@ public class Constants {
         public static final double armSensorMultiplier = .75;
         public static final double wristSensorMultiplier = -.56;
 
-        public static final double open = 0;
+        public static final double open = 0-0.2;
         public static final double onLimit = 1;
 
         // Grab Constants

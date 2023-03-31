@@ -17,7 +17,7 @@ public class StoreCommand extends SequentialCommandGroup {
     public StoreCommand(ArmSubsystem armSubsystem, WristSubsystem wristSubsystem, GripperSubsystem gripperSubsystem) {
         addCommands(
             new GripperCommand(Gripper.onLimit, gripperSubsystem, armSubsystem),
-            new ArmWristCommand(new ArmCommand(Arm.minDegrees, 45, 45, armSubsystem), new WristCommand(Wrist.maxDegrees, 45, 45, wristSubsystem, armSubsystem), -1, 90, armSubsystem, wristSubsystem, gripperSubsystem)
+            new ArmWristCommand(new ArmCommand(Arm.minDegrees, 90, 60, armSubsystem), new WristCommand(Wrist.maxDegrees, 120, 100, wristSubsystem, armSubsystem), -1, 100, armSubsystem, wristSubsystem, gripperSubsystem)
         );
     }
 

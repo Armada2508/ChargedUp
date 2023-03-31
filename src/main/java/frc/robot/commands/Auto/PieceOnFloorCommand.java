@@ -1,6 +1,5 @@
 package frc.robot.commands.auto;
 
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.Constants.Wrist;
 import frc.robot.commands.arm.ArmCommand;
@@ -15,8 +14,7 @@ public class PieceOnFloorCommand extends SequentialCommandGroup {
 
     public PieceOnFloorCommand(DriveSubsystem driveSubsystem, ArmSubsystem armSubsystem, WristSubsystem wristSubsystem, GripperSubsystem gripperSubsystem) {
         addCommands(
-            new ArmWristCommand(new ArmCommand(10, 45, 45, armSubsystem), new WristCommand(Wrist.maxDegrees, 45, 45, wristSubsystem, armSubsystem), -0.5, 10, armSubsystem, wristSubsystem, gripperSubsystem),
-            new FinishScoreCommand(Units.inchesToMeters(12), driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem)
+            new ArmWristCommand(new ArmCommand(10, 100, 75, armSubsystem), new WristCommand(Wrist.maxDegrees, 130, 130, wristSubsystem, armSubsystem), -0.5, 30, armSubsystem, wristSubsystem, gripperSubsystem)
         );   
        
     }

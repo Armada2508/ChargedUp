@@ -85,7 +85,7 @@ public class VisionSubsystem extends SubsystemBase {
         }
         if (hasTarget(Target.CONE)) {
             if (i % 2 == 0) {
-                System.out.println("X: " + getTargetX(Target.CONE));
+                // System.out.println("X: " + getTargetX(Target.CONE));
             }
         }
         if (hasTarget(Target.APRILTAG)) {

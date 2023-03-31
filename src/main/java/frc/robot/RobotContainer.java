@@ -18,11 +18,14 @@ import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Constants.Arm;
+import frc.robot.Constants.Balance;
 import frc.robot.Constants.Drive;
 import frc.robot.Constants.Gripper;
 import frc.robot.Constants.Wrist;
+import frc.robot.commands.BalanceCommand;
 import frc.robot.commands.arm.ArmCommand;
 import frc.robot.commands.arm.ArmWristCommand;
 import frc.robot.commands.arm.GripperCommand;
@@ -55,7 +58,7 @@ public class RobotContainer {
     private SubsystemBase[] subsystems;
     private final PigeonIMU pigeon;
     private final TimeOfFlight tof;
-    private final double autoGripperCal = 0.5; // 0.5
+    private final double autoGripperCal = 0.8; // 0.8
     private double lastPitch = 0;
 
     public RobotContainer(PigeonIMU pigeon, TimeOfFlight tof) {
@@ -140,6 +143,16 @@ public class RobotContainer {
         // Place Positions
         mapJoyButton(new PlacePieceCommand(() -> Height.HIGH, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), 7);
         mapJoyButton(new PlacePieceCommand(() -> Height.MID, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), 9);
+        mapJoyButton(new ParallelCommandGroup(
+            new SequentialCommandGroup(
+                new WaitUntilCommand(() -> armSubsystem.getPosition() > 30),
+                new GripperCommand(Gripper.open, gripperSubsystem, armSubsystem)
+            ),
+            new ArmWristCommand(
+                new ArmCommand(94, 45, 45, armSubsystem), 
+                new WristCommand(20, 45, 45, wristSubsystem, armSubsystem), 
+                30, -15, armSubsystem, wristSubsystem, gripperSubsystem)
+        ), 10);
         mapJoyButton(new PlacePieceCommand(() -> Height.BOTTOM, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), 11);
 
         // Start Position - Don't press
@@ -147,15 +160,15 @@ public class RobotContainer {
             new GripperCommand(Gripper.onLimit, gripperSubsystem, armSubsystem),
             new WristCommand(Wrist.maxDegrees-10, 45, 45, wristSubsystem, armSubsystem),
             new ArmCommand(Arm.minDegrees+3, 45, 45, armSubsystem),
-            new InstantCommand(() -> gripperSubsystem.setPosition(0.5))
-        ), 10);
+            new InstantCommand(() -> gripperSubsystem.setPosition(-0.3))
+        ), 8);
 
         // Store
         mapBoardButton(new StoreCommand(armSubsystem, wristSubsystem, gripperSubsystem), 1);
 
         // Pickup Position
         mapBoardButton(new SequentialCommandGroup( 
-            new ArmWristCommand(new ArmCommand(0, 45, 45, armSubsystem), new WristCommand(100, 45, 45, wristSubsystem, armSubsystem), -0.5, 10, armSubsystem, wristSubsystem, gripperSubsystem),
+            new ArmWristCommand(new ArmCommand(0, 45, 45, armSubsystem), new WristCommand(92, 45, 45, wristSubsystem, armSubsystem), -0.5, 10, armSubsystem, wristSubsystem, gripperSubsystem),
             new GripperCommand(Gripper.open, gripperSubsystem, armSubsystem)
         ), 2);
 
@@ -171,6 +184,10 @@ public class RobotContainer {
 
         // Stop Everything
         mapBoardButton(Commands.runOnce(this::stopEverything), 5);
+    }
+
+    public void teleopInit() {
+        gripperSubsystem.getCalibrateSequence().schedule();
     }
 
     private Command autoScoreSequence() {
@@ -214,29 +231,30 @@ public class RobotContainer {
      */
     public Command getAutoCommand() {
         return new SequentialCommandGroup(
-            autoScoreSequence()
-            // new BalanceCommand(false, driveSubsystem, pigeon),
-            // new InstantCommand(driveSubsystem::holdPosition, driveSubsystem),
-            // new WaitUntilCommand(() -> { // wait until delta has stopped changing and things have calmed down
-            //     double pitch = pigeon.getPitch();
-            //     boolean val = Math.abs(pitch-lastPitch) <= Balance.minDelta;
-            //     lastPitch = pitch;
-            //     return val;
-            // }),
-            // new WaitCommand(1),
-            // new AutoDriveCommand(-0.39, 0.5, 0.2, driveSubsystem),
-            // new InstantCommand(driveSubsystem::holdPosition, driveSubsystem)
+            // new AutoDriveCommand(2, 1.5, 0.5, driveSubsystem)
+            autoScoreSequence(),
+            new BalanceCommand(true, driveSubsystem, pigeon),
+            new InstantCommand(driveSubsystem::holdPosition, driveSubsystem),
+            new WaitUntilCommand(() -> { // wait until delta has stopped changing and things have calmed down
+                double pitch = pigeon.getPitch();
+                boolean val = Math.abs(pitch-lastPitch) <= Balance.minDelta;
+                lastPitch = pitch;
+                return val;
+            }),
+            new WaitCommand(1),
+            new AutoDriveCommand(0.224, 0.5, 0.2, driveSubsystem),
+            new InstantCommand(driveSubsystem::holdPosition, driveSubsystem)
         );
     }
 
     /**
      * Calibrates, scores cone on high pole and then taxis. For side placement.
      */
-    // public Command getAltAutoCommand() {
-    //     return new SequentialCommandGroup(
-    //         autoScoreSequence(),
-    //         new AutoDriveCommand(-Units.inchesToMeters(152), 1.5, 0.5, driveSubsystem) 
-    //     );
-    // }
+    public Command getAltAutoCommand() {
+        return new SequentialCommandGroup(
+            autoScoreSequence(),
+            new AutoDriveCommand(-Units.inchesToMeters(152), 1.5, 0.5, driveSubsystem) 
+        );
+    }
 
 }
