@@ -21,11 +21,9 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Constants.Arm;
-import frc.robot.Constants.Balance;
 import frc.robot.Constants.Drive;
 import frc.robot.Constants.Gripper;
 import frc.robot.Constants.Wrist;
-import frc.robot.commands.BalanceCommand;
 import frc.robot.commands.arm.ArmCommand;
 import frc.robot.commands.arm.ArmWristCommand;
 import frc.robot.commands.arm.GripperCommand;
@@ -128,7 +126,7 @@ public class RobotContainer {
         // Close Gripper and Carry Cone
         mapJoyButton(new SequentialCommandGroup( 
             new GripperCommand(Gripper.grabCone, gripperSubsystem, armSubsystem),
-            new WristCommand(Wrist.maxDegrees, 45, 45, wristSubsystem, armSubsystem)
+            new WristCommand(Wrist.maxDegrees, 130, 130, wristSubsystem, armSubsystem)
         ), 1);
 
         // Open Gripper
@@ -149,8 +147,8 @@ public class RobotContainer {
                 new GripperCommand(Gripper.open, gripperSubsystem, armSubsystem)
             ),
             new ArmWristCommand(
-                new ArmCommand(94, 45, 45, armSubsystem), 
-                new WristCommand(20, 45, 45, wristSubsystem, armSubsystem), 
+                new ArmCommand(94, 100, 75, armSubsystem), 
+                new WristCommand(20, 130, 130, wristSubsystem, armSubsystem), 
                 30, -15, armSubsystem, wristSubsystem, gripperSubsystem)
         ), 10);
         mapJoyButton(new PlacePieceCommand(() -> Height.BOTTOM, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), 11);
@@ -232,18 +230,18 @@ public class RobotContainer {
     public Command getAutoCommand() {
         return new SequentialCommandGroup(
             // new AutoDriveCommand(2, 1.5, 0.5, driveSubsystem)
-            autoScoreSequence(),
-            new BalanceCommand(true, driveSubsystem, pigeon),
-            new InstantCommand(driveSubsystem::holdPosition, driveSubsystem),
-            new WaitUntilCommand(() -> { // wait until delta has stopped changing and things have calmed down
-                double pitch = pigeon.getPitch();
-                boolean val = Math.abs(pitch-lastPitch) <= Balance.minDelta;
-                lastPitch = pitch;
-                return val;
-            }),
-            new WaitCommand(1),
-            new AutoDriveCommand(0.224, 0.5, 0.2, driveSubsystem),
-            new InstantCommand(driveSubsystem::holdPosition, driveSubsystem)
+            autoScoreSequence()
+            // new BalanceCommand(true, driveSubsystem, pigeon),
+            // new InstantCommand(driveSubsystem::holdPosition, driveSubsystem),
+            // new WaitUntilCommand(() -> { // wait until delta has stopped changing and things have calmed down
+            //     double pitch = pigeon.getPitch();
+            //     boolean val = Math.abs(pitch-lastPitch) <= Balance.minDelta;
+            //     lastPitch = pitch;
+            //     return val;
+            // }),
+            // new WaitCommand(1),
+            // new AutoDriveCommand(0.224, 0.5, 0.2, driveSubsystem),
+            // new InstantCommand(driveSubsystem::holdPosition, driveSubsystem)
         );
     }
 
@@ -253,7 +251,7 @@ public class RobotContainer {
     public Command getAltAutoCommand() {
         return new SequentialCommandGroup(
             autoScoreSequence(),
-            new AutoDriveCommand(-Units.inchesToMeters(152), 1.5, 0.5, driveSubsystem) 
+            new AutoDriveCommand(-Units.inchesToMeters(120), 1.5, 0.5, driveSubsystem) 
         );
     }
 
