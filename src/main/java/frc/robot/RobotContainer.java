@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -54,7 +55,7 @@ public class RobotContainer {
     private SubsystemBase[] subsystems;
     private final PigeonIMU pigeon;
     private final TimeOfFlight tof;
-    private final double autoGripperCal = 0.4; // 0.8
+    private final double autoGripperCal = 0.5; // 0.5
     private double lastPitch = 0;
 
     public RobotContainer(PigeonIMU pigeon, TimeOfFlight tof) {
@@ -143,7 +144,7 @@ public class RobotContainer {
 
         // Start Position - Don't press
         mapJoyButton(new SequentialCommandGroup(
-            new GripperCommand(Gripper.closed, gripperSubsystem, armSubsystem),
+            new GripperCommand(Gripper.onLimit, gripperSubsystem, armSubsystem),
             new WristCommand(Wrist.maxDegrees-10, 45, 45, wristSubsystem, armSubsystem),
             new ArmCommand(Arm.minDegrees+3, 45, 45, armSubsystem),
             new InstantCommand(() -> gripperSubsystem.setPosition(0.5))
@@ -154,7 +155,7 @@ public class RobotContainer {
 
         // Pickup Position
         mapBoardButton(new SequentialCommandGroup( 
-            new ArmWristCommand(new ArmCommand(0, 45, 45, armSubsystem), new WristCommand(90, 45, 45, wristSubsystem, armSubsystem), -0.5, 10, armSubsystem, wristSubsystem, gripperSubsystem),
+            new ArmWristCommand(new ArmCommand(0, 45, 45, armSubsystem), new WristCommand(100, 45, 45, wristSubsystem, armSubsystem), -0.5, 10, armSubsystem, wristSubsystem, gripperSubsystem),
             new GripperCommand(Gripper.open, gripperSubsystem, armSubsystem)
         ), 2);
 
@@ -191,11 +192,13 @@ public class RobotContainer {
             ),
             new GripperCommand(Gripper.open, gripperSubsystem, armSubsystem),
             new WaitCommand(0.5),
+            new PrintCommand("Finished Opening Gripper to score"),
             new ParallelCommandGroup( // going down
                 new AutoDriveCommand(-distance, 3*scale, 2*scale, driveSubsystem),
                 new GripperCommand(Gripper.onLimit, gripperSubsystem, armSubsystem),
                 new SequentialCommandGroup(
                     new WaitCommand(0.5),
+                    new PrintCommand("Running Arm and Wrist down to store"),
                     new ParallelCommandGroup(
                         new ArmCommand(Arm.minDegrees, 180*scale, 120*scale, armSubsystem), 
                         new WristCommand(Wrist.maxDegrees, 150*scale, 150*scale, wristSubsystem, armSubsystem)
@@ -212,7 +215,7 @@ public class RobotContainer {
     public Command getAutoCommand() {
         return new SequentialCommandGroup(
             autoScoreSequence()
-            // new BalanceCommand(true, driveSubsystem, pigeon),
+            // new BalanceCommand(false, driveSubsystem, pigeon),
             // new InstantCommand(driveSubsystem::holdPosition, driveSubsystem),
             // new WaitUntilCommand(() -> { // wait until delta has stopped changing and things have calmed down
             //     double pitch = pigeon.getPitch();

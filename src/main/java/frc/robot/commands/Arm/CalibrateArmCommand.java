@@ -11,13 +11,11 @@ import frc.robot.subsystems.GripperSubsystem;
 public class CalibrateArmCommand extends CommandBase {
 
     private TalonFX talonFX;
-    private TalonFX follow;
     private ArmSubsystem armSubsystem;
     private GripperSubsystem gripperSubsystem;
 
-    public CalibrateArmCommand(TalonFX talonFX, TalonFX follow, ArmSubsystem armSubsystem, GripperSubsystem gripperSubsystem) {
+    public CalibrateArmCommand(TalonFX talonFX, ArmSubsystem armSubsystem, GripperSubsystem gripperSubsystem) {
         this.talonFX = talonFX;
-        this.follow = follow;
         this.armSubsystem = armSubsystem;
         this.gripperSubsystem = gripperSubsystem;
         addRequirements(armSubsystem);
@@ -39,7 +37,6 @@ public class CalibrateArmCommand extends CommandBase {
         armSubsystem.stop();
         gripperSubsystem.updateArmOffset(talonFX.getSelectedSensorPosition() - armSubsystem.fromAngle(calibrateAngle));
         talonFX.setSelectedSensorPosition(armSubsystem.fromAngle(calibrateAngle));
-        follow.setSelectedSensorPosition(armSubsystem.fromAngle(calibrateAngle));
     }
 
     @Override

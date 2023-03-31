@@ -58,8 +58,4 @@ public class ArmCommand extends CommandBase {
         return (currentDegrees < armSubsystem.getTarget()+degreesDeadband && currentDegrees > armSubsystem.getTarget()-degreesDeadband);
     }
 
-    public double getTarget() {
-        return targetDegrees.getAsDouble();
-    }
-    
 }

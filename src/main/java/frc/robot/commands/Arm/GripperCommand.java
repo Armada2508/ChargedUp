@@ -28,7 +28,7 @@ public class GripperCommand extends CommandBase {
     @Override
     public void initialize() {
         double pos = position.getAsDouble();
-        if (armSubsystem.insideFrame() && pos < Gripper.closed) {
+        if (armSubsystem.insideFrame() && pos < Gripper.onLimit) {
             cancel();
             return;
         } else {

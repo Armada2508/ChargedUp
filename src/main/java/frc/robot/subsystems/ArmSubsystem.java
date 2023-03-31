@@ -28,23 +28,14 @@ public class ArmSubsystem extends SubsystemBase {
 
     public ArmSubsystem() {
         configureMotor(talonFX);
-        talonFXFollow.configFactoryDefault();
-        talonFXFollow.setNeutralMode(NeutralMode.Brake);
+        configureMotor(talonFXFollow);
         talonFXFollow.setInverted(true);
         talonFXFollow.follow(talonFX);
     }
 
     @Override
     public void periodic() {
-        // Velocity Check
-        // if (Math.abs(toAngle(talonFX.getSelectedSensorVelocity())) * 10 > Arm.maxVelocity) {
-        //     System.out.println("Arm: HOLY POOP SLOW DOWN");
-        //     if (this.getCurrentCommand() != null) {
-        //         this.getCurrentCommand().cancel();
-        //     }
-        //     talonFX.neutralOutput(); 
-        // } 
-        System.out.println("Arm Hard Limit: " + pollLimitSwitch());
+        System.out.println("Arm Hard Limit: " + pollLimitSwitch() + ", Arm Control Mode: " + talonFX.getControlMode() + ", Follower Control Mode: " + talonFXFollow.getControlMode() + ", Follwoer Limt? " + talonFXFollow.isFwdLimitSwitchClosed());
     } 
 
     private void configureMotor(TalonFX talon) {
@@ -110,7 +101,6 @@ public class ArmSubsystem extends SubsystemBase {
      * @param acceleration in degrees/second/second
      */
     public void configMotionMagic(double velocity, double acceleration) {
-        talonFX.setIntegralAccumulator(0);
         talonFX.configMotionCruiseVelocity(fromVelocity(velocity));
         talonFX.configMotionAcceleration(fromVelocity(acceleration));
     }
@@ -142,7 +132,6 @@ public class ArmSubsystem extends SubsystemBase {
 
     private void configSoftwareLimits(boolean enable) {
         talonFX.configForwardSoftLimitEnable(enable, Constants.timeoutMs);
-        talonFXFollow.configForwardSoftLimitEnable(enable, Constants.timeoutMs);
     }
 
     private void startCalibrate() {
@@ -167,7 +156,7 @@ public class ArmSubsystem extends SubsystemBase {
                     new InstantCommand(() -> talonFX.set(TalonFXControlMode.PercentOutput, 0.10)),
                     new WaitCommand(waitTime)
                 ), new InstantCommand(), this::pollLimitSwitch),
-                new CalibrateArmCommand(talonFX, talonFXFollow, this, gripperSubsystem),
+                new CalibrateArmCommand(talonFX, this, gripperSubsystem),
                 new InstantCommand(this::endCalibrate, this)
         ), new InstantCommand(), wristSubsystem::pollLimitSwitch).withName("ArmCalibrationSequence");
     }

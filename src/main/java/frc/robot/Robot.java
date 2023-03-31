@@ -70,15 +70,12 @@ public class Robot extends TimedRobot {
 
   /** This function is called periodically during autonomous. */
   @Override
-  public void autonomousPeriodic() {
-    CommandScheduler.getInstance().run();
-  }
+  public void autonomousPeriodic() {}
 
   /** This function is called once when teleop is enabled. */
   @Override
   public void teleopInit() {
     CommandScheduler.getInstance().cancelAll();
-    container.stopEverything();
     // container.teleopInit();
   }
 
@@ -88,9 +85,7 @@ public class Robot extends TimedRobot {
 
   /** This function is called once when the robot is disabled. */
   @Override
-  public void disabledInit() {
-    container.stopEverything();
-  }
+  public void disabledInit() {}
 
   /** This function is called periodically when disabled. */
   @Override

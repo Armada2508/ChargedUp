@@ -69,8 +69,4 @@ public class WristCommand extends CommandBase {
         return (Math.abs(currentDegrees - target) < degreesDeadband) || (wristSubsystem.pollLimitSwitch() && delta > 0);
     }
 
-    public double getTarget() {
-        return targetDegrees.getAsDouble();
-    }
-
 }
