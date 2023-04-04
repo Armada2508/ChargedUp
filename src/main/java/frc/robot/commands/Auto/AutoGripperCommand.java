@@ -47,7 +47,7 @@ public class AutoGripperCommand extends CommandBase {
                 System.out.println("Saw Cone.");
                 new SequentialCommandGroup( // gripper close
                     new GripperCommand(Gripper.grabCone, gripperSubsystem, armSubsystem),
-                    new WristCommand(Wrist.maxDegrees, 45, 45, wristSubsystem, armSubsystem)
+                    new WristCommand(Wrist.maxDegrees, 130, 130, wristSubsystem, armSubsystem)
                 ).schedule(); 
                 seeingCone = true;
             }
