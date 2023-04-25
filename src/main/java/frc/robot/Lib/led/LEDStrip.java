@@ -4,6 +4,8 @@ import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.util.Color;
 
+import java.util.concurrent.TimeUnit;
+
 public class LEDStrip {
 
     private final AddressableLED mStrip;
@@ -109,6 +111,8 @@ public class LEDStrip {
         return mBuffer.getLED(index);
     }
 
+    //~ start of effects
+
     /**
      * Make a rainbow effect
      * @param increment The hue increment(speed)
@@ -180,5 +184,18 @@ public class LEDStrip {
         mStrip.setData(mBuffer);
     }
 
-    
+    /**
+     * Creates a slow flashing effect
+     * @param color the color of the effect
+     * @param pulse the ammout of times it flashes
+     * @throws InterruptedException
+     */
+    public void pulse(Color color, int pulse) throws InterruptedException { 
+        for (int i = 0; i <= pulse; i++) {
+            color = new Color(255, 0, 0); //chage to (0, 255, 0) if on blue instead of red OR take alliance color in from driver station
+            color = new Color(0, 0, 0); //turns lights off
+            TimeUnit.SECONDS.sleep(1); //! Still a maybe, check with someone || Waits 1 second before continuing for loop
+        }
+        mStrip.setData(mBuffer);
+    }
 }
