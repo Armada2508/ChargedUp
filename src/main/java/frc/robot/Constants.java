@@ -168,6 +168,11 @@ public class Constants {
         public static final double grabCone = onLimit + 0.8;
     }
 
+    public static final class LED {
+        public static final int port = 0;
+        public static final int length = 60;
+    }
+
     // ========================================
     //    Global Motor Controller Constants
     // ========================================A
