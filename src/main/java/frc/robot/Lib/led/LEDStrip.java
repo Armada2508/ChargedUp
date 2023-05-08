@@ -1,10 +1,16 @@
 package frc.robot.lib.led;
 
+import static edu.wpi.first.wpilibj2.command.Commands.runOnce;
+import static edu.wpi.first.wpilibj2.command.Commands.waitSeconds;
+
+import java.util.concurrent.TimeUnit;
+
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.util.Color;
-
-import java.util.concurrent.TimeUnit;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.RepeatCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 
 public class LEDStrip {
 
@@ -198,4 +204,22 @@ public class LEDStrip {
         }
         mStrip.setData(mBuffer);
     }
+
+    /**
+     * @param color1 
+     * @param color2
+     * @param pulseTimeSeconds
+     * @return A command that flashes the led strip between two colors which takes pulseTimeSeconds to do.
+     */
+    public Command pulseCommand(Color color1, Color color2, double pulseTimeSeconds) {
+		return new RepeatCommand(
+			new SequentialCommandGroup(
+				runOnce(() -> set(color1)),
+				waitSeconds(pulseTimeSeconds),
+				runOnce(() -> set(color2)),
+				waitSeconds(pulseTimeSeconds)
+		    )
+		);
+    }
+
 }

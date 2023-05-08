@@ -4,9 +4,6 @@
 
 package frc.robot;
 
-import static edu.wpi.first.wpilibj2.command.Commands.runOnce;
-import static edu.wpi.first.wpilibj2.command.Commands.waitSeconds;
-
 import com.ctre.phoenix.sensors.PigeonIMU;
 import com.ctre.phoenix.sensors.WPI_PigeonIMU;
 import com.playingwithfusion.TimeOfFlight;
@@ -16,8 +13,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.RepeatCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.Constants.LED;
 import frc.robot.lib.led.LEDStrip;
 
@@ -39,7 +34,7 @@ public class Robot extends TimedRobot {
 		DriverStation.silenceJoystickConnectionWarning(true);
 		tof.setRangingMode(RangingMode.Short, 100);
 		container = new RobotContainer(pigeon, tof);
-		led.set(new Color(255, 0, 0));
+		led.set(new Color(0, 255, 0));
 	}
 	
 	@Override
@@ -47,9 +42,9 @@ public class Robot extends TimedRobot {
 		CommandScheduler.getInstance().run();
 		// if (tof.isRangeValid()) {
 			// System.out.println("Distance: " + String.format("%.3f", tof.getRange() / 25.4) + ", Sigma: " + String.format("%.3f", (tof.getRangeSigma()  / 25.4)));
-			// }
-			// System.out.println("Pigeon: Yaw: " + pigeon.getYaw() + " Pitch: " + pigeon.getPitch() + " Roll: " + pigeon.getRoll());
-		}
+		// }
+		// System.out.println("Pigeon: Yaw: " + pigeon.getYaw() + " Pitch: " + pigeon.getPitch() + " Roll: " + pigeon.getRoll());
+	}
 		
 	@Override
 	public void autonomousInit() {
@@ -62,17 +57,8 @@ public class Robot extends TimedRobot {
 	
 	@Override
 	public void teleopInit() {
-		CommandScheduler.getInstance().cancelAll();
 		container.stopEverything();
-		final Color red = new Color(255, 0, 0);
-		final Color green = new Color(0, 255, 0);
-		new RepeatCommand(
-			new SequentialCommandGroup(
-				runOnce(() -> led.set(green)),
-				waitSeconds(0.5),
-				runOnce(() -> led.set(red))
-			)
-		).schedule();
+		led.pulseCommand(new Color(255, 0, 0), new Color(0, 255, 0), 0.75).schedule();
 	}
 	
 	@Override
@@ -81,6 +67,7 @@ public class Robot extends TimedRobot {
 	@Override
 	public void disabledInit() {
 		container.stopEverything();
+		led.set(new Color(0, 255, 0));
 	}
 	
 	@Override

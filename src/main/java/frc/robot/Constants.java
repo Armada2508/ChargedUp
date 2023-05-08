@@ -170,7 +170,7 @@ public class Constants {
 
     public static final class LED {
         public static final int port = 0;
-        public static final int length = 60;
+        public static final int length = 176;
     }
 
     // ========================================
