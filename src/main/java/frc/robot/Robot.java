@@ -35,6 +35,8 @@ public class Robot extends TimedRobot {
 		tof.setRangingMode(RangingMode.Short, 100);
 		container = new RobotContainer(pigeon, tof);
 		led.set(new Color(0, 255, 0));
+            //            G   R   B
+
 	}
 	
 	@Override
@@ -58,7 +60,8 @@ public class Robot extends TimedRobot {
 	@Override
 	public void teleopInit() {
 		container.stopEverything();
-		led.pulseCommand(new Color(255, 0, 0), new Color(0, 255, 0), 0.75).schedule();
+		//led.pulseCommand(new Color(255, 0, 0), new Color(0, 255, 0), 0.75).schedule();
+		//led.pulse(new Color(255, 0, 0), 5);
 	}
 	
 	@Override
@@ -67,7 +70,8 @@ public class Robot extends TimedRobot {
 	@Override
 	public void disabledInit() {
 		container.stopEverything();
-		led.set(new Color(0, 255, 0));
+		led.pulse(new Color(0, 255, 0), 5); //! CHANGE THESE VALUES TO CHANGE COLOR message for stem night people, remove later
+		//                  G   R   B
 	}
 	
 	@Override
