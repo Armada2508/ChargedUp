@@ -3,8 +3,6 @@ package frc.robot.lib.led;
 import static edu.wpi.first.wpilibj2.command.Commands.runOnce;
 import static edu.wpi.first.wpilibj2.command.Commands.waitSeconds;
 
-import java.util.concurrent.TimeUnit;
-
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.util.Color;
@@ -194,13 +192,11 @@ public class LEDStrip {
      * Creates a slow flashing effect
      * @param color the color of the effect
      * @param pulse the ammout of times it flashes
-     * @throws InterruptedException
      */
-    public void pulse(Color color, int pulse) throws InterruptedException { 
-        for (int i = 0; i <= pulse; i++) {
-            color = new Color(255, 0, 0); //chage to (0, 255, 0) if on blue instead of red OR take alliance color in from driver station
-            color = new Color(0, 0, 0); //turns lights off
-            TimeUnit.SECONDS.sleep(1); //! Still a maybe, check with someone || Waits 1 second before continuing for loop
+    public void pulse(Color color, int pulse) { 
+        for (int i = 0; i < pulse; i++) {
+            set(color);
+            set(new Color(0, 0, 0));
         }
         mStrip.setData(mBuffer);
     }
@@ -221,5 +217,4 @@ public class LEDStrip {
 		    )
 		);
     }
-
 }
