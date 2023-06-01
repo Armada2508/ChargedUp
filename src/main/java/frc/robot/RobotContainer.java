@@ -42,6 +42,7 @@ import frc.robot.lib.motion.FollowTrajectory;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.GripperSubsystem;
+import frc.robot.subsystems.LEDSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.WristSubsystem;
 
@@ -55,6 +56,7 @@ public class RobotContainer {
     private final ArmSubsystem armSubsystem = new ArmSubsystem();
     private final WristSubsystem wristSubsystem = new WristSubsystem();
     private final GripperSubsystem gripperSubsystem = new GripperSubsystem(armSubsystem, wristSubsystem);
+    private final LEDSubsystem ledSubsystem;
     private SubsystemBase[] subsystems;
     private final PigeonIMU pigeon;
     private final TimeOfFlight tof;
@@ -66,6 +68,7 @@ public class RobotContainer {
         this.pigeon = pigeon;
         this.tof = tof;
         this.driveSubsystem = new DriveSubsystem(pigeon);
+        this.ledSubsystem = new LEDSubsystem(pigeon);
         subsystems = new SubsystemBase[]{driveSubsystem, visionSubsystem, armSubsystem, wristSubsystem, gripperSubsystem};
         FollowTrajectory.config(0, 0, 0, Drive.ramseteB, Drive.ramseteZeta, Drive.trackWidthMeters, new PIDController(0, 0, 0), 0);
         InverseKinematics.config(Arm.jointLengthInches, Wrist.jointLengthInches);
