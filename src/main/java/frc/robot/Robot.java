@@ -11,7 +11,10 @@ import com.playingwithfusion.TimeOfFlight.RangingMode;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.Constants.LED;
+import frc.robot.lib.led.LEDStrip;
 
 /**
 * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -24,13 +27,16 @@ public class Robot extends TimedRobot {
 	private RobotContainer container;
 	private TimeOfFlight tof = new TimeOfFlight(0);
 	private final PigeonIMU pigeon = new WPI_PigeonIMU(Constants.pigeonID);
+	/** GRB */
+	private final LEDStrip led = new LEDStrip(LED.port, LED.length);
+	private Color offColor = new Color(0, 255, 0);
 	
 	@Override
 	public void robotInit() {
 		DriverStation.silenceJoystickConnectionWarning(true);
 		tof.setRangingMode(RangingMode.Short, 100);
 		container = new RobotContainer(pigeon, tof);
-		// led.set(new Color(0, 255, 0));
+		led.set(offColor);
 	}
 	
 	@Override
@@ -54,7 +60,7 @@ public class Robot extends TimedRobot {
 	@Override
 	public void teleopInit() {
 		container.stopEverything();
-		// led.pulseCommand(new Color(255, 0, 0), new Color(0, 255, 0), 0.75).schedule();
+		led.pulseCommand(new Color(255, 0, 0), new Color(0, 255, 0), 0.75).schedule();
 	}
 	
 	@Override
@@ -63,6 +69,7 @@ public class Robot extends TimedRobot {
 	@Override
 	public void disabledInit() {
 		container.stopEverything();
+		led.set(offColor);
 	}
 	
 	@Override
@@ -79,4 +86,5 @@ public class Robot extends TimedRobot {
 	
 	@Override
 	public void simulationPeriodic() {}
+
 }
