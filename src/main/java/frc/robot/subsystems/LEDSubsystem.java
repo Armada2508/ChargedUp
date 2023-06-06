@@ -8,13 +8,16 @@ import frc.robot.lib.led.LEDStrip;
 
 public class LEDSubsystem extends SubsystemBase {
     private final LEDStrip led = new LEDStrip(LED.port, LED.length);
+    private double pitch;
+    private final PigeonIMU pigeon;
 
-    public LEDSubsystem(PigeonIMU Pigeon) {
-
+    public LEDSubsystem(PigeonIMU pigeon) {
+        this.pigeon = pigeon;
     }
+
+    
 
     @Override
     public void periodic() {
-
     }
 }
