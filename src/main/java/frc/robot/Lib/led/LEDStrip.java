@@ -7,7 +7,6 @@ import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 
@@ -205,28 +204,5 @@ public class LEDStrip {
 		    )
 		);
     }
-    
-    /**
-     * @param pulseTimeSeconds
-     * @return A command that changes led's colors depending on how the robot is balencing
-     */
-    public Command balenceledCommand() {
-        return new ConditionalCommand(
-            null, //on true
-            null, //on false
-            null  //supplier
-            );
-    }
-
-    public boolean pitchMethod() {
-        if () {
-
-        }
-        else if () {
-
-        }
-        else {
-
-        }
-    }
+   
 }
