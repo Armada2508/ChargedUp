@@ -1,8 +1,5 @@
 package frc.robot;
 
-import java.lang.reflect.Field;
-import java.util.List;
-
 import com.ctre.phoenix.sensors.PigeonIMU;
 import com.playingwithfusion.TimeOfFlight;
 
@@ -72,39 +69,7 @@ public class RobotContainer {
         driveSubsystem.setDefaultCommand(new ButterySmoothDriveCommand(() -> -joystick.getRawAxis(1), () -> -joystick.getRawAxis(0),  () -> -joystick.getRawAxis(2), () -> joystick.getRawButton(12), true, driveSubsystem)); // default to driving from joystick input
         gripperSubsystem.setDefaultCommand(new AutoGripperCommand(driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem, tof));
         configureButtons();
-        // logSubsystems();
-    }
-
-    @SuppressWarnings("unchecked")
-    private void logSubsystems() {
-        try {
-            final Field fieldIndex = SequentialCommandGroup.class.getDeclaredField("m_currentCommandIndex");
-            fieldIndex.setAccessible(true);
-            final Field fieldCommands = SequentialCommandGroup.class.getDeclaredField("m_commands");
-            fieldCommands.setAccessible(true);
-            SubsystemBase loggerSubsystem = new SubsystemBase() {};
-            loggerSubsystem.setDefaultCommand(Commands.run(() -> {
-                System.out.println("\nDEBUG: Subsystem Logger");
-                for (int i = 0; i < subsystems.length; i++) {
-                    String name = "None";
-                    Command command = subsystems[i].getCurrentCommand();
-                    if (command != null) {
-                        name = command.getName();
-                        if (command instanceof SequentialCommandGroup) {
-                            try {
-                                List<Command> list = (List<Command>) fieldCommands.get(command);
-                                name += " - " + list.get(fieldIndex.getInt(command)).getName();
-                            } catch (IllegalArgumentException | IllegalAccessException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                    System.out.println(subsystems[i].getName() + ": " + name);
-                }
-            }, loggerSubsystem));
-        } catch (NoSuchFieldException | SecurityException e) {
-            e.printStackTrace();
-        }
+        // LogUtil.logSubsystems(subsystems);
     }
 
     public void mapJoyButton(Command c, int b) {
@@ -141,8 +106,8 @@ public class RobotContainer {
         mapJoyButton(new ArmCommand(() -> armSubsystem.getPosition() + 3, 45, 45, armSubsystem), 6);
 
         // Place Positions
-        mapJoyButton(new PlacePieceCommand(() -> Height.HIGH, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), 7);
-        mapJoyButton(new PlacePieceCommand(() -> Height.MID, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), 9);
+        mapJoyButton(new PlacePieceCommand(() -> Height.HIGH, armSubsystem, wristSubsystem, gripperSubsystem), 7);
+        mapJoyButton(new PlacePieceCommand(() -> Height.MID, armSubsystem, wristSubsystem, gripperSubsystem), 9);
         mapJoyButton(new ParallelCommandGroup(
             new SequentialCommandGroup(
                 new WaitUntilCommand(() -> armSubsystem.getPosition() > 30),
@@ -153,7 +118,7 @@ public class RobotContainer {
                 new WristCommand(20, 130, 130, wristSubsystem, armSubsystem), 
                 30, -15, armSubsystem, wristSubsystem, gripperSubsystem)
         ), 10);
-        mapJoyButton(new PlacePieceCommand(() -> Height.BOTTOM, driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), 11);
+        mapJoyButton(new PlacePieceCommand(() -> Height.BOTTOM, armSubsystem, wristSubsystem, gripperSubsystem), 11);
 
         // Start Position - Don't press
         mapJoyButton(new SequentialCommandGroup(

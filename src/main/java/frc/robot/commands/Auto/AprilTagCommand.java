@@ -20,7 +20,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.Constants.Drive;
 import frc.robot.Constants.Vision;
 import frc.robot.lib.motion.FollowTrajectory;
-import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.lib.motion.TrajectorySubsystem;
 import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.VisionSubsystem.Target;
 
@@ -30,7 +30,7 @@ public class AprilTagCommand extends InstantCommand {
     private final double minZ = 0.05;
     private final double minX = 0.05;
     private final Supplier<Position> position;    
-    private final DriveSubsystem driveSubsystem;
+    private final TrajectorySubsystem driveSubsystem;
     private final VisionSubsystem visionSubsystem;
 
     /**
@@ -40,12 +40,12 @@ public class AprilTagCommand extends InstantCommand {
      * @param driveSubsystem
      * @param visionSubsystem
      */
-    public AprilTagCommand(Supplier<Position> position, double zOffset, DriveSubsystem driveSubsystem, VisionSubsystem visionSubsystem) {
+    public AprilTagCommand(Supplier<Position> position, double zOffset, TrajectorySubsystem driveSubsystem, VisionSubsystem visionSubsystem) {
         this.position = position;
         this.zOffset = zOffset;
         this.driveSubsystem = driveSubsystem;
         this.visionSubsystem = visionSubsystem;
-        addRequirements(driveSubsystem);
+        addRequirements(driveSubsystem.getRequirements());
     }
 
     @Override

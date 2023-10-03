@@ -5,16 +5,15 @@ import java.util.function.Supplier;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.ArmSubsystem;
-import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.GripperSubsystem;
 import frc.robot.subsystems.WristSubsystem;
 
 public class PlacePieceCommand extends SequentialCommandGroup {
 
-    public PlacePieceCommand(Supplier<Height> height, DriveSubsystem driveSubsystem, ArmSubsystem armSubsystem, WristSubsystem wristSubsystem, GripperSubsystem gripperSubsystem) {
+    public PlacePieceCommand(Supplier<Height> height, ArmSubsystem armSubsystem, WristSubsystem wristSubsystem, GripperSubsystem gripperSubsystem) {
         addCommands(
             new ConditionalCommand(
-                new PieceOnFloorCommand(driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), 
+                new PieceOnFloorCommand(armSubsystem, wristSubsystem, gripperSubsystem), 
                 new ConeOnPoleCommand(height.get(), armSubsystem, wristSubsystem, gripperSubsystem),
                 () -> height.get() == Height.BOTTOM
             )
