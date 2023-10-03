@@ -40,7 +40,7 @@ public class GripperSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        System.out.println("Gripper Limit: " + pollLimitSwitch());
+        // System.out.println("Gripper Limit: " + pollLimitSwitch());
         if (pollLimitSwitch() && calibrated) {
             setPower(-0.15);
             desiredPosition = toPosition(talonFX.getSelectedSensorPosition());
