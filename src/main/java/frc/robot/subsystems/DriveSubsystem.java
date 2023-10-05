@@ -15,9 +15,10 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Drive;
 import frc.robot.lib.Encoder;
+import frc.robot.lib.motion.TrajectorySubsystem;
 
 
-public class DriveSubsystem extends SubsystemBase {
+public class DriveSubsystem extends SubsystemBase implements TrajectorySubsystem {
 
     private final WPI_TalonFX talonFXL = new WPI_TalonFX(Drive.LID); 
     private final WPI_TalonFX talonFXLfollow = new WPI_TalonFX(Drive.LFID);  

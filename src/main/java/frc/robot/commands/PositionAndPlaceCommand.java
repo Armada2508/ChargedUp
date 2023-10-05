@@ -10,8 +10,8 @@ import frc.robot.commands.auto.AprilTagCommand;
 import frc.robot.commands.auto.AprilTagCommand.Position;
 import frc.robot.commands.auto.PlacePieceCommand;
 import frc.robot.commands.auto.PlacePieceCommand.Height;
-import frc.robot.lib.motion.TrajectorySubsystem;
 import frc.robot.subsystems.ArmSubsystem;
+import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.GripperSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.VisionSubsystem.Target;
@@ -21,7 +21,7 @@ public class PositionAndPlaceCommand extends SequentialCommandGroup {
 
     private Joystick joystick;
     
-    public PositionAndPlaceCommand(Joystick joystick, Supplier<Target> target, TrajectorySubsystem driveSubsystem, ArmSubsystem armSubsystem, WristSubsystem wristSubsystem, GripperSubsystem gripperSubsystem, VisionSubsystem visionSubsystem, PigeonIMU pigeon) {
+    public PositionAndPlaceCommand(Joystick joystick, Supplier<Target> target, DriveSubsystem driveSubsystem, ArmSubsystem armSubsystem, WristSubsystem wristSubsystem, GripperSubsystem gripperSubsystem, VisionSubsystem visionSubsystem, PigeonIMU pigeon) {
         this.joystick = joystick;
         addCommands(
             new AprilTagCommand(this::getPosition, 1, driveSubsystem, visionSubsystem),
