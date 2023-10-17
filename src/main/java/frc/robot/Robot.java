@@ -51,7 +51,7 @@ public class Robot extends TimedRobot {
 	@Override
 	public void autonomousInit() {
 		Constants.Balance.pitchOffset = -pigeon.getPitch();
-		container.getAltAutoCommand().schedule();
+		container.getBalanceSequence().schedule();
 	}
 	
 	@Override

@@ -8,7 +8,6 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
@@ -27,12 +26,7 @@ import frc.robot.commands.arm.ArmCommand;
 import frc.robot.commands.arm.ArmWristCommand;
 import frc.robot.commands.arm.GripperCommand;
 import frc.robot.commands.arm.WristCommand;
-import frc.robot.commands.auto.AutoGripperCommand;
 import frc.robot.commands.auto.ConeOnPoleCommand;
-import frc.robot.commands.auto.FinishScoreCommand;
-import frc.robot.commands.auto.PlacePieceCommand;
-import frc.robot.commands.auto.PlacePieceCommand.Height;
-import frc.robot.commands.auto.StoreCommand;
 import frc.robot.commands.driving.AutoDriveCommand;
 import frc.robot.commands.driving.ButterySmoothDriveCommand;
 import frc.robot.lib.motion.FollowTrajectory;
@@ -67,7 +61,7 @@ public class RobotContainer {
         FollowTrajectory.config(0, 0, 0, Drive.ramseteB, Drive.ramseteZeta, Drive.trackWidthMeters, new PIDController(0, 0, 0), 0);
         InverseKinematics.config(Arm.jointLengthInches, Wrist.jointLengthInches);
         driveSubsystem.setDefaultCommand(new ButterySmoothDriveCommand(() -> -joystick.getRawAxis(1), () -> -joystick.getRawAxis(0),  () -> -joystick.getRawAxis(2), () -> joystick.getRawButton(12), true, driveSubsystem)); // default to driving from joystick input
-        gripperSubsystem.setDefaultCommand(new AutoGripperCommand(driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem, tof));
+        // gripperSubsystem.setDefaultCommand(new AutoGripperCommand(driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem, tof));
         configureButtons();
         // LogUtil.logSubsystems(subsystems);
     }
@@ -91,68 +85,68 @@ public class RobotContainer {
     //! Button 12 joystick is used for slow speed.
     private void configureButtons() {
         // Close Gripper and Carry Cone
-        mapJoyButton(new SequentialCommandGroup( 
-            new GripperCommand(Gripper.grabCone, gripperSubsystem, armSubsystem),
-            new WristCommand(Wrist.maxDegrees, 130, 130, wristSubsystem, armSubsystem)
-        ), 1);
+        // mapJoyButton(new SequentialCommandGroup( 
+            // new GripperCommand(Gripper.grabCone, gripperSubsystem, armSubsystem),
+            // new WristCommand(Wrist.maxDegrees, 130, 130, wristSubsystem, armSubsystem)
+        // ), 1);
 
         // Open Gripper
-        mapJoyButton(new GripperCommand(Gripper.open, gripperSubsystem, armSubsystem), 2); 
+        // mapJoyButton(new GripperCommand(Gripper.open, gripperSubsystem, armSubsystem), 2); 
 
         // Bump Buttons
-        mapJoyButton(new WristCommand(() -> wristSubsystem.getPosition() - 3, 45, 45, wristSubsystem, armSubsystem), 3);
-        mapJoyButton(new ArmCommand(() -> armSubsystem.getPosition() - 3, 45, 45, armSubsystem), 4);
-        mapJoyButton(new WristCommand(() -> wristSubsystem.getPosition() + 3, 45, 45, wristSubsystem, armSubsystem), 5);
-        mapJoyButton(new ArmCommand(() -> armSubsystem.getPosition() + 3, 45, 45, armSubsystem), 6);
+        // mapJoyButton(new WristCommand(() -> wristSubsystem.getPosition() - 3, 45, 45, wristSubsystem, armSubsystem), 3);
+        // mapJoyButton(new ArmCommand(() -> armSubsystem.getPosition() - 3, 45, 45, armSubsystem), 4);
+        // mapJoyButton(new WristCommand(() -> wristSubsystem.getPosition() + 3, 45, 45, wristSubsystem, armSubsystem), 5);
+        // mapJoyButton(new ArmCommand(() -> armSubsystem.getPosition() + 3, 45, 45, armSubsystem), 6);
 
         // Place Positions
-        mapJoyButton(new PlacePieceCommand(() -> Height.HIGH, armSubsystem, wristSubsystem, gripperSubsystem), 7);
-        mapJoyButton(new PlacePieceCommand(() -> Height.MID, armSubsystem, wristSubsystem, gripperSubsystem), 9);
-        mapJoyButton(new ParallelCommandGroup(
-            new SequentialCommandGroup(
-                new WaitUntilCommand(() -> armSubsystem.getPosition() > 30),
-                new GripperCommand(Gripper.open, gripperSubsystem, armSubsystem)
-            ),
-            new ArmWristCommand(
-                new ArmCommand(94, 120, 120, armSubsystem), 
-                new WristCommand(20, 130, 130, wristSubsystem, armSubsystem), 
-                30, -15, armSubsystem, wristSubsystem, gripperSubsystem)
-        ), 10);
-        mapJoyButton(new PlacePieceCommand(() -> Height.BOTTOM, armSubsystem, wristSubsystem, gripperSubsystem), 11);
+        // mapJoyButton(new PlacePieceCommand(() -> Height.HIGH, armSubsystem, wristSubsystem, gripperSubsystem), 7);
+        // mapJoyButton(new PlacePieceCommand(() -> Height.MID, armSubsystem, wristSubsystem, gripperSubsystem), 9);
+        // mapJoyButton(new ParallelCommandGroup(
+        //     new SequentialCommandGroup(
+        //         new WaitUntilCommand(() -> armSubsystem.getPosition() > 30),
+        //         new GripperCommand(Gripper.open, gripperSubsystem, armSubsystem)
+        //     ),
+        //     new ArmWristCommand(
+        //         new ArmCommand(94, 120, 120, armSubsystem), 
+        //         new WristCommand(20, 130, 130, wristSubsystem, armSubsystem), 
+        //         30, -15, armSubsystem, wristSubsystem, gripperSubsystem)
+        // ), 10);
+        // mapJoyButton(new PlacePieceCommand(() -> Height.BOTTOM, armSubsystem, wristSubsystem, gripperSubsystem), 11);
 
         // Start Position - Don't press
-        mapJoyButton(new SequentialCommandGroup(
-            new GripperCommand(Gripper.onLimit, gripperSubsystem, armSubsystem),
-            new WristCommand(Wrist.maxDegrees-10, 45, 45, wristSubsystem, armSubsystem),
-            new ArmCommand(Arm.minDegrees+3, 45, 45, armSubsystem),
-            new InstantCommand(() -> gripperSubsystem.setPosition(-0.3))
-        ), 8);
+        // mapJoyButton(new SequentialCommandGroup(
+        //     new GripperCommand(Gripper.onLimit, gripperSubsystem, armSubsystem),
+        //     new WristCommand(Wrist.maxDegrees-10, 45, 45, wristSubsystem, armSubsystem),
+        //     new ArmCommand(Arm.minDegrees+3, 45, 45, armSubsystem),
+        //     new InstantCommand(() -> gripperSubsystem.setPosition(-0.3))
+        // ), 8);
 
         // Store
-        mapBoardButton(new StoreCommand(armSubsystem, wristSubsystem, gripperSubsystem), 1);
+        // mapBoardButton(new StoreCommand(armSubsystem, wristSubsystem, gripperSubsystem), 1);
 
         // Pickup Position
-        mapBoardButton(new SequentialCommandGroup( 
-            new ArmWristCommand(new ArmCommand(0, 120, 120, armSubsystem), new WristCommand(92, 120, 120, wristSubsystem, armSubsystem), -0.5, 10, armSubsystem, wristSubsystem, gripperSubsystem),
-            new GripperCommand(Gripper.open, gripperSubsystem, armSubsystem)
-        ), 2);
+        // mapBoardButton(new SequentialCommandGroup( 
+        //     new ArmWristCommand(new ArmCommand(0, 120, 120, armSubsystem), new WristCommand(92, 120, 120, wristSubsystem, armSubsystem), -0.5, 10, armSubsystem, wristSubsystem, gripperSubsystem),
+        //     new GripperCommand(Gripper.open, gripperSubsystem, armSubsystem)
+        // ), 2);
 
         // Calibrate All
-        mapBoardButton(new SequentialCommandGroup( 
-            gripperSubsystem.getCalibrateSequence(),
-            wristSubsystem.getCalibrateSequence(gripperSubsystem),
-            armSubsystem.getCalibrateSequence(wristSubsystem, gripperSubsystem)
-        ), 3);
+        // mapBoardButton(new SequentialCommandGroup( 
+        //     gripperSubsystem.getCalibrateSequence(),
+        //     wristSubsystem.getCalibrateSequence(gripperSubsystem),
+        //     armSubsystem.getCalibrateSequence(wristSubsystem, gripperSubsystem)
+        // ), 3);
 
         // Finish Scoring
-        mapBoardButton(new FinishScoreCommand(Units.inchesToMeters(18), driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), 4);
+        // mapBoardButton(new FinishScoreCommand(Units.inchesToMeters(18), driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem), 4);
 
         // Stop Everything
-        mapBoardButton(Commands.runOnce(this::stopEverything), 5);
+        // mapBoardButton(Commands.runOnce(this::stopEverything), 5);
     }
 
     public void teleopInit() {
-        gripperSubsystem.getCalibrateSequence().schedule();
+        // gripperSubsystem.getCalibrateSequence().schedule();
     }
 
     private Command autoScoreSequence() {
@@ -191,13 +185,8 @@ public class RobotContainer {
         );
     }
 
-    /**
-     * Calibrates, scores cone on high pole, taxis and then balances. For the middle placement. 
-     */
-    public Command getAutoCommand() {
+    public Command getBalanceSequence() {
         return new SequentialCommandGroup(
-            // new AutoDriveCommand(2, 1.5, 0.5, driveSubsystem)
-            autoScoreSequence(),
             new BalanceCommand(true, driveSubsystem, pigeon),
             new InstantCommand(driveSubsystem::holdPosition, driveSubsystem),
             new WaitUntilCommand(() -> { // wait until delta has stopped changing and things have calmed down
@@ -206,9 +195,20 @@ public class RobotContainer {
                 lastPitch = pitch;
                 return val;
             }),
-            new WaitCommand(1),
-            new AutoDriveCommand(0.23, 0.5, 0.2, driveSubsystem),
+            new WaitCommand(1), 
+            new AutoDriveCommand(0.23, 0.5, 0.2, driveSubsystem), 
             new InstantCommand(driveSubsystem::holdPosition, driveSubsystem)
+        );
+    }
+
+    /**
+     * Calibrates, scores cone on high pole, taxis and then balances. For the middle placement. 
+     */
+    public Command getAutoCommand() {
+        return new SequentialCommandGroup(
+            // new AutoDriveCommand(2, 1.5, 0.5, driveSubsystem)
+            autoScoreSequence(),
+            getBalanceSequence()
         );
     }
 
