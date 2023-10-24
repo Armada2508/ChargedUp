@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import java.util.Map;
+
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
 import com.ctre.phoenix.motorcontrol.TalonFXFeedbackDevice;
@@ -15,10 +17,13 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Drive;
 import frc.robot.lib.Encoder;
+import frc.robot.lib.logging.Loggable;
+import frc.robot.lib.logging.NTLogger;
 import frc.robot.lib.motion.TrajectorySubsystem;
+import frc.robot.lib.util.Util;
 
 
-public class DriveSubsystem extends SubsystemBase implements TrajectorySubsystem {
+public class DriveSubsystem extends SubsystemBase implements TrajectorySubsystem, Loggable {
 
     private final WPI_TalonFX talonFXL = new WPI_TalonFX(Drive.LID); 
     private final WPI_TalonFX talonFXLfollow = new WPI_TalonFX(Drive.LFID);  
@@ -28,6 +33,7 @@ public class DriveSubsystem extends SubsystemBase implements TrajectorySubsystem
     private final PigeonIMU pigeon;
 
     public DriveSubsystem(PigeonIMU pigeon) {
+        NTLogger.register(this);
         this.pigeon = pigeon;
         calibrate(0);
         configureMotor(talonFXL);
@@ -66,6 +72,12 @@ public class DriveSubsystem extends SubsystemBase implements TrajectorySubsystem
     @Override
     public void periodic() {
         odometry.update(Rotation2d.fromDegrees(getHeading()), getLeftPostition(), getRightPostition());
+    }
+
+    @Override
+    public Map<String, Object> log(Map<String, Object> map) {
+        map.put("Constant", 0);
+        return Util.mergeMaps(map, NTLogger.getTalonLog(talonFXL), NTLogger.getTalonLog(talonFXR));
     }
 
     public void setPower(double leftPower, double rightPower) {

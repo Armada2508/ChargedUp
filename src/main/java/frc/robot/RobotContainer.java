@@ -61,7 +61,7 @@ public class RobotContainer {
         FollowTrajectory.config(0, 0, 0, Drive.ramseteB, Drive.ramseteZeta, Drive.trackWidthMeters, new PIDController(0, 0, 0), 0);
         InverseKinematics.config(Arm.jointLengthInches, Wrist.jointLengthInches);
         driveSubsystem.setDefaultCommand(new ButterySmoothDriveCommand(() -> -joystick.getRawAxis(1), () -> -joystick.getRawAxis(0),  () -> -joystick.getRawAxis(2), () -> joystick.getRawButton(12), true, driveSubsystem)); // default to driving from joystick input
-        // gripperSubsystem.setDefaultCommand(new AutoGripperCommand(driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem, tof));
+        //! gripperSubsystem.setDefaultCommand(new AutoGripperCommand(driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem, tof));
         configureButtons();
         // LogUtil.logSubsystems(subsystems);
     }
@@ -181,7 +181,6 @@ public class RobotContainer {
                     )
                 )
             )
-            // gripperSubsystem.getCalibrateSequence()
         );
     }
 
@@ -206,7 +205,6 @@ public class RobotContainer {
      */
     public Command getAutoCommand() {
         return new SequentialCommandGroup(
-            // new AutoDriveCommand(2, 1.5, 0.5, driveSubsystem)
             autoScoreSequence(),
             getBalanceSequence()
         );

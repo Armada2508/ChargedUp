@@ -15,13 +15,8 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.Constants.LED;
 import frc.robot.lib.led.LEDStrip;
+import frc.robot.lib.logging.NTLogger;
 
-/**
-* The VM is configured to automatically run this class, and to call the functions corresponding to
-* each mode, as described in the TimedRobot documentation. If you change the name of this class or
-* the package after creating this project, you must also update the build.gradle file in the
-* project.
-*/
 public class Robot extends TimedRobot {
 	
 	private RobotContainer container;
@@ -33,6 +28,7 @@ public class Robot extends TimedRobot {
 	
 	@Override
 	public void robotInit() {
+		NTLogger.initDataLogger();
 		DriverStation.silenceJoystickConnectionWarning(true);
 		tof.setRangingMode(RangingMode.Short, 100);
 		container = new RobotContainer(pigeon, tof);
@@ -42,6 +38,7 @@ public class Robot extends TimedRobot {
 	@Override
 	public void robotPeriodic() {
 		CommandScheduler.getInstance().run();
+		NTLogger.log();
 		// if (tof.isRangeValid()) {
 			// System.out.println("Distance: " + String.format("%.3f", tof.getRange() / 25.4) + ", Sigma: " + String.format("%.3f", (tof.getRangeSigma()  / 25.4)));
 		// }
