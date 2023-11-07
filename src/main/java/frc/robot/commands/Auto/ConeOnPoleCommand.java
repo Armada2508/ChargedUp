@@ -18,8 +18,8 @@ public class ConeOnPoleCommand extends SequentialCommandGroup {
     public ConeOnPoleCommand(Height height, ArmSubsystem armSubsystem, WristSubsystem wristSubsystem, GripperSubsystem gripperSubsystem) {
         double arm = 0, wrist = Wrist.maxDegrees;
         if (height == Height.MID) {
-            arm = 78; 
-            wrist = 45; 
+            arm = 83; 
+            wrist = 54; 
         } else {
             arm = armHigh;
             wrist = wristHigh;

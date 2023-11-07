@@ -9,12 +9,11 @@ import com.ctre.phoenix.sensors.WPI_PigeonIMU;
 import com.playingwithfusion.TimeOfFlight;
 import com.playingwithfusion.TimeOfFlight.RangingMode;
 
+import edu.wpi.first.util.datalog.StringLogEntry;
+import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.Constants.LED;
-import frc.robot.lib.led.LEDStrip;
 import frc.robot.lib.logging.NTLogger;
 
 public class Robot extends TimedRobot {
@@ -22,33 +21,35 @@ public class Robot extends TimedRobot {
 	private RobotContainer container;
 	private TimeOfFlight tof = new TimeOfFlight(0);
 	private final PigeonIMU pigeon = new WPI_PigeonIMU(Constants.pigeonID);
-	/** GRB */
-	private final LEDStrip led = new LEDStrip(LED.port, LED.length);
-	private Color offColor = new Color(0, 255, 0);
+	private StringLogEntry entry = new StringLogEntry(DataLogManager.getLog(), "DSMODE");
 	
 	@Override
 	public void robotInit() {
 		NTLogger.initDataLogger();
 		DriverStation.silenceJoystickConnectionWarning(true);
+		
 		tof.setRangingMode(RangingMode.Short, 100);
 		container = new RobotContainer(pigeon, tof);
-		led.set(offColor);
 	}
 	
 	@Override
 	public void robotPeriodic() {
 		CommandScheduler.getInstance().run();
-		NTLogger.log();
-		// if (tof.isRangeValid()) {
-			// System.out.println("Distance: " + String.format("%.3f", tof.getRange() / 25.4) + ", Sigma: " + String.format("%.3f", (tof.getRangeSigma()  / 25.4)));
+		// try {
+		// 	Field f = IterativeRobotBase.class.getField("m_lastMode");
+		// 	f.canAccess(true);
+		// 	Object o = f.get(this);
+		// 	entry.append(o.toString());
+		// } catch (NoSuchFieldException | SecurityException | IllegalAccessException e) {
+		// 	e.printStackTrace();
 		// }
-		// System.out.println("Pigeon: Yaw: " + pigeon.getYaw() + " Pitch: " + pigeon.getPitch() + " Roll: " + pigeon.getRoll());
+		// NTLogger.log();
 	}
 		
 	@Override
 	public void autonomousInit() {
 		Constants.Balance.pitchOffset = -pigeon.getPitch();
-		container.getBalanceSequence().schedule();
+		// container.getAltAutoCommand().schedule();
 	}
 	
 	@Override
@@ -57,7 +58,6 @@ public class Robot extends TimedRobot {
 	@Override
 	public void teleopInit() {
 		container.stopEverything();
-		led.pulseCommand(new Color(255, 0, 0), new Color(0, 255, 0), 0.75).schedule();
 	}
 	
 	@Override
@@ -66,7 +66,6 @@ public class Robot extends TimedRobot {
 	@Override
 	public void disabledInit() {
 		container.stopEverything();
-		led.set(offColor);
 	}
 	
 	@Override

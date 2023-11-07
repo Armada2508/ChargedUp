@@ -70,7 +70,7 @@ public class Constants {
         // Offsets, gathered at start of match.
         public static double pitchOffset = 0;
         // Speeds
-        public static final double pitchSpeed = 0.13;
+        public static final double pitchSpeed = 0.10;
         // Pitch angle to start driving at
         public static final double stationAngle = 13;
         public static final double angleToStop = 10;

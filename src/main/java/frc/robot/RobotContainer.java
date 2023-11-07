@@ -108,6 +108,7 @@ public class RobotContainer {
         // Place Positions
         mapJoyButton(new PlacePieceCommand(() -> Height.HIGH, armSubsystem, wristSubsystem, gripperSubsystem), 7);
         mapJoyButton(new PlacePieceCommand(() -> Height.MID, armSubsystem, wristSubsystem, gripperSubsystem), 9);
+        // Pick up from cone station
         mapJoyButton(new ParallelCommandGroup(
             new SequentialCommandGroup(
                 new WaitUntilCommand(() -> armSubsystem.getPosition() > 30),
@@ -115,7 +116,7 @@ public class RobotContainer {
             ),
             new ArmWristCommand(
                 new ArmCommand(94, 120, 120, armSubsystem), 
-                new WristCommand(20, 130, 130, wristSubsystem, armSubsystem), 
+                new WristCommand(15, 130, 130, wristSubsystem, armSubsystem), 
                 30, -15, armSubsystem, wristSubsystem, gripperSubsystem)
         ), 10);
         mapJoyButton(new PlacePieceCommand(() -> Height.BOTTOM, armSubsystem, wristSubsystem, gripperSubsystem), 11);
@@ -177,7 +178,7 @@ public class RobotContainer {
             new PrintCommand("Finished Opening Gripper to score"),
             new ParallelCommandGroup( // going down
                 new AutoDriveCommand(-distance, 3*scale, 2*scale, driveSubsystem),
-                new GripperCommand(Gripper.onLimit, gripperSubsystem, armSubsystem),
+                new GripperCommand(Gripper.grabCone, gripperSubsystem, armSubsystem),
                 new SequentialCommandGroup(
                     new WaitCommand(0.5),
                     new PrintCommand("Running Arm and Wrist down to store"),
