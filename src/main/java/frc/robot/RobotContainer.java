@@ -69,7 +69,6 @@ public class RobotContainer {
         driveSubsystem.setDefaultCommand(new ButterySmoothDriveCommand(() -> -joystick.getRawAxis(1), () -> -joystick.getRawAxis(0),  () -> -joystick.getRawAxis(2), () -> joystick.getRawButton(12), true, driveSubsystem)); // default to driving from joystick input
         gripperSubsystem.setDefaultCommand(new AutoGripperCommand(driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem, tof));
         configureButtons();
-        // LogUtil.logSubsystems(subsystems);
     }
 
     public void mapJoyButton(Command c, int b) {

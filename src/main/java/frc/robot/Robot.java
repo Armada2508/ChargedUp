@@ -9,8 +9,6 @@ import com.ctre.phoenix.sensors.WPI_PigeonIMU;
 import com.playingwithfusion.TimeOfFlight;
 import com.playingwithfusion.TimeOfFlight.RangingMode;
 
-import edu.wpi.first.util.datalog.StringLogEntry;
-import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -21,13 +19,11 @@ public class Robot extends TimedRobot {
 	private RobotContainer container;
 	private TimeOfFlight tof = new TimeOfFlight(0);
 	private final PigeonIMU pigeon = new WPI_PigeonIMU(Constants.pigeonID);
-	private StringLogEntry entry = new StringLogEntry(DataLogManager.getLog(), "DSMODE");
 	
 	@Override
 	public void robotInit() {
 		NTLogger.initDataLogger();
 		DriverStation.silenceJoystickConnectionWarning(true);
-		
 		tof.setRangingMode(RangingMode.Short, 100);
 		container = new RobotContainer(pigeon, tof);
 	}
@@ -35,15 +31,7 @@ public class Robot extends TimedRobot {
 	@Override
 	public void robotPeriodic() {
 		CommandScheduler.getInstance().run();
-		// try {
-		// 	Field f = IterativeRobotBase.class.getField("m_lastMode");
-		// 	f.canAccess(true);
-		// 	Object o = f.get(this);
-		// 	entry.append(o.toString());
-		// } catch (NoSuchFieldException | SecurityException | IllegalAccessException e) {
-		// 	e.printStackTrace();
-		// }
-		// NTLogger.log();
+		NTLogger.log();
 	}
 		
 	@Override
