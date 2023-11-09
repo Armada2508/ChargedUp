@@ -1,6 +1,8 @@
 package frc.robot.subsystems;
 
 
+import java.util.Map;
+
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
 import com.ctre.phoenix.motorcontrol.TalonFXFeedbackDevice;
@@ -16,26 +18,27 @@ import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.Constants;
 import frc.robot.Constants.Wrist;
 import frc.robot.lib.Encoder;
+import frc.robot.lib.logging.Loggable;
+import frc.robot.lib.logging.NTLogger;
+import frc.robot.lib.util.Util;
 
-public class WristSubsystem extends SubsystemBase {
+public class WristSubsystem extends SubsystemBase implements Loggable {
 
     private boolean calibrated = false;
     private final WPI_TalonFX talonFX = new WPI_TalonFX(Wrist.motorID);
 
     public WristSubsystem() {
-       configureMotor(talonFX);
+        NTLogger.register(this);
+        configureMotor(talonFX);
     }
 
     @Override
-    public void periodic() {
-    //    // Velocity Check
-    //     if (Math.abs(toAngle(talonFX.getSelectedSensorVelocity())) * 10 > Wrist.maxVelocity) {
-    //     System.out.println("Wrist: HOLY POOP SLOW DOWN");
-    //     if (this.getCurrentCommand() != null) {
-    //         this.getCurrentCommand().cancel();
-    //     }
-    //     talonFX.neutralOutput(); 
-    //     }
+    public void periodic() {}
+
+    @Override
+    public Map<String, Object> log(Map<String, Object> map) {
+        map.put("Calibrated", calibrated);
+        return Util.mergeMaps(map, NTLogger.getTalonLog(talonFX));
     }
 
     private void configureMotor(TalonFX talon) {

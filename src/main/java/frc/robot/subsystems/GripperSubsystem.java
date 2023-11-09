@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import java.util.Map;
+
 import com.ctre.phoenix.motorcontrol.LimitSwitchNormal;
 import com.ctre.phoenix.motorcontrol.LimitSwitchSource;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
@@ -17,8 +19,11 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.Constants;
 import frc.robot.Constants.Gripper;
+import frc.robot.lib.logging.Loggable;
+import frc.robot.lib.logging.NTLogger;
+import frc.robot.lib.util.Util;
 
-public class GripperSubsystem extends SubsystemBase {
+public class GripperSubsystem extends SubsystemBase implements Loggable {
     
     private boolean calibrated = false;
     private double desiredPosition = 1;
@@ -33,6 +38,7 @@ public class GripperSubsystem extends SubsystemBase {
     public GripperSubsystem(ArmSubsystem armSubsystem, WristSubsystem wristSubsystem) {
         this.armSubsystem = armSubsystem;
         this.wristSubsystem = wristSubsystem;
+        NTLogger.register(this);
         configureMotor(talonFX);
         updateArmOffset(-armSubsystem.getSensorPosition());
         updateWristOffset(-wristSubsystem.getSensorPosition());
@@ -40,7 +46,6 @@ public class GripperSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        // System.out.println("Gripper Limit: " + pollLimitSwitch());
         if (pollLimitSwitch() && calibrated) {
             setPower(-0.15);
             desiredPosition = toPosition(talonFX.getSelectedSensorPosition());
@@ -53,6 +58,15 @@ public class GripperSubsystem extends SubsystemBase {
             double pos = limiter.calculate(desiredPosition);
             talonFX.set(TalonFXControlMode.Position, fromPosition(pos) + ((arm + armOffset) * Gripper.armSensorMultiplier) + ((wrist + wristOffset) * Gripper.wristSensorMultiplier));  
         }
+    }
+
+    @Override
+    public Map<String, Object> log(Map<String, Object> map) {
+        map.put("Calibrated", calibrated);
+        map.put("Desired Position", desiredPosition);
+        map.put("Arm Offset", armOffset);
+        map.put("Wrist Offset", wristOffset);
+        return Util.mergeMaps(map, NTLogger.getTalonLog(talonFX));
     }
 
     public void updateArmOffset(double offsetSensorUnits) {

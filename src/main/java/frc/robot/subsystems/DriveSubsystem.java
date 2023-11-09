@@ -76,7 +76,6 @@ public class DriveSubsystem extends SubsystemBase implements TrajectorySubsystem
 
     @Override
     public Map<String, Object> log(Map<String, Object> map) {
-        map.put("Constant", 0);
         return Util.mergeMaps(map, NTLogger.getTalonLog(talonFXL), NTLogger.getTalonLog(talonFXR));
     }
 

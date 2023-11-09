@@ -13,7 +13,6 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
@@ -27,7 +26,6 @@ import frc.robot.commands.arm.ArmCommand;
 import frc.robot.commands.arm.ArmWristCommand;
 import frc.robot.commands.arm.GripperCommand;
 import frc.robot.commands.arm.WristCommand;
-import frc.robot.commands.auto.AutoGripperCommand;
 import frc.robot.commands.auto.ConeOnPoleCommand;
 import frc.robot.commands.auto.FinishScoreCommand;
 import frc.robot.commands.auto.PlacePieceCommand;
@@ -39,7 +37,6 @@ import frc.robot.lib.motion.FollowTrajectory;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.GripperSubsystem;
-import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.WristSubsystem;
 
 @SuppressWarnings("unused")
@@ -48,35 +45,23 @@ public class RobotContainer {
     private final Joystick joystick = new Joystick(0);
     private final Joystick buttonBoard = new Joystick(1);
     private final DriveSubsystem driveSubsystem;
-    private final VisionSubsystem visionSubsystem = new VisionSubsystem();
+    // private final VisionSubsystem visionSubsystem = new VisionSubsystem();
     private final ArmSubsystem armSubsystem = new ArmSubsystem();
     private final WristSubsystem wristSubsystem = new WristSubsystem();
     private final GripperSubsystem gripperSubsystem = new GripperSubsystem(armSubsystem, wristSubsystem);
-    private SubsystemBase[] subsystems;
     private final PigeonIMU pigeon;
-    private final TimeOfFlight tof;
-    private final double autoGripperCal = 0.8; // 0.8
+    private final double autoGripperCal = 0.8; 
     private double lastPitch = 0;
 
     public RobotContainer(PigeonIMU pigeon, TimeOfFlight tof) {
         pigeon.setYaw(0);
         this.pigeon = pigeon;
-        this.tof = tof;
         this.driveSubsystem = new DriveSubsystem(pigeon);
-        subsystems = new SubsystemBase[]{driveSubsystem, visionSubsystem, armSubsystem, wristSubsystem, gripperSubsystem};
         FollowTrajectory.config(0, 0, 0, Drive.ramseteB, Drive.ramseteZeta, Drive.trackWidthMeters, new PIDController(0, 0, 0), 0);
         InverseKinematics.config(Arm.jointLengthInches, Wrist.jointLengthInches);
         driveSubsystem.setDefaultCommand(new ButterySmoothDriveCommand(() -> -joystick.getRawAxis(1), () -> -joystick.getRawAxis(0),  () -> -joystick.getRawAxis(2), () -> joystick.getRawButton(12), true, driveSubsystem)); // default to driving from joystick input
-        gripperSubsystem.setDefaultCommand(new AutoGripperCommand(driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem, tof));
-        configureButtons();
-    }
-
-    public void mapJoyButton(Command c, int b) {
-        new JoystickButton(joystick, b).onTrue(c);
-    }
-
-    public void mapBoardButton(Command c, int b) {
-        new JoystickButton(buttonBoard, b).onTrue(c);
+        //! gripperSubsystem.setDefaultCommand(new AutoGripperCommand(driveSubsystem, armSubsystem, wristSubsystem, gripperSubsystem, tof));
+        // configureButtons();
     }
 
     public void stopEverything() {
@@ -87,6 +72,14 @@ public class RobotContainer {
         gripperSubsystem.stop();
     }
 
+    private void mapJoyButton(Command c, int b) {
+        new JoystickButton(joystick, b).onTrue(c);
+    }
+
+    private void mapBoardButton(Command c, int b) {
+        new JoystickButton(buttonBoard, b).onTrue(c);
+    }
+    
     //! Button 12 joystick is used for slow speed.
     private void configureButtons() {
         // Close Gripper and Carry Cone
@@ -151,9 +144,9 @@ public class RobotContainer {
         mapBoardButton(Commands.runOnce(this::stopEverything), 5);
     }
 
-    public void teleopInit() {
+    // public void teleopInit() {
         // gripperSubsystem.getCalibrateSequence().schedule();
-    }
+    // }
 
     private Command autoScoreSequence() {
         double distance = 0.6;
